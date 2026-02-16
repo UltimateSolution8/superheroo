@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Superheroo | Verified Micro-Help, On Demand</title>
+    <meta
+      name="description"
+      content="Superheroo connects buyers with verified helpers for urgent, real-world micro-tasks: errands, setup, quick fixes, and local assistance."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=DM+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      // Apply theme before paint.
+      (function () {
+        try {
+          var saved = localStorage.getItem('him.theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = saved || (prefersDark ? 'dark' : 'light');
+          document.documentElement.dataset.theme = theme;
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="top">
+      <div class="wrap top__inner">
+        <a class="brand" href="#">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span class="brand__name">Superheroo</span>
+        </a>
+        <nav class="nav">
+          <a href="#how">How it works</a>
+          <a href="#safety">Safety</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <div class="top__actions">
+          <button id="themeToggle" class="btn btn--ghost" type="button" aria-label="Toggle theme">
+            Theme
+          </button>
+          <a class="btn btn--primary" href="#cta">Get Early Access</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="wrap hero__inner">
+          <div class="hero__copy">
+            <p class="kicker">Urgent micro-help marketplace</p>
+            <h1>
+              Verified help for the tasks
+              <span class="hero__hl">big apps ignore</span>.
+            </h1>
+            <p class="lead">
+              Post a small real-world task. Nearby helpers get notified. You get it done in minutes, with
+              support (AI + human) if anything goes wrong.
+            </p>
+
+            <div class="hero__ctas" id="cta">
+              <a class="btn btn--primary" href="#form">Join the waitlist</a>
+              <a class="btn btn--ghost" href="#tasks">See examples</a>
+            </div>
+
+            <ul class="trust">
+              <li><span class="dot dot--a" aria-hidden="true"></span> KYC-approved helpers</li>
+              <li><span class="dot dot--b" aria-hidden="true"></span> Real-time matching</li>
+              <li><span class="dot dot--c" aria-hidden="true"></span> Dispute-first support</li>
+            </ul>
+          </div>
+
+          <div class="hero__panel" role="img" aria-label="App preview">
+            <div class="phone">
+              <div class="phone__top">
+                <div class="pill" aria-hidden="true"></div>
+                <div class="pill" aria-hidden="true"></div>
+              </div>
+              <div class="phone__body">
+                <div class="card card--mint">
+                  <p class="card__title">Need help now</p>
+                  <p class="card__body">Wi-Fi setup, document pickup, one switch fix.</p>
+                  <div class="card__bar"></div>
+                </div>
+                <div class="card">
+                  <p class="card__title">Helpers nearby</p>
+                  <p class="card__body">Offers sent in seconds.</p>
+                  <div class="card__dots" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span><span></span>
+                  </div>
+                </div>
+                <div class="card card--amber">
+                  <p class="card__title">Support included</p>
+                  <p class="card__body">AI triage + human escalation.</p>
+                  <div class="card__bar"></div>
+                </div>
+              </div>
+            </div>
+            <div class="blob blob--a" aria-hidden="true"></div>
+            <div class="blob blob--b" aria-hidden="true"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tasks" class="section">
+        <div class="wrap">
+          <h2>Tasks people ask for every day</h2>
+          <p class="muted">
+            We focus on small, urgent, non-standard help that is often underserved by ride-hailing and
+            scheduled-service apps.
+          </p>
+          <div class="grid">
+            <div class="tile">
+              <h3>Errands</h3>
+              <p>Pickup/drop, medicine run, document handover.</p>
+            </div>
+            <div class="tile">
+              <h3>Setup</h3>
+              <p>Wi‑Fi/router, smart TV, printer, phone data transfer.</p>
+            </div>
+            <div class="tile">
+              <h3>Micro-fixes</h3>
+              <p>One switch, one drill, one shelf mount, one bulb.</p>
+            </div>
+            <div class="tile">
+              <h3>Local help</h3>
+              <p>Senior assistance, short companion visit, pet walk.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how" class="section section--soft">
+        <div class="wrap">
+          <h2>How it works</h2>
+          <div class="steps">
+            <div class="step">
+              <div class="step__n">1</div>
+              <h3>Post</h3>
+              <p>Choose a category and describe what you need. Share location.</p>
+            </div>
+            <div class="step">
+              <div class="step__n">2</div>
+              <h3>Match</h3>
+              <p>Nearby verified helpers receive an offer in real time.</p>
+            </div>
+            <div class="step">
+              <div class="step__n">3</div>
+              <h3>Complete</h3>
+              <p>Track status updates. Support is available if anything deviates.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="safety" class="section">
+        <div class="wrap">
+          <h2>Safety, trust, and compliance</h2>
+          <div class="grid grid--2">
+            <div class="tile">
+              <h3>Verification</h3>
+              <p>KYC and approvals for helpers before they can go online and receive tasks.</p>
+            </div>
+            <div class="tile">
+              <h3>Prohibited tasks</h3>
+              <p>Strict policy and moderation for illegal, unsafe, or restricted requests.</p>
+            </div>
+            <div class="tile">
+              <h3>Audit trail</h3>
+              <p>Every critical action is logged for dispute resolution and fraud control.</p>
+            </div>
+            <div class="tile">
+              <h3>Support</h3>
+              <p>AI triage for speed plus human escalation for sensitive or high-impact issues.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" class="section section--soft">
+        <div class="wrap">
+          <h2>Simple pricing (configurable)</h2>
+          <div class="pricing">
+            <div class="price">
+              <h3>Per task</h3>
+              <p class="price__big">Platform fee</p>
+              <ul>
+                <li>Fixed + percentage</li>
+                <li>Optional surge in peak demand</li>
+                <li>Clear cancellation rules</li>
+              </ul>
+            </div>
+            <div class="price">
+              <h3>Helpers</h3>
+              <p class="price__big">Optional subscription</p>
+              <ul>
+                <li>Higher visibility</li>
+                <li>Priority offers (policy-based)</li>
+                <li>Performance incentives</li>
+              </ul>
+            </div>
+          </div>
+          <p class="muted tiny">
+            Note: Final pricing and compliance allocations must be validated with local legal and tax advisors.
+          </p>
+        </div>
+      </section>
+
+      <section id="form" class="section">
+        <div class="wrap">
+          <h2>Get early access</h2>
+          <p class="muted">Tell us your city and we will notify you when we launch.</p>
+          <form class="form" onsubmit="return window.himFormSubmit(event)">
+            <label>
+              <span>Name</span>
+              <input name="name" autocomplete="name" required />
+            </label>
+            <label>
+              <span>Phone</span>
+              <input name="phone" inputmode="numeric" autocomplete="tel" required />
+            </label>
+            <label>
+              <span>City</span>
+              <input name="city" autocomplete="address-level2" required />
+            </label>
+            <button class="btn btn--primary" type="submit">Join waitlist</button>
+            <p class="tiny muted">
+              No spam. We only contact you for launch and account access.
+            </p>
+          </form>
+          <div id="formMsg" class="form__msg" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="faq" class="section">
+        <div class="wrap">
+          <h2>FAQ</h2>
+          <details>
+            <summary>What kinds of tasks are not allowed?</summary>
+            <p>
+              Anything illegal, unsafe, or restricted. Also, tasks requiring licenses where applicable.
+            </p>
+          </details>
+          <details>
+            <summary>How fast is matching?</summary>
+            <p>
+              Matching is real-time and location-based. Actual response time depends on availability in your area.
+            </p>
+          </details>
+          <details>
+            <summary>Do you provide customer support?</summary>
+            <p>
+              Yes. AI handles quick triage and standard cases, and humans handle escalations and safety concerns.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer__inner">
+        <div>
+          <div class="brand brand--footer">
+            <span class="brand__mark" aria-hidden="true"></span>
+            <span class="brand__name">Superheroo</span>
+          </div>
+          <p class="muted tiny">© <span id="year"></span> Superheroo. All rights reserved.</p>
+        </div>
+        <div class="footer__links">
+          <a href="#tasks">Tasks</a>
+          <a href="#safety">Safety</a>
+          <a href="#form">Waitlist</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
