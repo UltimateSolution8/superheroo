@@ -79,15 +79,15 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: -0.2px;
 }
 
-.brand__mark {
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  background: conic-gradient(from 210deg, var(--primary), var(--primary2), var(--primary));
-  box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 16%, transparent);
+.brand__logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  object-fit: cover;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
-.brand--footer .brand__mark { box-shadow: none; }
+.brand--footer .brand__logo { box-shadow: none; }
 .brand__name { font-size: 15px; }
 
 .nav {
@@ -190,6 +190,10 @@ h1 {
   gap: 10px;
   margin-top: 18px;
   flex-wrap: wrap;
+}
+
+.hero__ctas--secondary .btn--primary {
+  background: var(--primary2);
 }
 
 .trust {
@@ -416,4 +420,3 @@ details p { margin: 10px 0 0; color: var(--muted); line-height: 1.65; }
   .steps { grid-template-columns: repeat(3, 1fr); }
   .pricing { grid-template-columns: repeat(2, 1fr); }
 }
-
