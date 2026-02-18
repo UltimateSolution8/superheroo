@@ -138,30 +138,6 @@ body {
   flex-wrap: wrap;
 }
 
-.hero__stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
-  margin-top: 32px;
-}
-
-.hero__stats div {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 14px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-}
-
-.hero__stats span {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.hero__stats strong {
-  display: block;
-  margin-top: 6px;
-}
 
 .hero__panel {
   display: flex;
