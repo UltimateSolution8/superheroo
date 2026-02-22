@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=DM+Sans:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
 
@@ -26,7 +26,9 @@
           <span class="brand__name">Superheroo</span>
         </a>
         <nav class="nav">
-          <a href="#demo">Demo</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#features">Features</a>
+          <a href="#flow">App flow</a>
           <a href="#cta">Get the app</a>
         </nav>
         <div class="top__actions">
@@ -37,64 +39,182 @@
     </header>
 
     <main>
+      <!-- Hero Section -->
       <section class="hero">
+        <div class="hero__bg-glow"></div>
         <div class="wrap hero__inner">
           <div class="hero__copy">
-            <p class="kicker">No‑skill micro‑help platform</p>
-            <h1>Tap. Create. Relax.</h1>
-            <p class="lead">
-              Superheroo connects you with nearby helpers in minutes. Track live and release payment after completion.
-            </p>
+            <div class="badge">🚀 No-skill help, on demand</div>
+            <h1>Tap. <span class="gradient-text">Create.</span> Relax.</h1>
+            <p class="lead">Post a task in seconds. A verified helper arrives in minutes. Track live. Pay safely via escrow.</p>
+
+            <div class="hero__stats">
+              <div class="stat">
+                <span class="stat__value">< 5 min</span>
+                <span class="stat__label">Avg response</span>
+              </div>
+              <div class="stat">
+                <span class="stat__value">OTP + Selfie</span>
+                <span class="stat__label">Verified flow</span>
+              </div>
+              <div class="stat">
+                <span class="stat__value">Escrow</span>
+                <span class="stat__label">Safe payments</span>
+              </div>
+            </div>
 
             <div class="hero__ctas" id="cta">
-              <a class="btn btn--primary" href="#">Download APK</a>
-              <a class="btn btn--ghost" href="https://superheroo.vercel.app" target="_blank" rel="noreferrer">Open web demo</a>
+              <a class="btn btn--primary btn--lg" href="#">Download APK</a>
+              <a class="btn btn--ghost btn--lg" href="https://superheroo.vercel.app" target="_blank" rel="noreferrer">Open web demo</a>
             </div>
           </div>
 
           <div class="hero__panel" role="img" aria-label="App preview">
-            <div class="phone">
-              <img src="assets/BuyerHome.svg" alt="Superheroo buyer home" />
+            <div class="phone-mockup">
+              <div class="phone-mockup__screen">
+                <img src="assets/BuyerHome.svg" alt="Superheroo buyer home" />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="demo" class="section">
+      <!-- How it works -->
+      <section id="how-it-works" class="section">
+        <div class="wrap">
+          <div class="section__head">
+            <div class="badge badge--center">✨ Simple 4-step process</div>
+            <h2>How it works</h2>
+            <p class="muted">From task creation to payment — everything happens in minutes.</p>
+          </div>
+          <div class="steps-grid">
+            <div class="step-card">
+              <div class="step-card__num">01</div>
+              <div class="step-card__icon">📝</div>
+              <h3>Post a task</h3>
+              <p>Describe what you need, set your budget, and tap create. It takes 30 seconds.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-card__num">02</div>
+              <div class="step-card__icon">🎯</div>
+              <h3>Get matched</h3>
+              <p>Our H3-powered geo-matching finds the closest verified helpers instantly.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-card__num">03</div>
+              <div class="step-card__icon">📍</div>
+              <h3>Track live</h3>
+              <p>Watch your helper approach in real time on the map with ETA updates.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-card__num">04</div>
+              <div class="step-card__icon">✅</div>
+              <h3>Verify & pay</h3>
+              <p>Share OTP, helper takes selfie. Escrow releases automatically on completion.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features" class="section section--dark">
+        <div class="wrap">
+          <div class="section__head">
+            <h2>Built for <span class="gradient-text">speed & trust</span></h2>
+            <p class="muted">Enterprise-grade features wrapped in a simple consumer experience.</p>
+          </div>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-card__icon">🗺️</div>
+              <h3>Live GPS Tracking</h3>
+              <p>Real-time location updates via Socket.IO. See your helper on the map with polyline routing.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-card__icon">🔐</div>
+              <h3>OTP Verification</h3>
+              <p>Arrival and completion OTPs ensure the right person does the job, at the right place.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-card__icon">📸</div>
+              <h3>Selfie Checkpoints</h3>
+              <p>Geo-tagged selfies at arrival and completion create a verifiable audit trail.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-card__icon">💰</div>
+              <h3>Escrow Payments</h3>
+              <p>Budget is held securely. Auto-released on completion. No disputes, no hassle.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-card__icon">🆔</div>
+              <h3>KYC Onboarding</h3>
+              <p>Helpers submit ID docs and selfies. Admin-approved before going live.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-card__icon">⭐</div>
+              <h3>Dual Ratings</h3>
+              <p>Both buyers and helpers rate each other after every task for quality assurance.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- App flow demo -->
+      <section id="flow" class="section">
         <div class="wrap">
           <div class="section__head">
             <h2>See the app flow</h2>
             <p class="muted">Post a task, track your helper, release payment after completion.</p>
           </div>
           <div class="demo-grid">
-            <figure>
-              <img src="assets/BuyerHome.svg" alt="Post task" />
-              <figcaption>Post a task</figcaption>
+            <figure class="demo-card">
+              <div class="demo-card__img">
+                <img src="assets/BuyerHome.svg" alt="Post task" />
+              </div>
+              <figcaption>
+                <strong>Buyer Home</strong>
+                <span>Browse and create tasks</span>
+              </figcaption>
             </figure>
-            <figure>
-              <img src="assets/PostTask.svg" alt="Task details" />
-              <figcaption>Confirm & pay</figcaption>
+            <figure class="demo-card">
+              <div class="demo-card__img">
+                <img src="assets/PostTask.svg" alt="Task details" />
+              </div>
+              <figcaption>
+                <strong>Create Task</strong>
+                <span>Set details, budget & urgency</span>
+              </figcaption>
             </figure>
-            <figure>
-              <img src="assets/LiveTracking.svg" alt="Live tracking" />
-              <figcaption>Track live</figcaption>
+            <figure class="demo-card">
+              <div class="demo-card__img">
+                <img src="assets/LiveTracking.svg" alt="Live tracking" />
+              </div>
+              <figcaption>
+                <strong>Live Tracking</strong>
+                <span>Watch helper on the map</span>
+              </figcaption>
             </figure>
-            <figure>
-              <img src="assets/PaymentRelease.svg" alt="Escrow release" />
-              <figcaption>Release payment</figcaption>
+            <figure class="demo-card">
+              <div class="demo-card__img">
+                <img src="assets/PaymentRelease.svg" alt="Escrow release" />
+              </div>
+              <figcaption>
+                <strong>Payment Release</strong>
+                <span>Auto escrow on completion</span>
+              </figcaption>
             </figure>
           </div>
         </div>
       </section>
 
-      <section class="section section--soft">
-        <div class="wrap simple">
-          <h2>Built for fast, local help</h2>
-          <p class="muted">
-            No skills listing. Tasks go to nearby helpers first. Buyers can verify arrival with selfie + OTP.
-          </p>
-          <div class="simple__cta">
-            <a class="btn btn--primary" href="#cta">Get the app</a>
+      <!-- Final CTA -->
+      <section class="section section--cta">
+        <div class="wrap cta-inner">
+          <div class="cta-glow"></div>
+          <h2>Ready to get help in minutes?</h2>
+          <p class="muted">Download the app and post your first task. It's free to get started.</p>
+          <div class="cta-buttons">
+            <a class="btn btn--primary btn--lg" href="#">Download APK</a>
+            <a class="btn btn--ghost btn--lg" href="https://superheroo.vercel.app" target="_blank" rel="noreferrer">Try web demo</a>
           </div>
         </div>
       </section>
@@ -102,8 +222,11 @@
 
     <footer class="footer">
       <div class="wrap footer__inner">
-        <span>Superheroo</span>
-        <span>Tap. Create. Relax.</span>
+        <div class="footer__brand">
+          <img src="superlogo.png" alt="Superheroo" class="footer__logo" />
+          <span class="footer__name">Superheroo</span>
+        </div>
+        <span class="footer__tagline">Tap. Create. Relax.</span>
       </div>
     </footer>
   </body>
