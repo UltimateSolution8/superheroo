@@ -29,7 +29,14 @@
           <a href="#cta">Get the app</a>
         </nav>
         <div class="top__actions">
-          <a class="btn btn--primary" href="https://drive.google.com/file/d/1NpRezSjYmEMYlUZYKmBSDUGLtrrQf0wS/view?usp=sharing" target="_blank" rel="noreferrer">Download APK</a>
+          <a class="btn btn--app-store btn--sm" href="#" aria-label="Download on App Store">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            <span>App Store</span>
+          </a>
+          <a class="btn btn--google-play btn--sm" href="#" aria-label="Get it on Google Play">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 010 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
+            <span>Google Play</span>
+          </a>
         </div>
       </div>
     </header>
@@ -45,7 +52,6 @@
             <p class="lead">Discover work near you with digital transparent payouts.</p>
 
             <div class="hero__ctas" id="cta">
-              <a class="btn btn--primary btn--lg" href="https://drive.google.com/file/d/1NpRezSjYmEMYlUZYKmBSDUGLtrrQf0wS/view?usp=sharing" target="_blank" rel="noreferrer">Download APK</a>
               <a class="btn btn--app-store btn--lg" href="#" aria-label="Download on App Store">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
                 <span>Download on App Store</span>
@@ -59,27 +65,131 @@
           <div class="hero__panel">
             <div class="map-visual">
               <div class="map-visual__container">
+                <!-- Google Maps style background -->
                 <div class="map-visual__bg"></div>
-                <div class="map-visual__road"></div>
-                <div class="map-visual__location map-visual__location--buyer">
-                  <div class="map-visual__pin"></div>
-                  <span class="map-visual__label">Buyer</span>
+                <!-- Map roads -->
+                <div class="map-visual__roads">
+                  <div class="map-visual__road map-visual__road--h1"></div>
+                  <div class="map-visual__road map-visual__road--h2"></div>
+                  <div class="map-visual__road map-visual__road--v1"></div>
+                  <div class="map-visual__road map-visual__road--v2"></div>
                 </div>
+                <!-- Map buildings/blocks -->
+                <div class="map-visual__blocks">
+                  <div class="map-visual__block" style="top: 15%; left: 10%; width: 25%; height: 20%;"></div>
+                  <div class="map-visual__block" style="top: 15%; right: 10%; width: 20%; height: 25%;"></div>
+                  <div class="map-visual__block" style="bottom: 20%; left: 15%; width: 30%; height: 18%;"></div>
+                  <div class="map-visual__block" style="bottom: 15%; right: 15%; width: 22%; height: 22%;"></div>
+                </div>
+                <!-- Customer/User marker -->
+                <div class="map-visual__location map-visual__location--customer">
+                  <div class="map-visual__pin map-visual__pin--customer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                  </div>
+                  <span class="map-visual__label map-visual__label--customer">You</span>
+                </div>
+                <!-- Helper/Superheroo marker -->
                 <div class="map-visual__location map-visual__location--helper">
-                  <div class="map-visual__pin map-visual__pin--active"></div>
-                  <span class="map-visual__label">Helper</span>
+                  <div class="map-visual__pin map-visual__pin--helper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white">
+                      <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+                    </svg>
+                  </div>
+                  <span class="map-visual__label map-visual__label--helper">Helper nearby</span>
                 </div>
+                <!-- Route line -->
                 <div class="map-visual__route">
-                  <svg viewBox="0 0 200 60" preserveAspectRatio="none">
-                    <path d="M 20 30 Q 60 10, 100 30 T 180 30" fill="none" stroke="#000" stroke-width="2" stroke-dasharray="8 4"/>
+                  <svg viewBox="0 0 300 150" preserveAspectRatio="none">
+                    <path d="M 50 70 Q 100 40, 150 70 T 250 70" fill="none" stroke="#4285F4" stroke-width="4" stroke-dasharray="0"/>
+                    <defs>
+                      <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#4285F4;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#34A853;stop-opacity:1" />
+                      </linearGradient>
+                    </defs>
                   </svg>
                 </div>
+                <!-- Animated car -->
                 <div class="map-visual__car">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#4285F4">
+                    <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                  </svg>
+                </div>
+                <!-- ETA info -->
+                <div class="map-visual__eta">
+                  <span class="map-visual__eta-time">3 min</span>
+                  <span class="map-visual__eta-distance">1.2 km</span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- Services Showcase Section -->
+      <section class="services-section">
+        <div class="wrap">
+          <div class="services-section__head">
+            <h2>Find help within minutes for:</h2>
+            <p class="muted">Whatever you need, our helpers are ready to assist</p>
+          </div>
+          <div class="services-carousel">
+            <div class="services-carousel__track">
+              <!-- Service Card 1 -->
+              <div class="service-card">
+                <div class="service-card__icon">🚗</div>
+                <h3>Deliveries</h3>
+                <p>Food, packages & more</p>
+              </div>
+              <!-- Service Card 2 -->
+              <div class="service-card">
+                <div class="service-card__icon">🛒</div>
+                <h3>Grocery Shopping</h3>
+                <p>Shop & deliver for you</p>
+              </div>
+              <!-- Service Card 3 -->
+              <div class="service-card">
+                <div class="service-card__icon">🧹</div>
+                <h3>Cleaning Services</h3>
+                <p>Home & office cleaning</p>
+              </div>
+              <!-- Service Card 4 -->
+              <div class="service-card">
+                <div class="service-card__icon">🔧</div>
+                <h3>Repairs & Handyman</h3>
+                <p>Fix it all for you</p>
+              </div>
+              <!-- Service Card 5 -->
+              <div class="service-card">
+                <div class="service-card__icon">📦</div>
+                <h3>Moving & Lifting</h3>
+                <p>Heavy lifting help</p>
+              </div>
+              <!-- Service Card 6 -->
+              <div class="service-card">
+                <div class="service-card__icon">🌿</div>
+                <h3>Gardening & Lawn Care</h3>
+                <p>Outdoor maintenance</p>
+              </div>
+            </div>
+            <div class="services-carousel__nav">
+              <button class="services-carousel__btn services-carousel__btn--prev" aria-label="Previous">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+              </button>
+              <button class="services-carousel__btn services-carousel__btn--next" aria-label="Next">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="services-carousel__dots">
+            <button class="services-carousel__dot active" aria-label="Slide 1"></button>
+            <button class="services-carousel__dot" aria-label="Slide 2"></button>
+            <button class="services-carousel__dot" aria-label="Slide 3"></button>
+          </div>
+        </div>
+      </section>
 
       <!-- Final CTA -->
       <section class="section section--cta">
@@ -88,7 +198,14 @@
           <h2>Ready to move faster?</h2>
           <p class="muted">Download Superheroo and start earning or posting tasks in minutes.</p>
           <div class="cta-buttons">
-            <a class="btn btn--primary btn--lg" href="https://drive.google.com/file/d/1NpRezSjYmEMYlUZYKmBSDUGLtrrQf0wS/view?usp=sharing" target="_blank" rel="noreferrer">Download APK</a>
+            <a class="btn btn--app-store btn--lg" href="#" aria-label="Download on App Store">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              <span>Download on App Store</span>
+            </a>
+            <a class="btn btn--google-play btn--lg" href="#" aria-label="Get it on Google Play">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 010 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
+              <span>Get it on Google Play</span>
+            </a>
           </div>
         </div>
       </section>
@@ -127,5 +244,86 @@
         </div>
       </div>
     </footer>
+
+    <script>
+      // Services carousel functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        const track = document.querySelector('.services-carousel__track');
+        const cards = document.querySelectorAll('.service-card');
+        const prevBtn = document.querySelector('.services-carousel__btn--prev');
+        const nextBtn = document.querySelector('.services-carousel__btn--next');
+        const dots = document.querySelectorAll('.services-carousel__dot');
+        
+        let currentIndex = 0;
+        const cardsPerView = getCardsPerView();
+        const totalSlides = Math.ceil(cards.length - cardsPerView) + 1;
+        
+        function getCardsPerView() {
+          if (window.innerWidth <= 480) return 1;
+          if (window.innerWidth <= 768) return 2;
+          if (window.innerWidth <= 1024) return 3;
+          return 4;
+        }
+        
+        function updateCarousel() {
+          const cardWidth = cards[0].offsetWidth + 16;
+          const offset = currentIndex * cardWidth;
+          track.style.transform = `translateX(-${offset}px)`;
+          
+          dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentIndex);
+          });
+        }
+        
+        function nextSlide() {
+          const maxIndex = cards.length - getCardsPerView();
+          if (currentIndex < maxIndex) {
+            currentIndex++;
+            updateCarousel();
+          } else {
+            currentIndex = 0;
+            updateCarousel();
+          }
+        }
+        
+        function prevSlide() {
+          const maxIndex = cards.length - getCardsPerView();
+          if (currentIndex > 0) {
+            currentIndex--;
+            updateCarousel();
+          } else {
+            currentIndex = maxIndex;
+            updateCarousel();
+          }
+        }
+        
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+        
+        dots.forEach((dot, index) => {
+          dot.addEventListener('click', () => {
+            currentIndex = index;
+            updateCarousel();
+          });
+        });
+        
+        // Auto-advance carousel
+        let autoAdvance = setInterval(nextSlide, 4000);
+        
+        track.addEventListener('mouseenter', () => clearInterval(autoAdvance));
+        track.addEventListener('mouseleave', () => {
+          autoAdvance = setInterval(nextSlide, 4000);
+        });
+        
+        // Handle resize
+        window.addEventListener('resize', () => {
+          const newCardsPerView = getCardsPerView();
+          if (currentIndex > cards.length - newCardsPerView) {
+            currentIndex = Math.max(0, cards.length - newCardsPerView);
+          }
+          updateCarousel();
+        });
+      });
+    </script>
   </body>
 </html>

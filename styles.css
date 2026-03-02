@@ -13,6 +13,13 @@
   --radius:16px;
   --font:'Inter',sans-serif;
   --font-heading:'Space Grotesk','Inter',sans-serif;
+  /* Google Maps colors */
+  --map-road:#e0e0e0;
+  --map-road-line:#ffffff;
+  --map-building:#f5f5f5;
+  --map-building-alt:#eeeeee;
+  --route-blue:#4285F4;
+  --route-green:#34A853;
 }
 html{scroll-behavior:smooth}
 body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
@@ -29,9 +36,11 @@ a{color:inherit;text-decoration:none}
 .btn--ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
 .btn--ghost:hover{background:rgba(0,0,0,.05);border-color:var(--accent)}
 .btn--lg{padding:14px 28px;font-size:1rem;border-radius:14px}
+.btn--sm{padding:8px 16px;font-size:.8rem}
 .btn--app-store,.btn--google-play{background:#000;color:#fff;gap:10px}
 .btn--app-store:hover,.btn--google-play:hover{background:#333;transform:translateY(-2px)}
 .btn--app-store svg,.btn--google-play svg{width:20px;height:20px}
+.btn--sm svg{width:16px;height:16px}
 
 /* ============ Badge ============ */
 .badge{display:inline-block;background:rgba(0,0,0,.08);color:var(--accent);font-size:.8rem;font-weight:600;padding:6px 16px;border-radius:100px;border:1px solid rgba(0,0,0,.1);margin-bottom:16px}
@@ -62,25 +71,72 @@ a{color:inherit;text-decoration:none}
 .hero__ctas{display:flex;gap:12px;flex-wrap:wrap}
 .hero__panel{display:flex;justify-content:center;align-items:center}
 
-/* Map Visual - Uber-style */
-.map-visual{width:100%;max-width:400px}
-.map-visual__container{position:relative;width:100%;aspect-ratio:16/10;border-radius:24px;overflow:hidden;background:linear-gradient(180deg,#f5f5f0 0%,#e8e8e0 100%);border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.1)}
-.map-visual__bg{position:absolute;inset:0;background-image:radial-gradient(circle at 20% 30%,rgba(0,0,0,.03) 1px,transparent 1px),radial-gradient(circle at 80% 70%,rgba(0,0,0,.03) 1px,transparent 1px);background-size:20px 20px}
-.map-visual__road{position:absolute;top:50%;left:0;right:0;height:8px;background:#ddd;transform:translateY(-50%)}
-.map-visual__road::before,.map-visual__road::after{content:'';position:absolute;top:50%;width:40%;height:3px;background:#fff;transform:translateY(-50%)}
-.map-visual__road::before{left:10%}
-.map-visual__road::after{right:10%}
-.map-visual__location{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px}
-.map-visual__location--buyer{top:30%;left:15%}
-.map-visual__location--helper{top:30%;right:15%}
-.map-visual__pin{width:16px;height:16px;border-radius:50%;background:#666;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-.map-visual__pin--active{background:#000;animation:pulse 1.5s ease-in-out infinite}
-.map-visual__label{font-size:.7rem;font-weight:600;color:#333;background:rgba(255,255,255,.9);padding:2px 8px;border-radius:10px;white-space:nowrap}
-.map-visual__route{position:absolute;top:50%;left:20px;right:20px;height:30px;transform:translateY(-50%)}
+/* Map Visual - Google Maps Style */
+.map-visual{width:100%;max-width:420px}
+.map-visual__container{position:relative;width:100%;aspect-ratio:16/10;border-radius:24px;overflow:hidden;background:linear-gradient(180deg,#f8f9fa 0%,#e9ecef 100%);border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.12)}
+.map-visual__bg{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23f0f0f0' width='100' height='100'/%3E%3Crect fill='%23e8e8e8' x='0' y='0' width='50' height='50'/%3E%3Crect fill='%23e8e8e8' x='50' y='50' width='50' height='50'/%3E%3C/svg%3E");background-size:30px 30px;opacity:0.5}
+
+/* Map roads - Google Maps style */
+.map-visual__roads{position:absolute;inset:0}
+.map-visual__road{position:absolute;background:var(--map-road)}
+.map-visual__road--h1{top:35%;left:0;right:0;height:6px}
+.map-visual__road--h1::after{content:'';position:absolute;top:50%;left:5%;right:5%;height:2px;background:var(--map-road-line);transform:translateY(-50%)}
+.map-visual__road--h2{top:65%;left:0;right:0;height:8px}
+.map-visual__road--h2::after{content:'';position:absolute;top:50%;left:10%;right:10%;height:2px;background:var(--map-road-line);transform:translateY(-50%)}
+.map-visual__road--v1{top:0;bottom:0;left:30%;width:6px}
+.map-visual__road--v1::after{content:'';position:absolute;left:50%;top:10%;bottom:10%;width:2px;background:var(--map-road-line);transform:translateX(-50%)}
+.map-visual__road--v2{top:0;bottom:0;right:25%;width:8px}
+.map-visual__road--v2::after{content:'';position:absolute;left:50%;top:15%;bottom:15%;width:2px;background:var(--map-road-line);transform:translateX(-50%)}
+
+/* Map buildings */
+.map-visual__blocks{position:absolute;inset:0}
+.map-visual__block{position:absolute;background:linear-gradient(135deg,var(--map-building) 0%,var(--map-building-alt) 100%);border-radius:4px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),0 1px 3px rgba(0,0,0,0.1)}
+.map-visual__block::before{content:'';position:absolute;inset:4px;border:1px solid rgba(0,0,0,0.05);border-radius:2px}
+
+/* Map locations */
+.map-visual__location{position:absolute;display:flex;flex-direction:column;align-items:center;z-index:10}
+.map-visual__location--customer{top:25%;left:12%}
+.map-visual__location--helper{top:55%;right:15%}
+
+/* Customer pin - Red Google Maps style */
+.map-visual__pin{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.3),0 0 0 2px rgba(255,255,255,.8)}
+.map-visual__pin--customer{background:#EA4335;animation:markerBounce 2s ease-in-out infinite}
+.map-visual__pin--helper{background:#000;width:36px;height:36px;animation:markerBounceHelper 2s ease-in-out infinite}
+
+/* Pin labels */
+.map-visual__label{font-size:.65rem;font-weight:600;padding:3px 8px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.map-visual__label--customer{background:#fff;color:#EA4335;margin-top:2px}
+.map-visual__label--helper{background:#000;color:#fff;margin-top:2px}
+
+/* Route line */
+.map-visual__route{position:absolute;top:40%;left:20px;right:20px;height:40px;z-index:5}
 .map-visual__route svg{width:100%;height:100%}
-.map-visual__car{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:50%;padding:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);animation:drive 3s ease-in-out infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
-@keyframes drive{0%{left:25%}50%{left:75%}100%{left:25%}}
+.map-visual__route path{stroke:url(#routeGradient);stroke-width:4;stroke-linecap:round}
+
+/* Car */
+.map-visual__car{position:absolute;top:45%;left:30%;background:#fff;border-radius:50%;padding:8px;box-shadow:0 3px 10px rgba(0,0,0,.2);z-index:15;animation:driveCar 8s ease-in-out infinite}
+.map-visual__car svg{width:20px;height:20px}
+
+/* ETA display */
+.map-visual__eta{position:absolute;bottom:12px;left:12px;background:#fff;border-radius:8px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:20;display:flex;flex-direction:column;gap:2px}
+.map-visual__eta-time{font-size:.75rem;font-weight:700;color:#333}
+.map-visual__eta-distance{font-size:.65rem;color:#666}
+
+@keyframes markerBounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+@keyframes markerBounceHelper{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+@keyframes driveCar{
+  0%{left:25%;top:45%}
+  25%{left:50%;top:40%}
+  50%{left:70%;top:45%}
+  75%{left:50%;top:50%}
+  100%{left:25%;top:45%}
+}
 
 /* Phone mockup */
 .phone-mockup{width:280px;border-radius:32px;background:linear-gradient(145deg,#27272a,#1a1a1e);padding:12px;box-shadow:0 32px 80px rgba(0,0,0,.15),0 0 0 1px var(--border)}
@@ -93,6 +149,29 @@ a{color:inherit;text-decoration:none}
 .section__head{text-align:center;max-width:600px;margin:0 auto 60px}
 .section__head h2{font-family:var(--font-heading);font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
 .section__head .muted{font-size:1rem}
+
+/* ============ Services Section ============ */
+.services-section{background:var(--surface);padding:80px 0}
+.services-section__head{text-align:center;margin-bottom:48px}
+.services-section__head h2{font-family:var(--font-heading);font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+.services-section__head .muted{font-size:1.1rem}
+
+/* Services Carousel */
+.services-carousel{position:relative;max-width:1100px;margin:0 auto;overflow:hidden;padding:0 50px}
+.services-carousel__track{display:flex;gap:16px;transition:transform .4s ease}
+.services-carousel__nav{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);display:flex;justify-content:space-between;pointer-events:none;z-index:10}
+.services-carousel__btn{width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.1);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease;pointer-events:auto;color:var(--text)}
+.services-carousel__btn:hover{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.05)}
+.services-carousel__dots{display:flex;justify-content:center;gap:8px;margin-top:32px}
+.services-carousel__dot{width:10px;height:10px;border-radius:50%;background:var(--border);border:none;cursor:pointer;transition:all .2s ease}
+.services-carousel__dot.active{background:var(--primary);transform:scale(1.2)}
+
+/* Service Card */
+.service-card{background:#fff;border-radius:20px;padding:28px 24px;min-width:220px;flex:0 0 auto;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid var(--border);transition:all .3s ease}
+.service-card:hover{transform:translateY(-8px);box-shadow:0 12px 40px rgba(0,0,0,.12)}
+.service-card__icon{font-size:2.8rem;margin-bottom:16px;display:block}
+.service-card h3{font-family:var(--font-heading);font-size:1.05rem;font-weight:700;margin-bottom:6px;color:var(--text)}
+.service-card p{font-size:.85rem;color:var(--muted);line-height:1.5}
 
 /* ============ Steps Grid ============ */
 .steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
@@ -135,7 +214,7 @@ a{color:inherit;text-decoration:none}
 .cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:500px;background:radial-gradient(circle,rgba(0,0,0,.03)0%,transparent 70%);pointer-events:none}
 .cta-inner h2{font-family:var(--font-heading);font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:800;letter-spacing:-.02em;margin-bottom:12px;position:relative}
 .cta-inner .muted{font-size:1rem;margin-bottom:32px;position:relative}
-.cta-buttons{display:flex;gap:12px;justify-content:center;position:relative}
+.cta-buttons{display:flex;gap:12px;justify-content:center;position:relative;flex-wrap:wrap}
 
 /* ============ Footer ============ */
 .footer{border-top:1px solid var(--border);padding:24px 0}
@@ -167,17 +246,38 @@ a{color:inherit;text-decoration:none}
   .features-grid{grid-template-columns:repeat(2,1fr)}
   .demo-grid{grid-template-columns:repeat(2,1fr)}
   .video-grid{grid-template-columns:1fr}
+  .services-carousel{padding:0 40px}
 }
-@media(max-width:640px){
+
+@media(max-width:768px){
   .top__inner{flex-wrap:wrap;gap:12px}
+  .top__actions{order:3;width:100%;justify-content:center;margin-top:8px}
+  .nav{display:none}
+  .hero{padding:60px 0 50px}
+  .section{padding:60px 0}
+  .services-section{padding:50px 0}
+  .services-carousel{padding:0 36px}
+  .service-card{min-width:180px;padding:20px 16px}
+  .service-card__icon{font-size:2.2rem}
+  .cta-buttons{flex-direction:column;align-items:center}
+}
+
+@media(max-width:640px){
   .nav{gap:2px}
   .nav a{font-size:.78rem;padding:6px 10px}
   .top__actions{gap:6px}
-  .hero{padding:60px 0 40px}
-  .section{padding:60px 0}
+  .hero{padding:50px 0 40px}
+  .section{padding:50px 0}
   .steps-grid,.features-grid,.demo-grid,.video-grid{grid-template-columns:1fr}
   .hero__stats{flex-direction:column;gap:12px;align-items:center}
   .footer__inner{flex-direction:column;gap:8px;text-align:center}
+  .services-carousel{padding:0 32px}
+  .services-carousel__btn{width:36px;height:36px}
+  .service-card{min-width:160px}
+  .map-visual{max-width:100%}
+  .map-visual__eta{bottom:8px;left:8px;padding:6px 10px}
+  .map-visual__eta-time{font-size:.7rem}
+  .map-visual__eta-distance{font-size:.6rem}
 }
 
 /* ============ Animations ============ */
@@ -199,3 +299,17 @@ a{color:inherit;text-decoration:none}
 .demo-card:nth-child(3){animation-delay:.3s}
 .demo-card:nth-child(4){animation-delay:.4s}
 @keyframes fadeInUp{to{opacity:1;transform:translateY(0)}}
+
+/* Services card entrance animation */
+.service-card{opacity:0;transform:translateY(30px);animation:serviceCardIn .5s ease forwards}
+.service-card:nth-child(1){animation-delay:.05s}
+.service-card:nth-child(2){animation-delay:.1s}
+.service-card:nth-child(3){animation-delay:.15s}
+.service-card:nth-child(4){animation-delay:.2s}
+.service-card:nth-child(5){animation-delay:.25s}
+.service-card:nth-child(6){animation-delay:.3s}
+@keyframes serviceCardIn{to{opacity:1;transform:translateY(0)}}
+
+/* Staggered animation on page load */
+.services-section{opacity:0;animation:sectionFadeIn .6s ease .3s forwards}
+@keyframes sectionFadeIn{to{opacity:1}}
