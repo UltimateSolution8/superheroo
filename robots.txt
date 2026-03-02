@@ -5,4 +5,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://superheroo.com/sitemap.xml
+Sitemap: https://superherooo.com/sitemap.xml
