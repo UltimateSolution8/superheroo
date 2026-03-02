@@ -81,6 +81,22 @@
                   <div class="map-visual__block" style="bottom: 20%; left: 15%; width: 30%; height: 18%;"></div>
                   <div class="map-visual__block" style="bottom: 15%; right: 15%; width: 22%; height: 22%;"></div>
                 </div>
+                <!-- Place Labels -->
+                <div class="map-visual__places">
+                  <span class="map-visual__place" style="top: 22%; left: 18%;">Coffee Shop</span>
+                  <span class="map-visual__place" style="top: 18%; right: 22%;">Main Street</span>
+                  <span class="map-visual__place" style="bottom: 28%; left: 25%;">Park Ave</span>
+                </div>
+                <!-- Google Maps Logo -->
+                <div class="map-visual__logo">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 20">
+                    <path fill="#4285F4" d="M9.5 17.5h1.2v-5.3h-1.2v5.3zM5.4 12.2h1.2v-3.5h3.5v-1.2h-4.7v4.7h1.2v-2.3l-1.2 2.3h.2z"/>
+                    <path fill="#34A853" d="M19.8 17.5c1.5 0 2.7-1.2 2.7-2.7s-1.2-2.7-2.7-2.7-2.7 1.2-2.7 2.7 1.3 2.7 2.7 2.7z"/>
+                    <path fill="#FBBC05" d="M25.4 8.2v8.6c0 .9-.2 1.7-.7 2.3l-1.4-1.1c.3-.4.5-.9.5-1.4v-1.2h-5.3v-2.5h7.4v-5.7h-1z"/>
+                    <path fill="#EA4335" d="M30.8 6.5c-1.6 0-3 .6-4.1 1.6l1.4 1.4c.8-.8 1.9-1.3 3-1.3 2.6 0 4.7 2.1 4.7 4.7s-2.1 4.7-4.7 4.7c-1.3 0-2.4-.5-3.2-1.3l-1.4 1.4c1.3 1.4 3 2.3 4.9 2.3 3.1 0 5.6-2.5 5.6-5.6s-2.5-5.9-5.9-5.9z"/>
+                    <text x="38" y="14" font-family="Arial" font-size="9" fill="#5f6368">maps</text>
+                  </svg>
+                </div>
                 <!-- Customer/User marker -->
                 <div class="map-visual__location map-visual__location--customer">
                   <div class="map-visual__pin map-visual__pin--customer">
@@ -88,7 +104,7 @@
                       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                     </svg>
                   </div>
-                  <span class="map-visual__label map-visual__label--customer">You</span>
+                  <span class="map-visual__label map-visual__label--customer">SuperCustomer</span>
                 </div>
                 <!-- Helper/Superheroo marker -->
                 <div class="map-visual__location map-visual__location--helper">
@@ -97,7 +113,7 @@
                       <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
                     </svg>
                   </div>
-                  <span class="map-visual__label map-visual__label--helper">Helper nearby</span>
+                  <span class="map-visual__label map-visual__label--helper">Superhero</span>
                 </div>
                 <!-- Route line -->
                 <div class="map-visual__route">
@@ -140,38 +156,92 @@
               <!-- Service Card 1 -->
               <div class="service-card">
                 <div class="service-card__icon">🚗</div>
-                <h3>Deliveries</h3>
-                <p>Food, packages & more</p>
+                <h3>Package Delivery</h3>
+                <p>Fast & secure delivery</p>
               </div>
               <!-- Service Card 2 -->
+              <div class="service-card">
+                <div class="service-card__icon">🍔</div>
+                <h3>Food Delivery</h3>
+                <p>Your favorite meals delivered</p>
+              </div>
+              <!-- Service Card 3 -->
               <div class="service-card">
                 <div class="service-card__icon">🛒</div>
                 <h3>Grocery Shopping</h3>
                 <p>Shop & deliver for you</p>
               </div>
-              <!-- Service Card 3 -->
-              <div class="service-card">
-                <div class="service-card__icon">🧹</div>
-                <h3>Cleaning Services</h3>
-                <p>Home & office cleaning</p>
-              </div>
               <!-- Service Card 4 -->
               <div class="service-card">
-                <div class="service-card__icon">🔧</div>
-                <h3>Repairs & Handyman</h3>
-                <p>Fix it all for you</p>
+                <div class="service-card__icon">🧹</div>
+                <h3>House Cleaning</h3>
+                <p>Home & office cleaning</p>
               </div>
               <!-- Service Card 5 -->
+              <div class="service-card">
+                <div class="service-card__icon">⚡</div>
+                <h3>Electrical Repairs</h3>
+                <p>Safe electrical services</p>
+              </div>
+              <!-- Service Card 6 -->
+              <div class="service-card">
+                <div class="service-card__icon">🔧</div>
+                <h3>Plumbing Services</h3>
+                <p>Fix leaks & installations</p>
+              </div>
+              <!-- Service Card 7 -->
               <div class="service-card">
                 <div class="service-card__icon">📦</div>
                 <h3>Moving & Lifting</h3>
                 <p>Heavy lifting help</p>
               </div>
-              <!-- Service Card 6 -->
+              <!-- Service Card 8 -->
               <div class="service-card">
                 <div class="service-card__icon">🌿</div>
                 <h3>Gardening & Lawn Care</h3>
                 <p>Outdoor maintenance</p>
+              </div>
+              <!-- Service Card 9 -->
+              <div class="service-card">
+                <div class="service-card__icon">🐕</div>
+                <h3>Pet Walking</h3>
+                <p>Walk your furry friends</p>
+              </div>
+              <!-- Service Card 10 -->
+              <div class="service-card">
+                <div class="service-card__icon">🚙</div>
+                <h3>Car Wash</h3>
+                <p>Mobile car cleaning</p>
+              </div>
+              <!-- Service Card 11 -->
+              <div class="service-card">
+                <div class="service-card__icon">👶</div>
+                <h3>Childcare</h3>
+                <p>Trusted babysitting</p>
+              </div>
+              <!-- Service Card 12 -->
+              <div class="service-card">
+                <div class="service-card__icon">🏥</div>
+                <h3>Medical Courier</h3>
+                <p>Urgent medical deliveries</p>
+              </div>
+              <!-- Service Card 13 -->
+              <div class="service-card">
+                <div class="service-card__icon">🛠️</div>
+                <h3>Furniture Assembly</h3>
+                <p>Professional assembly</p>
+              </div>
+              <!-- Service Card 14 -->
+              <div class="service-card">
+                <div class="service-card__icon">🎄</div>
+                <h3>Event Setup</h3>
+                <p>Parties & gatherings</p>
+              </div>
+              <!-- Service Card 15 -->
+              <div class="service-card">
+                <div class="service-card__icon">📸</div>
+                <h3>Photography Services</h3>
+                <p>Capture your moments</p>
               </div>
             </div>
             <div class="services-carousel__nav">
@@ -183,10 +253,7 @@
               </button>
             </div>
           </div>
-          <div class="services-carousel__dots">
-            <button class="services-carousel__dot active" aria-label="Slide 1"></button>
-            <button class="services-carousel__dot" aria-label="Slide 2"></button>
-            <button class="services-carousel__dot" aria-label="Slide 3"></button>
+          <div class="services-carousel__dots" id="carouselDots">
           </div>
         </div>
       </section>
@@ -252,11 +319,11 @@
         const cards = document.querySelectorAll('.service-card');
         const prevBtn = document.querySelector('.services-carousel__btn--prev');
         const nextBtn = document.querySelector('.services-carousel__btn--next');
-        const dots = document.querySelectorAll('.services-carousel__dot');
+        const dotsContainer = document.getElementById('carouselDots');
         
         let currentIndex = 0;
-        const cardsPerView = getCardsPerView();
-        const totalSlides = Math.ceil(cards.length - cardsPerView) + 1;
+        let cardsPerView = getCardsPerView();
+        let totalSlides = 0;
         
         function getCardsPerView() {
           if (window.innerWidth <= 480) return 1;
@@ -265,47 +332,63 @@
           return 4;
         }
         
+        function createDots() {
+          cardsPerView = getCardsPerView();
+          totalSlides = Math.max(1, cards.length - cardsPerView + 1);
+          dotsContainer.innerHTML = '';
+          
+          for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'services-carousel__dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+            dot.addEventListener('click', () => goToSlide(i));
+            dotsContainer.appendChild(dot);
+          }
+        }
+        
+        function getDots() {
+          return dotsContainer.querySelectorAll('.services-carousel__dot');
+        }
+        
         function updateCarousel() {
           const cardWidth = cards[0].offsetWidth + 16;
           const offset = currentIndex * cardWidth;
           track.style.transform = `translateX(-${offset}px)`;
           
+          const dots = getDots();
           dots.forEach((dot, index) => {
             dot.classList.toggle('active', index === currentIndex);
           });
         }
         
+        function goToSlide(index) {
+          currentIndex = Math.max(0, Math.min(index, totalSlides - 1));
+          updateCarousel();
+        }
+        
         function nextSlide() {
-          const maxIndex = cards.length - getCardsPerView();
-          if (currentIndex < maxIndex) {
+          if (currentIndex < totalSlides - 1) {
             currentIndex++;
-            updateCarousel();
           } else {
             currentIndex = 0;
-            updateCarousel();
           }
+          updateCarousel();
         }
         
         function prevSlide() {
-          const maxIndex = cards.length - getCardsPerView();
           if (currentIndex > 0) {
             currentIndex--;
-            updateCarousel();
           } else {
-            currentIndex = maxIndex;
-            updateCarousel();
+            currentIndex = totalSlides - 1;
           }
+          updateCarousel();
         }
         
         nextBtn.addEventListener('click', nextSlide);
         prevBtn.addEventListener('click', prevSlide);
         
-        dots.forEach((dot, index) => {
-          dot.addEventListener('click', () => {
-            currentIndex = index;
-            updateCarousel();
-          });
-        });
+        // Create dots on load
+        createDots();
         
         // Auto-advance carousel
         let autoAdvance = setInterval(nextSlide, 4000);
@@ -316,12 +399,19 @@
         });
         
         // Handle resize
+        let resizeTimeout;
         window.addEventListener('resize', () => {
-          const newCardsPerView = getCardsPerView();
-          if (currentIndex > cards.length - newCardsPerView) {
-            currentIndex = Math.max(0, cards.length - newCardsPerView);
-          }
-          updateCarousel();
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            const newCardsPerView = getCardsPerView();
+            if (newCardsPerView !== cardsPerView) {
+              createDots();
+              if (currentIndex > totalSlides - 1) {
+                currentIndex = Math.max(0, totalSlides - 1);
+              }
+              updateCarousel();
+            }
+          }, 250);
         });
       });
     </script>
