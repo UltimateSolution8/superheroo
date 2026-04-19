@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SuperHerooo Pitch</title>
+  <title>SuperHerooo Pitch Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="pitch-styles.css" />
 </head>
 
@@ -84,30 +87,68 @@
 <!-- CTA -->
 <section class="cta">
   <h2>Ready to Transform Work?</h2>
+  <p>Discover how SuperHerooo is revolutionizing the gig economy</p>
 
-  <a href="#deck" class="btn-primary">View Full Deck</a>
+  <a href="#deck" class="btn-cta">View Full Deck</a>
 </section>
 
 <!-- PDF VIEWER -->
 <section class="section" id="deck">
   <h2>Investor Deck</h2>
+  <p>Explore our complete pitch deck presentation</p>
 
-  <iframe 
-    src="assets/Superherooo Pitch Deck.pdf"
-    width="100%"
-    height="600px">
-  </iframe>
+  <div class="pdf-container">
+    <iframe
+      id="pitchDeck"
+      src="assets/Superherooo Pitch Deck.pdf"
+      width="100%"
+      height="600px"
+      allowfullscreen>
+    </iframe>
+  </div>
 
-  <br><br>
-
-  <a href="assets/Superherooo Pitch Deck.pdf" download class="btn">
-    Download Deck
-  </a>
+  <div class="deck-actions">
+    <button onclick="openFullscreen()" class="btn btn-fullscreen">View Full Screen</button>
+    <a href="assets/Superherooo Pitch Deck.pdf" download class="btn btn-download">
+      Download Deck
+    </a>
+  </div>
 </section>
 
 <footer>
   © 2026 SuperHerooo
 </footer>
+
+<script>
+function openFullscreen() {
+  const iframe = document.getElementById('pitchDeck');
+  if (iframe.requestFullscreen) {
+    iframe.requestFullscreen();
+  } else if (iframe.webkitRequestFullscreen) { /* Safari */
+    iframe.webkitRequestFullscreen();
+  } else if (iframe.msRequestFullscreen) { /* IE11 */
+    iframe.msRequestFullscreen();
+  }
+}
+
+// Add fade-in animation on scroll
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('fade-in');
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.section, .hero, .cta').forEach(section => {
+  observer.observe(section);
+});
+</script>
 
 </body>
 </html>
