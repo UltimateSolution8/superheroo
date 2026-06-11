@@ -181,16 +181,16 @@ p { color: var(--text-muted); }
 .values__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
 
 /* Overlapping Cards */
-.values__cards { position: relative; height: 380px; }
+.values__cards { display: grid; grid-template-columns: 1fr 1fr; position: relative; }
 .values__card {
-  position: absolute; width: 320px; padding: 40px; border-radius: var(--radius-lg);
+  width: 100%; min-width: 240px; max-width: 320px; padding: 40px; border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
 }
 .values__card--vision {
-  top: 0; left: 0; background: var(--white); z-index: 2;
+  background: var(--white); z-index: 2; margin-top: 0; margin-left: 0;
 }
 .values__card--mission {
-  bottom: 0; right: 20px; background: var(--navy); color: var(--white); z-index: 1;
+  background: var(--navy); color: var(--white); z-index: 1; margin-top: 80px; margin-left: -40px;
 }
 .values__card-icon { width: 48px; height: 48px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
 .values__card--vision .values__card-icon { background: rgba(252, 182, 26, 0.1); color: var(--amber); }
@@ -413,6 +413,7 @@ p { color: var(--text-muted); }
   .values__grid, .choose__grid, .promise__grid { grid-template-columns: 1fr; gap: 60px; }
   .values__cards { margin: 0 auto; }
   .benefits__row1, .benefits__row2 { grid-template-columns: 1fr; }
+  .bc-safety, .bc-payouts, .bc-freedom { grid-column: auto; grid-row: auto; }
   .cj-step { grid-template-columns: 1fr; gap: 40px; }
   .cj-step:nth-child(even) { direction: ltr; }
   .cj-cards { grid-template-columns: 1fr; }
