@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Log In - Superherooo</title>
+  <style>
+    .contact-form { background: var(--white); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 400px; margin: 0 auto; }
+    .form-group { margin-bottom: 24px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--navy); }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: var(--radius-sm); font-family: var(--font); font-size: 1rem; }
+    .btn-submit { width: 100%; margin-bottom: 16px; }
+    .toggle-link { text-align: center; font-size: 0.9rem; cursor: pointer; color: var(--text-muted); }
+    .toggle-link span { color: var(--amber); font-weight: 700; text-decoration: underline; }
+    #responseMsg { margin-top: 16px; font-weight: 600; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="wrap">
+      <div class="header__inner" style="background: var(--white); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <a href="index.html" class="header__logo">Super<span>Herooo</span></a>
+        <nav class="header__nav">
+          <a href="index.html">Home</a>
+          <a href="services.html">Services</a>
+          <a href="index.html#journey">How It Works</a>
+          <a href="become-a-hero.html">Become a Hero</a>
+        </nav>
+        <a href="login.html" class="btn btn-navy header__btn">Log In/ Sign Up</a>
+        <div class="hamburger"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="legal-content wrap">
+    <h1 style="text-align:center;" id="formTitle">Welcome Back</h1>
+    <p style="text-align:center; margin-bottom:40px;" id="formSubtitle">Log in to manage your bookings and account.</p>
+    
+    <div class="contact-form">
+      <form id="authForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required />
+        </div>
+        <button type="submit" class="btn btn-navy btn-submit" id="submitBtn">Log In</button>
+        <p class="toggle-link" id="toggleLink">Don't have an account? <span>Sign Up</span></p>
+        <div id="responseMsg"></div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    let isLogin = true;
+    const toggleLink = document.getElementById('toggleLink');
+    const formTitle = document.getElementById('formTitle');
+    const formSubtitle = document.getElementById('formSubtitle');
+    const submitBtn = document.getElementById('submitBtn');
+
+    toggleLink.addEventListener('click', () => {
+      isLogin = !isLogin;
+      if (isLogin) {
+        formTitle.innerText = 'Welcome Back';
+        formSubtitle.innerText = 'Log in to manage your bookings and account.';
+        submitBtn.innerText = 'Log In';
+        toggleLink.innerHTML = "Don't have an account? <span>Sign Up</span>";
+      } else {
+        formTitle.innerText = 'Create an Account';
+        formSubtitle.innerText = 'Sign up to start booking reliable professionals.';
+        submitBtn.innerText = 'Sign Up';
+        toggleLink.innerHTML = "Already have an account? <span>Log In</span>";
+      }
+      document.getElementById('responseMsg').innerText = '';
+    });
+
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      const msgDiv = document.getElementById('responseMsg');
+      btn.innerText = 'Processing...';
+      
+      const payload = {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+      };
+
+      const endpoint = isLogin ? 'http://localhost:8080/api/auth/login' : 'http://localhost:8080/api/auth/signup';
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        msgDiv.style.color = 'green';
+        msgDiv.innerText = data.message;
+        if(isLogin) {
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+        } else {
+            e.target.reset();
+        }
+      } catch (err) {
+        msgDiv.style.color = 'red';
+        msgDiv.innerText = 'Failed to connect to the server. Please ensure backend is running.';
+      }
+      btn.innerText = isLogin ? 'Log In' : 'Sign Up';
+    });
+  </script>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer__grid">
+        <div>
+          <div class="footer__logo">Super<span>Herooo</span></div>
+          <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
+          <div class="footer__social">
+            <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank">Fb</a>
+            <a href="https://x.com/superherooo2026" target="_blank">Tw</a>
+            <a href="https://www.linkedin.com/company/112068924/" target="_blank">In</a>
+          </div>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html#values">About Us</a></li>
+            <li><a href="services.html">Services Directory</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="index.html#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms of Service</a></li>
+            <li><a href="insurance.html">Insurance Policy</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

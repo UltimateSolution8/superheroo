@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Services Directory - Superherooo</title>
+  <style>
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 24px; margin-top: 40px; }
+    .service-card { background: var(--white); padding: 32px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); text-align: center; transition: var(--transition); }
+    .service-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(252, 182, 26, 0.15); border: 1px solid var(--amber); }
+    .service-icon { font-size: 3rem; margin-bottom: 16px; }
+    .service-card h3 { margin-bottom: 8px; font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="wrap">
+      <div class="header__inner" style="background: var(--white); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <a href="index.html" class="header__logo">Super<span>Herooo</span></a>
+        <nav class="header__nav">
+          <a href="index.html">Home</a>
+          <a href="services.html">Services</a>
+          <a href="index.html#journey">How It Works</a>
+          <a href="become-a-hero.html">Become a Hero</a>
+        </nav>
+        <a href="login.html" class="btn btn-navy header__btn">Log In/ Sign Up</a>
+        <div class="hamburger"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="legal-content wrap" style="max-width: 1000px;">
+    <h1 style="text-align:center;">Our Services</h1>
+    <p style="text-align:center;">From quick fixes to deep cleaning, our verified professionals have you covered.</p>
+    
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">⚡</div>
+        <h3>Electricians</h3>
+        <p>Wiring, installations, and repairs.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🧹</div>
+        <h3>Premium Cleaning</h3>
+        <p>Deep sanitization and regular upkeep.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🔧</div>
+        <h3>Plumbing</h3>
+        <p>Leak fixes, pipe installations, and unclogging.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🔨</div>
+        <h3>Carpentry</h3>
+        <p>Furniture assembly and custom woodwork.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🎨</div>
+        <h3>Painting</h3>
+        <p>Interior and exterior home painting.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">❄️</div>
+        <h3>AC Repair</h3>
+        <p>Servicing, gas refill, and installation.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer__grid">
+        <div>
+          <div class="footer__logo">Super<span>Herooo</span></div>
+          <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
+          <div class="footer__social">
+            <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank">Fb</a>
+            <a href="https://x.com/superherooo2026" target="_blank">Tw</a>
+            <a href="https://www.linkedin.com/company/112068924/" target="_blank">In</a>
+          </div>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html#values">About Us</a></li>
+            <li><a href="services.html">Services Directory</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="index.html#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms of Service</a></li>
+            <li><a href="insurance.html">Insurance Policy</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
