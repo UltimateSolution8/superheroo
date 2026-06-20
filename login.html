@@ -4,16 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Log In - Superherooo</title>
-  <style>
-    .contact-form { background: var(--white); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 400px; margin: 0 auto; }
-    .form-group { margin-bottom: 24px; }
-    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--navy); }
-    .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: var(--radius-sm); font-family: var(--font); font-size: 1rem; }
-    .btn-submit { width: 100%; margin-bottom: 16px; }
-    .toggle-link { text-align: center; font-size: 0.9rem; cursor: pointer; color: var(--text-muted); }
-    .toggle-link span { color: var(--amber); font-weight: 700; text-decoration: underline; }
-    #responseMsg { margin-top: 16px; font-weight: 600; text-align: center; }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
@@ -34,24 +25,30 @@
     </div>
   </header>
 
-  <main class="legal-content wrap">
-    <h1 style="text-align:center;" id="formTitle">Welcome Back</h1>
-    <p style="text-align:center; margin-bottom:40px;" id="formSubtitle">Log in to manage your bookings and account.</p>
-    
-    <div class="contact-form">
-      <form id="authForm">
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" required />
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" required />
-        </div>
-        <button type="submit" class="btn btn-navy btn-submit" id="submitBtn">Log In</button>
-        <p class="toggle-link" id="toggleLink">Don't have an account? <span>Sign Up</span></p>
-        <div id="responseMsg"></div>
-      </form>
+  <div class="page-header">
+    <div class="wrap">
+      <h1 id="formTitle">Welcome Back</h1>
+      <p id="formSubtitle">Log in to manage your bookings and account.</p>
+    </div>
+  </div>
+
+  <main class="page-content">
+    <div class="wrap">
+      <div class="premium-form-card">
+        <form id="authForm">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" class="form-control" required />
+          </div>
+          <button type="submit" class="btn btn-navy btn-full" id="submitBtn">Log In</button>
+          <div class="form-footer" id="toggleLink">Don't have an account? <span>Sign Up</span></div>
+          <div id="responseMsg"></div>
+        </form>
+      </div>
     </div>
   </main>
 

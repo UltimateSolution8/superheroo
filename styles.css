@@ -437,3 +437,187 @@ p { color: var(--text-muted); }
   .eco-arrow { transform: rotate(90deg); }
   .footer__grid { grid-template-columns: 1fr; }
 }
+
+/* =========================================
+   UTILITY PAGES (Forms, Legal, Services)
+   ========================================= */
+
+.page-header {
+  background: var(--navy);
+  padding: 180px 0 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle at 50% 50%, rgba(252, 182, 26, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+.page-header h1 {
+  color: var(--white);
+  font-size: 3rem;
+  margin-bottom: 16px;
+  position: relative; z-index: 2;
+}
+.page-header p {
+  color: rgba(255,255,255,0.8);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative; z-index: 2;
+}
+
+.page-content {
+  padding: 80px 0;
+  background: var(--light-gray);
+  min-height: 50vh;
+}
+
+/* Premium Forms */
+.premium-form-card {
+  background: var(--white);
+  padding: 48px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  max-width: 500px;
+  margin: -80px auto 40px;
+  position: relative;
+  z-index: 10;
+  border-top: 4px solid var(--amber);
+}
+
+.premium-form-card--large {
+  max-width: 700px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+  text-align: left;
+}
+.form-group label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--navy);
+  font-size: 0.9rem;
+}
+.form-control {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid rgba(15, 25, 50, 0.1);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 1rem;
+  background: var(--light-gray);
+  transition: var(--transition);
+  color: var(--text-dark);
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--amber);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(252, 182, 26, 0.1);
+}
+textarea.form-control {
+  height: 150px;
+  resize: vertical;
+}
+
+.btn-full {
+  width: 100%;
+  padding: 16px;
+  font-size: 1.1rem;
+  margin-top: 16px;
+}
+
+.form-footer {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+.form-footer span {
+  color: var(--amber);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#responseMsg {
+  margin-top: 16px;
+  font-weight: 600;
+  text-align: center;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+}
+#responseMsg.success { background: rgba(0, 128, 0, 0.1); color: green; }
+#responseMsg.error { background: rgba(255, 0, 0, 0.1); color: red; }
+
+/* Legal Content styling */
+.legal-content-wrapper {
+  background: var(--white);
+  padding: 64px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  max-width: 900px;
+  margin: -60px auto 60px;
+  position: relative;
+  z-index: 10;
+}
+.legal-content-wrapper h2 {
+  font-size: 1.8rem;
+  margin: 40px 0 16px;
+  color: var(--navy);
+}
+.legal-content-wrapper p {
+  margin-bottom: 20px;
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+.legal-content-wrapper ul {
+  list-style: disc;
+  margin-left: 24px;
+  margin-bottom: 24px;
+}
+.legal-content-wrapper li {
+  margin-bottom: 12px;
+  color: var(--text-muted);
+}
+
+/* Services Grid Premium */
+.services-directory {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 32px;
+  margin-top: -60px;
+  position: relative;
+  z-index: 10;
+}
+.service-dir-card {
+  background: var(--white);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  transition: var(--transition);
+  border-bottom: 4px solid transparent;
+}
+.service-dir-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--amber);
+}
+.service-dir-icon {
+  font-size: 3.5rem;
+  margin-bottom: 24px;
+  background: var(--light-gray);
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+}
+.service-dir-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+}
