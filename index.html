@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/png" href="assets/superlogo.png" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Superherooo — Everyday tasks handled by Super Heroes</title>
@@ -26,9 +27,11 @@
   </header>
 
   <!-- 2. HERO -->
-  <section class="hero" id="hero">
-    <img src="assets/hero-namaste-indian.png" alt="SuperHero" class="hero__bg" style="object-fit: contain; object-position: right bottom; opacity: 1; z-index: 1;" />
-    <div class="hero__overlay" style="z-index: 0; background: linear-gradient(135deg, rgba(10,25,47,0.95) 0%, rgba(10,25,47,0.85) 50%, transparent 100%);"></div>
+  <section class="hero" id="hero" style="background: var(--navy); overflow: hidden; position: relative;">
+    <!-- Person image floated right, transparent bg -->
+    <img src="assets/hero-namaste-transparent.png" alt="SuperHero" style="position: absolute; right: 0; bottom: 0; height: 100%; width: auto; max-width: 55%; object-fit: contain; object-position: right bottom; z-index: 1; pointer-events: none;" />
+    <!-- Subtle golden glow behind person -->
+    <div style="position: absolute; right: 10%; bottom: 0; width: 500px; height: 500px; background: radial-gradient(circle, rgba(252,182,26,0.15) 0%, transparent 70%); z-index: 0;"></div>
     <div class="wrap" style="position: relative; z-index: 2;">
       <div class="hero__content">
         <span class="hero__badge">Reliable & Dignified Service</span>
@@ -155,7 +158,7 @@
         </div>
         <div class="choose__img-wrapper">
           <div class="choose__img-bg"></div>
-          <img src="assets/worker-portrait.png" alt="Professional" class="choose__img" />
+          <img src="assets/worker-portrait-transparent.png" alt="Professional" class="choose__img" />
         </div>
       </div>
     </div>
@@ -228,7 +231,7 @@
   <section class="promise">
     <div class="wrap">
       <div class="promise__grid">
-        <img src="assets/worker-portrait.png" alt="Professional" class="promise__img" />
+        <img src="assets/worker-portrait-transparent.png" alt="Professional" class="promise__img" />
         <div class="promise__content">
           <span class="small-label">The Superherooo Promise</span>
           <h2>Restoring dignity to work, and peace to your home.</h2>
@@ -305,7 +308,7 @@
         </div>
         <div class="cta__img-wrapper">
           <div class="cta__badge">4.9 ★ <br/> APP RATING</div>
-          <img src="assets/app-mockup.png" alt="App Download" class="cta__img" />
+          <img src="assets/iphone-mockup.png" alt="App Download" class="cta__img" />
         </div>
       </div>
     </div>
