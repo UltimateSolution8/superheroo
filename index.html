@@ -12,12 +12,12 @@
   <header class="header">
     <div class="wrap">
       <div class="header__inner">
-        <a href="#" class="header__logo">Super<span>Herooo</span></a>
+        <a href="#" class="header__logo"><img src="assets/superlogo.png" alt="SuperHerooo" style="height: 48px;" /></a>
         <nav class="header__nav">
-          <a href="index.html" class="active">Home</a>
-          <a href="services.html">Services</a>
-          <a href="index.html#journey">How It Works</a>
-          <a href="become-a-hero.html">Become a Hero</a>
+          <a href="#hero" class="active">Home</a>
+          <a href="#services">Services</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#become-a-hero">Become a Hero</a>
         </nav>
         <a href="login.html" class="btn btn-navy header__btn">Log In/ Sign Up</a>
         <div class="hamburger"><span></span><span></span><span></span></div>
@@ -26,47 +26,54 @@
   </header>
 
   <!-- 2. HERO -->
-  <section class="hero">
-    <img src="assets/hero-professional.png" alt="SuperHero" class="hero__bg" />
-    <div class="hero__overlay"></div>
-    <div class="wrap">
+  <section class="hero" id="hero">
+    <img src="assets/hero-namaste-indian.png" alt="SuperHero" class="hero__bg" style="object-fit: contain; object-position: right bottom; opacity: 1; z-index: 1;" />
+    <div class="hero__overlay" style="z-index: 0; background: linear-gradient(135deg, rgba(10,25,47,0.95) 0%, rgba(10,25,47,0.85) 50%, transparent 100%);"></div>
+    <div class="wrap" style="position: relative; z-index: 2;">
       <div class="hero__content">
         <span class="hero__badge">Reliable & Dignified Service</span>
         <h1 class="hero__title">Everyday tasks<br/>handled by <span>Super</span><br/><span>Heroes.</span></h1>
         <p class="hero__desc">From electrical repairs to premium cleaning, we bring professional, background-verified experts to your doorstep across India.</p>
         
-        <div class="hero__tags">
-          <span class="hero__tag">⚡ Electricians</span>
-          <span class="hero__tag">🧹 Cleaning</span>
-          <span class="hero__tag">🔧 Plumbing</span>
+        <div class="cta__buttons" style="margin-top: 32px; justify-content: flex-start;">
+          <a href="#" class="cta__btn" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: var(--white); border-color: rgba(255,255,255,0.2);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            <div class="cta__btn-text"><small>Download on</small><strong>App Store</strong></div>
+          </a>
+          <a href="#" class="cta__btn" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: var(--white); border-color: rgba(255,255,255,0.2);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 010 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
+            <div class="cta__btn-text"><small>Get it on</small><strong>Google Play</strong></div>
+          </a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 3. STATS BAR -->
-  <section class="stats">
+  <!-- 3. SERVICES DIRECTORY -->
+  <section class="services" id="services" style="padding: 100px 0; background: var(--light-gray);">
     <div class="wrap">
-      <div class="stats__grid">
-        <div class="stats__item">
-          <span class="stats__num">50k+</span>
-          <span class="stats__label">Verified Heroes</span>
+      <h2 style="text-align:center; color:var(--navy); margin-bottom: 40px; font-size: 2.5rem;">Our Premium Services</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px;">
+        <div style="background: var(--white); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 16px;">⚡</div>
+          <h3 style="margin-bottom: 8px;">Electricians</h3>
+          <p style="color:var(--text-muted); font-size:0.95rem;">Wiring, installations, and repairs.</p>
         </div>
-        <div class="stats__item">
-          <span class="stats__num">1.2M</span>
-          <span class="stats__label">Tasks Completed</span>
+        <div style="background: var(--white); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 16px;">🧹</div>
+          <h3 style="margin-bottom: 8px;">Cleaning</h3>
+          <p style="color:var(--text-muted); font-size:0.95rem;">Deep sanitization and regular upkeep.</p>
         </div>
-        <div class="stats__item">
-          <span class="stats__num">4.8/5</span>
-          <span class="stats__label">Average Rating</span>
-        </div>
-        <div class="stats__item">
-          <span class="stats__num">24/7</span>
-          <span class="stats__label">Support Ready</span>
+        <div style="background: var(--white); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 16px;">🔧</div>
+          <h3 style="margin-bottom: 8px;">Plumbing</h3>
+          <p style="color:var(--text-muted); font-size:0.95rem;">Leak fixes, pipe installations, and more.</p>
         </div>
       </div>
     </div>
   </section>
+
+
 
   <!-- 4. CORE VALUES -->
   <section class="values">
@@ -154,38 +161,10 @@
     </div>
   </section>
 
-  <!-- 6. THE SUPERHERO JOURNEY -->
-  <section class="journey">
-    <div class="wrap">
-      <span class="small-label">How It Works</span>
-      <h2>The SuperHero Journey</h2>
-      <div class="journey__steps">
-        <div class="journey__step">
-          <div class="journey__icon">📅</div>
-          <h4>1. Booking</h4>
-          <p>Select your home size and preferred time slot online.</p>
-        </div>
-        <div class="journey__step">
-          <div class="journey__icon">📍</div>
-          <h4>2. Arrival</h4>
-          <p>Our verified 'Hero' arrives with hospital-grade equipment.</p>
-        </div>
-        <div class="journey__step">
-          <div class="journey__icon">💧</div>
-          <h4>3. Treatment</h4>
-          <p>4-stage deep sanitization process for total protection.</p>
-        </div>
-        <div class="journey__step">
-          <div class="journey__icon">✅</div>
-          <h4>4. Certification</h4>
-          <p>Post-service hygiene report and safety certificate.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+
 
   <!-- 7. WHY SUPERHEROOO? -->
-  <section class="benefits">
+  <section class="benefits" id="become-a-hero">
     <div class="wrap">
       <h2>Why SuperHerooo?</h2>
       <p>We don't just find you work; we build your legacy with benefits designed for India's modern workforce.</p>
@@ -220,57 +199,10 @@
     </div>
   </section>
 
-  <!-- 8. CUSTOMER JOURNEY -->
-  <section class="cj">
-    <div class="wrap">
-      <h2>Customer Journey</h2>
-      <p>Four simple steps to peace of mind.</p>
 
-      <div class="cj-step">
-        <div>
-          <span class="cj-step__label">STEP 01</span>
-          <h3>Search & Discover</h3>
-          <p>Enter your location and the service you need. Our intelligent matching engine filters the best local professionals based on proximity, ratings, and expertise.</p>
-          <div class="cj-step__tags">
-            <span class="cj-step__tag">📍 Geo-Matching</span>
-            <span class="cj-step__tag">✓ Vetted Pros</span>
-          </div>
-        </div>
-        <img src="assets/app-mockup.png" alt="App UI" class="cj-step__img" />
-      </div>
-
-      <div class="cj-step">
-        <div>
-          <span class="cj-step__label">STEP 02</span>
-          <h3>Select Your Hero</h3>
-          <p>Review detailed profiles, read honest reviews from neighbors, and compare transparent pricing structures. No hidden fees, ever.</p>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:20px; font-weight:600; font-size:0.9rem; color:var(--navy);">
-            <span>✓ Real-time availability viewing</span>
-            <span>✓ Previous work portfolio</span>
-          </div>
-        </div>
-        <img src="assets/hero-professional.png" alt="Handshake" class="cj-step__img" style="height:300px; object-fit:cover;" />
-      </div>
-
-      <div class="cj-cards">
-        <div class="cj-card cj-card--light">
-          <div class="cj-card-icon">📅</div>
-          <span class="cj-step__label">STEP 03</span>
-          <h3>Book with Confidence</h3>
-          <p>Secure your slot with a small booking fee. Our escrow-style payment system ensures your money is safe until the job is done perfectly.</p>
-        </div>
-        <div class="cj-card cj-card--dark">
-          <div class="cj-card-icon">✓</div>
-          <span class="cj-step__label" style="color:var(--amber);">STEP 04</span>
-          <h3>Service & Completion</h3>
-          <p>Your Hero arrives and completes the task. Mark the job as finished in the app to release the final payment and leave a review.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- 9. ECOSYSTEM FLOW -->
-  <section class="ecosystem">
+  <section class="ecosystem" id="how-it-works">
     <div class="wrap">
       <h2>The Ecosystem Flow</h2>
       <div class="eco-flow">
@@ -384,7 +316,7 @@
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <div class="footer__logo">Super<span>Herooo</span></div>
+          <a href="#" class="footer__logo"><img src="assets/superlogo.png" alt="SuperHerooo" style="height: 48px; margin-bottom: 16px;" /></a>
           <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
           <div class="footer__social">
             <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank" aria-label="Facebook">Fb</a>
@@ -395,10 +327,10 @@
         <div>
           <h4>Quick Links</h4>
           <ul>
-            <li><a href="index.html#values">About Us</a></li>
-            <li><a href="services.html">Services Directory</a></li>
+            <li><a href="#values">About Us</a></li>
+            <li><a href="#services">Services Directory</a></li>
             <li><a href="contact.html">Contact Us</a></li>
-            <li><a href="index.html#faq">FAQ</a></li>
+            <li><a href="#faq">FAQ</a></li>
           </ul>
         </div>
         <div>
