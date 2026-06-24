@@ -96,8 +96,9 @@ p { color: var(--text-muted); }
   padding: 12px 24px; border-radius: 100px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
-.header__logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.3rem; color: var(--navy); }
+.header__logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.3rem; color: var(--navy); text-decoration: none; }
 .header__logo span { color: var(--amber); }
+.header__brand { font-size: 1.25rem; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
 .header__nav { display: flex; gap: 32px; }
 .header__nav a { font-size: 0.9rem; font-weight: 500; color: var(--text-dark); transition: color 0.2s; }
 .header__nav a:hover { color: var(--amber); }
