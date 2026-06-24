@@ -23,7 +23,7 @@
           <a href="#how-it-works">How It Works</a>
           <a href="#become-a-hero">Become a Hero</a>
         </nav>
-        <a href="login.html" class="btn btn-navy header__btn">Log In/ Sign Up</a>
+        <a href="login.html" class="btn btn-navy header__btn" id="navLoginBtn">Log In/ Sign Up</a>
         <div class="hamburger"><span></span><span></span><span></span></div>
       </div>
     </div>
@@ -439,6 +439,16 @@
 
   <script>
     // ── Hamburger / Mobile Nav ───────────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+      if (localStorage.getItem('sh_token')) {
+        const btn = document.getElementById('navLoginBtn');
+        if(btn) {
+          btn.textContent = 'Profile';
+          btn.href = 'dashboard.html';
+        }
+      }
+    });
+
     const hamburger = document.querySelector('.hamburger');
     const mobileNav = document.getElementById('mobileNav');
     const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');

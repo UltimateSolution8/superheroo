@@ -38,9 +38,8 @@
           <a href="index.html">Home</a>
           <a href="index.html#services">Services</a>
           <a href="index.html#how-it-works">How It Works</a>
-          <a href="become-a-hero.html">Become a Hero</a>
         </nav>
-        <a href="login.html" class="btn btn-navy header__btn">Log In / Sign Up</a>
+        <a href="login.html" class="btn btn-navy header__btn" id="navLoginBtn">Log In/ Sign Up</a>
         <div class="hamburger"><span></span><span></span><span></span></div>
       </div>
     </div>
@@ -81,8 +80,20 @@
         </form>
 
         <!-- SIGNUP FORM -->
-        <form id="signupForm" style="display:none;" autocomplete="on">
-          <div class="form-row">
+        <div id="signupForm" style="display:none;" class="auth-box__form">
+          <!-- Role Selection -->
+          <div id="roleSelection" style="text-align: center; margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px; font-size: 1.2rem; color: var(--navy);">What would you like to do?</h3>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-navy" onclick="showCustomerForm()" style="flex: 1; min-width: 200px;">Hire a SuperHerooo</button>
+              <button type="button" class="btn" onclick="goToProfessionalForm()" style="flex: 1; min-width: 200px; border: 1px solid var(--navy); color: var(--navy); background: white;">Become a SuperHerooo</button>
+            </div>
+          </div>
+
+          <!-- Customer Form -->
+          <form id="customerForm" style="display: none;" autocomplete="on">
+            <button type="button" class="btn" onclick="backToRoleSelection()" style="background:transparent; color:var(--text-muted); padding:0; margin-bottom: 16px; font-size: 0.9rem;">&larr; Back</button>
+            <div class="form-row">
             <div class="form-group">
               <label for="signupName">Full Name *</label>
               <input type="text" id="signupName" class="form-control" placeholder="Rahul Sharma" required />
@@ -103,8 +114,9 @@
             <p class="pass-rules">✓ Minimum 8 characters &nbsp; ✓ One uppercase letter &nbsp; ✓ One number</p>
           </div>
           <button type="submit" class="btn btn-navy btn-full" id="signupBtn">Create Account</button>
-          <div class="msg-box" id="signupMsg"></div>
-        </form>
+            <div class="msg-box" id="signupMsg"></div>
+          </form>
+        </div>
 
       </div>
     </div>
@@ -153,16 +165,40 @@
   <script>
     const API_BASE = 'https://142-93-208-120.sslip.io/api';
 
+    document.addEventListener("DOMContentLoaded", () => {
+      if (localStorage.getItem('sh_token')) {
+        document.getElementById('navLoginBtn').textContent = 'Profile';
+        document.getElementById('navLoginBtn').href = 'dashboard.html';
+        
+        // Auto redirect if on login page
+        window.location.href = 'dashboard.html';
+      }
+    });
+
     function switchTab(tab) {
       const isLogin = tab === 'login';
       document.getElementById('tabLogin').classList.toggle('active', isLogin);
       document.getElementById('tabSignup').classList.toggle('active', !isLogin);
-      document.getElementById('loginForm').style.display  = isLogin ? 'block' : 'none';
-      document.getElementById('signupForm').style.display = isLogin ? 'none'  : 'block';
-      document.getElementById('pageTitle').innerText    = isLogin ? 'Welcome Back' : 'Create Account';
-      document.getElementById('pageSubtitle').innerText = isLogin
-        ? 'Log in to manage your bookings and account.'
-        : 'Sign up to start booking reliable professionals.';
+      document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+      document.getElementById('signupForm').style.display = isLogin ? 'none' : 'block';
+      
+      document.getElementById('pageTitle').innerText = isLogin ? 'Welcome Back' : 'Create an Account';
+      document.getElementById('pageSubtitle').innerText = isLogin ? 'Log in to manage your bookings and account.' : 'Join Superherooo and get things done quickly.';
+    }
+
+    function showCustomerForm() {
+      document.getElementById('roleSelection').style.display = 'none';
+      document.getElementById('customerForm').style.display = 'block';
+    }
+
+    function backToRoleSelection() {
+      document.getElementById('roleSelection').style.display = 'block';
+      document.getElementById('customerForm').style.display = 'none';
+      document.getElementById('signupMsg').innerHTML = '';
+    }
+
+    function goToProfessionalForm() {
+      window.location.href = 'become-a-hero.html';
     }
 
     function showMsg(id, type, text) {
@@ -190,7 +226,7 @@
           localStorage.setItem('sh_token', data.token);
           localStorage.setItem('sh_user',  JSON.stringify(data.user));
           showMsg('loginMsg', 'success', data.message);
-          setTimeout(() => window.location.href = 'index.html', 1200);
+          setTimeout(() => window.location.href = 'dashboard.html', 1200);
         } else {
           showMsg('loginMsg', 'error', data.message);
         }
@@ -200,8 +236,8 @@
       btn.disabled = false; btn.innerText = 'Log In';
     });
 
-    // SIGNUP
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    // Handle Signup
+    document.getElementById('customerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const mobile = document.getElementById('signupMobile').value.trim();
       if (!/^[6-9]\d{9}$/.test(mobile)) {
@@ -222,10 +258,14 @@
         });
         const data = await res.json();
         if (data.success) {
-          localStorage.setItem('sh_token', data.token);
-          localStorage.setItem('sh_user',  JSON.stringify(data.user));
-          showMsg('signupMsg', 'success', data.message);
-          setTimeout(() => window.location.href = 'index.html', 1500);
+          showMsg('signupMsg', 'success', 'Account created successfully! Please log in.');
+          setTimeout(() => {
+            switchTab('login');
+            document.getElementById('loginEmail').value = email;
+            document.getElementById('signupMsg').innerHTML = '';
+            document.getElementById('customerForm').reset();
+            backToRoleSelection();
+          }, 2000);
         } else {
           showMsg('signupMsg', 'error', data.message);
         }

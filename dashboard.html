@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/superlogo.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Profile — Superherooo</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem('sh_token');
+      const userStr = localStorage.getItem('sh_user');
+      
+      if (!token || !userStr) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      const user = JSON.parse(userStr);
+      document.getElementById('userName').textContent = user.full_name;
+      document.getElementById('userEmail').textContent = user.email;
+      document.getElementById('userMobile').textContent = user.mobile;
+      document.getElementById('userRole').textContent = (user.role || 'Customer').toUpperCase();
+    });
+
+    function logout() {
+      localStorage.removeItem('sh_token');
+      localStorage.removeItem('sh_user');
+      window.location.href = 'index.html';
+    }
+  </script>
+</head>
+<body style="background: var(--light-gray);">
+
+  <!-- HEADER -->
+  <header class="header" style="background: var(--navy);">
+    <div class="wrap">
+      <div class="header__inner" style="background: transparent; box-shadow: none; padding: 12px 0;">
+        <a href="index.html" class="header__logo">
+          <img src="assets/superlogo.png" alt="SuperHerooo" style="height:44px; object-fit: contain; filter: brightness(0) invert(1);" />
+          <span class="header__brand" style="color: var(--white); margin-left: 4px; font-size: 1.4rem;">Superherooo</span>
+        </a>
+        <nav class="header__nav" style="display: flex; align-items: center;">
+          <a href="index.html" style="color: var(--white);">Home</a>
+          <button onclick="logout()" class="btn btn-amber" style="margin-left: 16px;">Log Out</button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- PROFILE DASHBOARD -->
+  <main class="page-content" style="padding: 60px 0;">
+    <div class="wrap">
+      <div class="premium-form-card" style="max-width: 600px; margin: 0 auto; padding: 40px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <div style="width: 80px; height: 80px; background: var(--amber); color: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 0 auto 16px;">👤</div>
+          <h1 id="userName" style="color: var(--navy); margin-bottom: 8px;">Loading...</h1>
+          <span id="userRole" class="hero__badge" style="background: rgba(15,25,50,0.1); color: var(--navy); padding: 4px 12px; font-size: 0.8rem;"></span>
+        </div>
+        
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+          <h3 style="margin-bottom: 16px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Account Details</h3>
+          <p style="margin-bottom: 12px;"><strong>Email:</strong> <span id="userEmail"></span></p>
+          <p><strong>Mobile:</strong> <span id="userMobile"></span></p>
+        </div>
+
+        <div style="text-align: center;">
+          <button onclick="logout()" class="btn btn-navy" style="width: 100%;">Log Out Securely</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>
