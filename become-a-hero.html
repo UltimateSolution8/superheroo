@@ -5,13 +5,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Become a Hero - Superherooo</title>
+  <link rel="stylesheet" href="styles.css" />
   <style>
-    .contact-form { background: var(--white); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 600px; margin: 0 auto; }
-    .form-group { margin-bottom: 24px; }
-    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--navy); }
-    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: var(--radius-sm); font-family: var(--font); font-size: 1rem; }
-    .btn-submit { width: 100%; }
-    #responseMsg { margin-top: 16px; font-weight: 600; text-align: center; }
+    .form-row       { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:640px){ .form-row { grid-template-columns: 1fr; } }
+    .optional-label { font-size:0.75rem; font-weight:400; color:var(--text-mid); margin-left:4px; }
+    .section-divider{ margin: 32px 0 24px; padding-bottom: 12px; border-bottom: 2px solid var(--light-gray); }
+    .section-divider h3 { font-size:1rem; color:var(--navy); font-weight:700; }
+    .section-divider p  { font-size:0.82rem; color:var(--text-mid); margin-top:2px; }
+    .msg-box { margin-top:20px; padding:14px 18px; border-radius:10px; font-weight:600; font-size:0.9rem; display:none; }
+    .msg-box.success { background:#d1fae5; color:#065f46; display:block; }
+    .msg-box.error   { background:#fee2e2; color:#991b1b; display:block; }
+    .input-hint { font-size:0.78rem; color:var(--text-mid); margin-top:4px; }
+    .checkbox-group { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+    .checkbox-group label { display:flex; align-items:center; gap:6px; font-size:0.9rem;
+      background:var(--light-gray); padding:6px 14px; border-radius:100px; cursor:pointer;
+      border:2px solid transparent; transition:border-color 0.2s; }
+    .checkbox-group input[type=checkbox]:checked + span,
+    .checkbox-group label:has(input:checked) { border-color:var(--navy); }
+    .checkbox-group input[type=checkbox] { accent-color: var(--navy); }
   </style>
 </head>
 <body>
@@ -19,88 +31,211 @@
   <!-- HEADER -->
   <header class="header">
     <div class="wrap">
-      <div class="header__inner" style="background: var(--white); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-        <a href="index.html" class="header__logo">Super<span>Herooo</span></a>
+      <div class="header__inner">
+        <a href="index.html" class="header__logo">
+          <img src="assets/superlogo.png" alt="SuperHerooo" style="height:44px;" />
+          <span class="header__brand">Superherooo</span>
+        </a>
         <nav class="header__nav">
           <a href="index.html">Home</a>
-          <a href="services.html">Services</a>
-          <a href="index.html#journey">How It Works</a>
-          <a href="become-a-hero.html">Become a Hero</a>
+          <a href="index.html#services">Services</a>
+          <a href="index.html#how-it-works">How It Works</a>
+          <a href="become-a-hero.html" class="active">Become a Hero</a>
         </nav>
-        <a href="login.html" class="btn btn-navy header__btn">Log In/ Sign Up</a>
+        <a href="login.html" class="btn btn-navy header__btn">Log In / Sign Up</a>
         <div class="hamburger"><span></span><span></span><span></span></div>
       </div>
     </div>
   </header>
 
-  <main class="legal-content wrap">
-    <h1 style="text-align:center;">Join the SuperHerooo Team</h1>
-    <p style="text-align:center; margin-bottom:40px;">Turn your skills into a thriving business. Be your own boss, earn daily payouts, and access premium training.</p>
-    
-    <div class="contact-form">
-      <form id="heroForm">
-        <div class="form-group">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" required />
-        </div>
-        <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" required />
-        </div>
-        <div class="form-group">
-          <label for="service">Primary Skill/Service</label>
-          <select id="service" required>
-            <option value="">Select a service...</option>
-            <option value="cleaning">Premium Cleaning</option>
-            <option value="electrical">Electrical Repairs</option>
-            <option value="plumbing">Plumbing</option>
-            <option value="carpentry">Carpentry</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-navy btn-submit">Apply Now</button>
-        <div id="responseMsg"></div>
-      </form>
+  <div class="page-header">
+    <div class="wrap">
+      <h1>Join the Superherooo Team 🦸</h1>
+      <p>Turn your skills into a thriving business. Be your own boss, earn daily payouts, and access premium training.</p>
+    </div>
+  </div>
+
+  <main class="page-content">
+    <div class="wrap">
+      <div class="premium-form-card" style="max-width:680px; margin:0 auto;">
+
+        <form id="heroForm" novalidate autocomplete="on">
+
+          <!-- ── PERSONAL DETAILS ───────────────────────── -->
+          <div class="section-divider">
+            <h3>👤 Personal Details</h3>
+            <p>Required to create your account</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="full_name">Full Name *</label>
+              <input type="text" id="full_name" class="form-control" placeholder="Ramesh Kumar" required />
+            </div>
+            <div class="form-group">
+              <label for="mobile">Mobile Number *</label>
+              <input type="tel" id="mobile" class="form-control" placeholder="9876543210" maxlength="10" required />
+              <p class="input-hint">10-digit Indian number</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" class="form-control" placeholder="you@example.com" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">Create Password *</label>
+              <input type="password" id="password" class="form-control" placeholder="Min 8 chars, 1 uppercase, 1 number" required />
+            </div>
+            <div class="form-group">
+              <label for="city">City *</label>
+              <select id="city" class="form-control" required>
+                <option value="">Select your city…</option>
+                <option>Delhi NCR</option><option>Mumbai</option><option>Bengaluru</option>
+                <option>Hyderabad</option><option>Chennai</option><option>Pune</option>
+                <option>Kolkata</option><option>Ahmedabad</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ── SERVICE DETAILS ───────────────────────── -->
+          <div class="section-divider">
+            <h3>🛠️ Skills & Service</h3>
+            <p>Tell us what you specialise in</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="primary_service">Primary Service *</label>
+              <select id="primary_service" class="form-control" required>
+                <option value="">Select primary skill…</option>
+                <option>Premium Cleaning</option>
+                <option>Electrical Repairs</option>
+                <option>Plumbing</option>
+                <option>Carpentry & Furniture</option>
+                <option>Painting</option>
+                <option>AC Repair & Service</option>
+                <option>Pest Control</option>
+                <option>Appliance Repair</option>
+                <option>Laundry & Ironing</option>
+                <option>Security Guard</option>
+                <option>Driver / Chauffeur</option>
+                <option>Gardening</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="experience_years">Years of Experience <span class="optional-label">(optional)</span></label>
+              <input type="number" id="experience_years" class="form-control" placeholder="e.g. 5" min="0" max="50" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Secondary Services <span class="optional-label">(optional — select all that apply)</span></label>
+            <div class="checkbox-group" id="secondaryServices">
+              <label><input type="checkbox" value="Cleaning" /><span>Cleaning</span></label>
+              <label><input type="checkbox" value="Electrical" /><span>Electrical</span></label>
+              <label><input type="checkbox" value="Plumbing" /><span>Plumbing</span></label>
+              <label><input type="checkbox" value="Carpentry" /><span>Carpentry</span></label>
+              <label><input type="checkbox" value="Painting" /><span>Painting</span></label>
+              <label><input type="checkbox" value="AC Repair" /><span>AC Repair</span></label>
+              <label><input type="checkbox" value="Appliance Repair" /><span>Appliance Repair</span></label>
+              <label><input type="checkbox" value="Pest Control" /><span>Pest Control</span></label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="availability">Preferred Availability <span class="optional-label">(optional)</span></label>
+            <select id="availability" class="form-control">
+              <option value="">Select availability…</option>
+              <option>Full-time (8+ hours/day)</option>
+              <option>Part-time (4 hours/day)</option>
+              <option>Weekdays only</option>
+              <option>Weekends only</option>
+              <option>Flexible</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="languages">Languages Known <span class="optional-label">(optional)</span></label>
+            <input type="text" id="languages" class="form-control" placeholder="e.g. Hindi, Tamil, English" />
+            <p class="input-hint">Comma-separated</p>
+          </div>
+
+          <div class="form-group">
+            <label for="bio">About Yourself <span class="optional-label">(optional)</span></label>
+            <textarea id="bio" class="form-control" rows="3" placeholder="Brief description of your experience and strengths…" style="resize:vertical;"></textarea>
+          </div>
+
+          <!-- ── LOCATION ───────────────────────────────── -->
+          <div class="section-divider">
+            <h3>📍 Location</h3>
+            <p>Where will you be available to serve?</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pincode">Pincode <span class="optional-label">(optional)</span></label>
+              <input type="text" id="pincode" class="form-control" placeholder="110001" maxlength="6" />
+            </div>
+            <div class="form-group">
+              <label for="address">Full Address <span class="optional-label">(optional)</span></label>
+              <input type="text" id="address" class="form-control" placeholder="Street, Area" />
+            </div>
+          </div>
+
+          <!-- ── DOCUMENTS (OPTIONAL) ───────────────────── -->
+          <div class="section-divider">
+            <h3>📄 Documents <span class="optional-label" style="font-size:0.85rem;">(All optional — speeds up verification)</span></h3>
+            <p>Providing these documents speeds up your profile approval</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="aadhar_number">Aadhaar Number <span class="optional-label">(optional)</span></label>
+              <input type="text" id="aadhar_number" class="form-control" placeholder="12-digit Aadhaar" maxlength="12" />
+            </div>
+            <div class="form-group">
+              <label for="pan_number">PAN Number <span class="optional-label">(optional)</span></label>
+              <input type="text" id="pan_number" class="form-control" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase;" />
+            </div>
+          </div>
+
+          <!-- ── BANK DETAILS ───────────────────────────── -->
+          <div class="section-divider">
+            <h3>🏦 Bank Details <span class="optional-label" style="font-size:0.85rem;">(Optional — for payouts)</span></h3>
+            <p>Required only when you want to withdraw your earnings</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="bank_account">Account Number <span class="optional-label">(optional)</span></label>
+              <input type="text" id="bank_account" class="form-control" placeholder="Bank account number" />
+            </div>
+            <div class="form-group">
+              <label for="ifsc_code">IFSC Code <span class="optional-label">(optional)</span></label>
+              <input type="text" id="ifsc_code" class="form-control" placeholder="e.g. SBIN0001234" style="text-transform:uppercase;" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-navy btn-full" id="submitBtn" style="margin-top:8px; font-size:1rem; padding:16px;">
+            🚀 Submit Application
+          </button>
+          <div class="msg-box" id="responseMsg"></div>
+        </form>
+
+      </div>
     </div>
   </main>
-
-  <script>
-    document.getElementById('heroForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('button');
-      const msgDiv = document.getElementById('responseMsg');
-      btn.innerText = 'Submitting...';
-      
-      const payload = {
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        service: document.getElementById('service').value
-      };
-
-      try {
-        const res = await fetch('http://localhost:8080/api/hero/apply', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        msgDiv.style.color = 'green';
-        msgDiv.innerText = data.message;
-        e.target.reset();
-      } catch (err) {
-        msgDiv.style.color = 'red';
-        msgDiv.innerText = 'Failed to connect to the server. Please ensure backend is running.';
-      }
-      btn.innerText = 'Apply Now';
-    });
-  </script>
 
   <!-- FOOTER -->
   <footer class="footer">
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <div class="footer__logo">Super<span>Herooo</span></div>
+          <a href="index.html" class="footer__logo"><img src="assets/superlogo.png" alt="SuperHerooo" style="height:48px; margin-bottom:16px;" /></a>
           <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
           <div class="footer__social">
             <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank">Fb</a>
@@ -112,7 +247,7 @@
           <h4>Quick Links</h4>
           <ul>
             <li><a href="index.html#values">About Us</a></li>
-            <li><a href="services.html">Services Directory</a></li>
+            <li><a href="index.html#services">Services</a></li>
             <li><a href="contact.html">Contact Us</a></li>
             <li><a href="index.html#faq">FAQ</a></li>
           </ul>
@@ -129,5 +264,87 @@
     </div>
   </footer>
 
+  <script>
+    const API_BASE = 'http://142.93.208.120:3001/api';
+
+    function showMsg(type, text) {
+      const el = document.getElementById('responseMsg');
+      el.className = `msg-box ${type}`;
+      el.innerText = text;
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    document.getElementById('heroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+
+      // Client-side validations
+      const mobile = document.getElementById('mobile').value.trim();
+      if (!/^[6-9]\d{9}$/.test(mobile)) {
+        return showMsg('error', 'Enter a valid 10-digit Indian mobile number.');
+      }
+      const pincode = document.getElementById('pincode').value.trim();
+      if (pincode && !/^\d{6}$/.test(pincode)) {
+        return showMsg('error', 'Pincode must be exactly 6 digits.');
+      }
+      const aadhar = document.getElementById('aadhar_number').value.trim();
+      if (aadhar && !/^\d{12}$/.test(aadhar)) {
+        return showMsg('error', 'Aadhaar number must be exactly 12 digits.');
+      }
+      const pan = document.getElementById('pan_number').value.trim().toUpperCase();
+      if (pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan)) {
+        return showMsg('error', 'Enter a valid PAN number (e.g. ABCDE1234F).');
+      }
+
+      // Collect secondary services
+      const secondaryServices = Array.from(
+        document.querySelectorAll('#secondaryServices input:checked')
+      ).map(cb => cb.value);
+
+      // Collect languages
+      const langStr = document.getElementById('languages').value.trim();
+      const languages = langStr ? langStr.split(',').map(l => l.trim()).filter(Boolean) : [];
+
+      const payload = {
+        full_name:          document.getElementById('full_name').value.trim(),
+        email:              document.getElementById('email').value.trim(),
+        mobile,
+        password:           document.getElementById('password').value,
+        primary_service:    document.getElementById('primary_service').value,
+        city:               document.getElementById('city').value,
+        secondary_services: secondaryServices,
+        experience_years:   document.getElementById('experience_years').value || null,
+        availability:       document.getElementById('availability').value || null,
+        languages,
+        bio:                document.getElementById('bio').value.trim() || null,
+        pincode:            pincode || null,
+        address:            document.getElementById('address').value.trim() || null,
+        aadhar_number:      aadhar || null,
+        pan_number:         pan || null,
+        bank_account:       document.getElementById('bank_account').value.trim() || null,
+        ifsc_code:          document.getElementById('ifsc_code').value.trim().toUpperCase() || null,
+      };
+
+      btn.disabled = true; btn.innerText = 'Submitting…';
+
+      try {
+        const res  = await fetch(`${API_BASE}/hero/apply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+          showMsg('success', data.message);
+          e.target.reset();
+        } else {
+          showMsg('error', data.message);
+        }
+      } catch {
+        showMsg('error', 'Cannot connect to server. Please try again.');
+      }
+      btn.disabled = false; btn.innerText = '🚀 Submit Application';
+    });
+  </script>
 </body>
 </html>

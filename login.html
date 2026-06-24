@@ -4,23 +4,43 @@
   <link rel="icon" type="image/png" href="assets/superlogo.png" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Log In - Superherooo</title>
+  <title>Log In / Sign Up - Superherooo</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    .auth-tabs { display: flex; gap: 0; margin-bottom: 32px; border-bottom: 2px solid var(--light-gray); }
+    .auth-tab  { flex: 1; padding: 14px; text-align: center; font-weight: 700; font-size: 0.95rem;
+                 color: var(--text-mid); cursor: pointer; border-bottom: 3px solid transparent;
+                 margin-bottom: -2px; transition: color 0.2s, border-color 0.2s; }
+    .auth-tab.active { color: var(--navy); border-bottom-color: var(--navy); }
+    .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:600px){ .form-row { grid-template-columns: 1fr; } }
+    .input-hint { font-size: 0.78rem; color: var(--text-mid); margin-top: 4px; }
+    .pass-rules { font-size: 0.78rem; color: var(--text-mid); margin-top: 4px; line-height: 1.6; }
+    .msg-box    { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-weight: 600;
+                  font-size: 0.9rem; display: none; }
+    .msg-box.success { background: #d1fae5; color: #065f46; display: block; }
+    .msg-box.error   { background: #fee2e2; color: #991b1b; display: block; }
+    .divider { text-align:center; color: var(--text-mid); font-size:0.85rem; margin: 24px 0; position:relative; }
+    .divider::before,.divider::after { content:''; position:absolute; top:50%; width:42%; height:1px; background:#e5e7eb; }
+    .divider::before { left:0; } .divider::after { right:0; }
+  </style>
 </head>
 <body>
-
   <!-- HEADER -->
   <header class="header">
     <div class="wrap">
-      <div class="header__inner" style="background: var(--white); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-        <a href="index.html" class="header__logo">Super<span>Herooo</span></a>
+      <div class="header__inner">
+        <a href="index.html" class="header__logo">
+          <img src="assets/superlogo.png" alt="SuperHerooo" style="height:44px;" />
+          <span class="header__brand">Superherooo</span>
+        </a>
         <nav class="header__nav">
           <a href="index.html">Home</a>
-          <a href="services.html">Services</a>
-          <a href="index.html#journey">How It Works</a>
+          <a href="index.html#services">Services</a>
+          <a href="index.html#how-it-works">How It Works</a>
           <a href="become-a-hero.html">Become a Hero</a>
         </nav>
-        <a href="login.html" class="btn btn-navy header__btn">Log In/ Sign Up</a>
+        <a href="login.html" class="btn btn-navy header__btn">Log In / Sign Up</a>
         <div class="hamburger"><span></span><span></span><span></span></div>
       </div>
     </div>
@@ -28,95 +48,74 @@
 
   <div class="page-header">
     <div class="wrap">
-      <h1 id="formTitle">Welcome Back</h1>
-      <p id="formSubtitle">Log in to manage your bookings and account.</p>
+      <h1 id="pageTitle">Welcome Back</h1>
+      <p id="pageSubtitle">Log in to manage your bookings and account.</p>
     </div>
   </div>
 
   <main class="page-content">
     <div class="wrap">
-      <div class="premium-form-card">
-        <form id="authForm">
+      <div class="premium-form-card" style="max-width:560px; margin:0 auto;">
+
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <div class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Log In</div>
+          <div class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Sign Up</div>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm" autocomplete="on">
           <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" class="form-control" required />
+            <label for="loginEmail">Email Address</label>
+            <input type="email" id="loginEmail" class="form-control" placeholder="you@example.com" required autocomplete="email" />
           </div>
           <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" class="form-control" required />
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" class="form-control" placeholder="Your password" required autocomplete="current-password" />
           </div>
-          <button type="submit" class="btn btn-navy btn-full" id="submitBtn">Log In</button>
-          <div class="form-footer" id="toggleLink">Don't have an account? <span>Sign Up</span></div>
-          <div id="responseMsg"></div>
+          <div style="text-align:right; margin-top:-12px; margin-bottom:20px;">
+            <a href="#" style="font-size:0.85rem; color:var(--navy);">Forgot Password?</a>
+          </div>
+          <button type="submit" class="btn btn-navy btn-full" id="loginBtn">Log In</button>
+          <div class="msg-box" id="loginMsg"></div>
         </form>
+
+        <!-- SIGNUP FORM -->
+        <form id="signupForm" style="display:none;" autocomplete="on">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="signupName">Full Name *</label>
+              <input type="text" id="signupName" class="form-control" placeholder="Rahul Sharma" required />
+            </div>
+            <div class="form-group">
+              <label for="signupMobile">Mobile Number *</label>
+              <input type="tel" id="signupMobile" class="form-control" placeholder="9876543210" maxlength="10" required />
+              <p class="input-hint">10-digit Indian number</p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="signupEmail">Email Address *</label>
+            <input type="email" id="signupEmail" class="form-control" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label for="signupPassword">Create Password *</label>
+            <input type="password" id="signupPassword" class="form-control" placeholder="Min 8 chars, 1 uppercase, 1 number" required autocomplete="new-password" />
+            <p class="pass-rules">✓ Minimum 8 characters &nbsp; ✓ One uppercase letter &nbsp; ✓ One number</p>
+          </div>
+          <button type="submit" class="btn btn-navy btn-full" id="signupBtn">Create Account</button>
+          <div class="msg-box" id="signupMsg"></div>
+        </form>
+
       </div>
     </div>
   </main>
-
-  <script>
-    let isLogin = true;
-    const toggleLink = document.getElementById('toggleLink');
-    const formTitle = document.getElementById('formTitle');
-    const formSubtitle = document.getElementById('formSubtitle');
-    const submitBtn = document.getElementById('submitBtn');
-
-    toggleLink.addEventListener('click', () => {
-      isLogin = !isLogin;
-      if (isLogin) {
-        formTitle.innerText = 'Welcome Back';
-        formSubtitle.innerText = 'Log in to manage your bookings and account.';
-        submitBtn.innerText = 'Log In';
-        toggleLink.innerHTML = "Don't have an account? <span>Sign Up</span>";
-      } else {
-        formTitle.innerText = 'Create an Account';
-        formSubtitle.innerText = 'Sign up to start booking reliable professionals.';
-        submitBtn.innerText = 'Sign Up';
-        toggleLink.innerHTML = "Already have an account? <span>Log In</span>";
-      }
-      document.getElementById('responseMsg').innerText = '';
-    });
-
-    document.getElementById('authForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('button');
-      const msgDiv = document.getElementById('responseMsg');
-      btn.innerText = 'Processing...';
-      
-      const payload = {
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value
-      };
-
-      const endpoint = isLogin ? 'http://localhost:8080/api/auth/login' : 'http://localhost:8080/api/auth/signup';
-
-      try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        msgDiv.style.color = 'green';
-        msgDiv.innerText = data.message;
-        if(isLogin) {
-            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
-        } else {
-            e.target.reset();
-        }
-      } catch (err) {
-        msgDiv.style.color = 'red';
-        msgDiv.innerText = 'Failed to connect to the server. Please ensure backend is running.';
-      }
-      btn.innerText = isLogin ? 'Log In' : 'Sign Up';
-    });
-  </script>
 
   <!-- FOOTER -->
   <footer class="footer">
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <div class="footer__logo">Super<span>Herooo</span></div>
+          <a href="index.html" class="footer__logo"><img src="assets/superlogo.png" alt="SuperHerooo" style="height:48px; margin-bottom:16px;" /></a>
           <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
           <div class="footer__social">
             <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank">Fb</a>
@@ -128,7 +127,7 @@
           <h4>Quick Links</h4>
           <ul>
             <li><a href="index.html#values">About Us</a></li>
-            <li><a href="services.html">Services Directory</a></li>
+            <li><a href="index.html#services">Services</a></li>
             <li><a href="contact.html">Contact Us</a></li>
             <li><a href="index.html#faq">FAQ</a></li>
           </ul>
@@ -145,5 +144,90 @@
     </div>
   </footer>
 
+  <script>
+    const API_BASE = 'http://142.93.208.120:3001/api';
+
+    function switchTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('tabLogin').classList.toggle('active', isLogin);
+      document.getElementById('tabSignup').classList.toggle('active', !isLogin);
+      document.getElementById('loginForm').style.display  = isLogin ? 'block' : 'none';
+      document.getElementById('signupForm').style.display = isLogin ? 'none'  : 'block';
+      document.getElementById('pageTitle').innerText    = isLogin ? 'Welcome Back' : 'Create Account';
+      document.getElementById('pageSubtitle').innerText = isLogin
+        ? 'Log in to manage your bookings and account.'
+        : 'Sign up to start booking reliable professionals.';
+    }
+
+    function showMsg(id, type, text) {
+      const el = document.getElementById(id);
+      el.className = `msg-box ${type}`;
+      el.innerText = text;
+    }
+
+    // LOGIN
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.innerText = 'Logging in…';
+      try {
+        const res  = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email:    document.getElementById('loginEmail').value.trim(),
+            password: document.getElementById('loginPassword').value,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('sh_token', data.token);
+          localStorage.setItem('sh_user',  JSON.stringify(data.user));
+          showMsg('loginMsg', 'success', data.message);
+          setTimeout(() => window.location.href = 'index.html', 1200);
+        } else {
+          showMsg('loginMsg', 'error', data.message);
+        }
+      } catch {
+        showMsg('loginMsg', 'error', 'Cannot connect to server. Please try again.');
+      }
+      btn.disabled = false; btn.innerText = 'Log In';
+    });
+
+    // SIGNUP
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const mobile = document.getElementById('signupMobile').value.trim();
+      if (!/^[6-9]\d{9}$/.test(mobile)) {
+        return showMsg('signupMsg', 'error', 'Enter a valid 10-digit Indian mobile number.');
+      }
+      const btn = document.getElementById('signupBtn');
+      btn.disabled = true; btn.innerText = 'Creating account…';
+      try {
+        const res  = await fetch(`${API_BASE}/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: document.getElementById('signupName').value.trim(),
+            email:     document.getElementById('signupEmail').value.trim(),
+            mobile,
+            password:  document.getElementById('signupPassword').value,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('sh_token', data.token);
+          localStorage.setItem('sh_user',  JSON.stringify(data.user));
+          showMsg('signupMsg', 'success', data.message);
+          setTimeout(() => window.location.href = 'index.html', 1500);
+        } else {
+          showMsg('signupMsg', 'error', data.message);
+        }
+      } catch {
+        showMsg('signupMsg', 'error', 'Cannot connect to server. Please try again.');
+      }
+      btn.disabled = false; btn.innerText = 'Create Account';
+    });
+  </script>
 </body>
 </html>
