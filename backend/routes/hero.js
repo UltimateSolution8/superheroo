@@ -46,6 +46,7 @@ router.post('/apply', heroRules, async (req, res) => {
     const { data: existing } = await supabase
       .from('users')
       .select('id')
+      .eq('role', 'professional')
       .or(`email.eq.${email},mobile.eq.${mobile}`)
       .maybeSingle();
 

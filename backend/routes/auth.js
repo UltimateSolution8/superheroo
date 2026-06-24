@@ -42,10 +42,11 @@ router.post('/signup', signupRules, async (req, res) => {
   const { full_name, email, mobile, password } = req.body;
 
   try {
-    // Check for existing user
+    // Check for existing user with same role
     const { data: existing } = await supabase
       .from('users')
       .select('id')
+      .eq('role', 'customer')
       .or(`email.eq.${email},mobile.eq.${mobile}`)
       .maybeSingle();
 

@@ -13,7 +13,10 @@
   <header class="header">
     <div class="wrap">
       <div class="header__inner">
-        <a href="#" class="header__logo"><img src="assets/superlogo.png" alt="SuperHerooo" style="height: 48px;" /><span class="header__brand">Superherooo</span></a>
+        <a href="#" class="header__logo">
+          <img src="assets/superlogo.png" alt="SuperHerooo" style="height: 48px; object-fit: contain;" />
+          <span class="header__brand" style="color: var(--navy); margin-left: 4px; font-size: 1.4rem;">Superherooo</span>
+        </a>
         <nav class="header__nav">
           <a href="#hero" class="active">Home</a>
           <a href="#services">Services</a>
@@ -63,30 +66,6 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 010 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
             <div class="cta__btn-text"><small>Get it on</small><strong>Google Play</strong></div>
           </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. SERVICES DIRECTORY -->
-  <section class="services" id="services" style="padding: 100px 0; background: var(--light-gray);">
-    <div class="wrap">
-      <h2 style="text-align:center; color:var(--navy); margin-bottom: 40px; font-size: 2.5rem;">Our Premium Services</h2>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px;">
-        <div style="background: var(--white); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); text-align: center;">
-          <div style="font-size: 3rem; margin-bottom: 16px;">⚡</div>
-          <h3 style="margin-bottom: 8px;">Electricians</h3>
-          <p style="color:var(--text-muted); font-size:0.95rem;">Wiring, installations, and repairs.</p>
-        </div>
-        <div style="background: var(--white); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); text-align: center;">
-          <div style="font-size: 3rem; margin-bottom: 16px;">🧹</div>
-          <h3 style="margin-bottom: 8px;">Cleaning</h3>
-          <p style="color:var(--text-muted); font-size:0.95rem;">Deep sanitization and regular upkeep.</p>
-        </div>
-        <div style="background: var(--white); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); text-align: center;">
-          <div style="font-size: 3rem; margin-bottom: 16px;">🔧</div>
-          <h3 style="margin-bottom: 8px;">Plumbing</h3>
-          <p style="color:var(--text-muted); font-size:0.95rem;">Leak fixes, pipe installations, and more.</p>
         </div>
       </div>
     </div>
@@ -211,7 +190,6 @@
           <div class="benefit-card bc-academy">
             <h3>Skill Enhancement Academy</h3>
             <p>Access free professional certification courses and soft-skills training to increase your hourly rates and customer ratings.</p>
-            <a href="services.html" class="bc-link">Explore Courses</a>
           </div>
         </div>
       </div>
@@ -426,10 +404,16 @@
         <div>
           <a href="#" class="footer__logo"><img src="assets/superlogo.png" alt="SuperHerooo" style="height: 48px; margin-bottom: 16px;" /></a>
           <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
-          <div class="footer__social">
-            <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank" aria-label="Facebook">Fb</a>
-            <a href="https://x.com/superherooo2026" target="_blank" aria-label="Twitter">Tw</a>
-            <a href="https://www.linkedin.com/company/112068924/" target="_blank" aria-label="LinkedIn">In</a>
+          <div class="footer__social" style="display: flex; gap: 16px;">
+            <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank" aria-label="Facebook">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
+            </a>
+            <a href="https://x.com/superherooo2026" target="_blank" aria-label="Twitter">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.52 8.52 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
+            </a>
+            <a href="https://www.linkedin.com/company/112068924/" target="_blank" aria-label="LinkedIn">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.16-3.66c-1.02 0-1.5.56-1.75.96v-.83h-3.13c.04.88 0 8.83 0 8.83h3.13v-4.93c0-.26.02-.52.1-.7.2-.53.68-1.07 1.48-1.07 1.04 0 1.46.8 1.46 1.96v4.74h3.13M5.33 8.16h3.14V18.5H5.33V8.16M6.9 6.84c1.1 0 1.78-.72 1.78-1.63 0-.92-.66-1.63-1.74-1.63C5.84 3.58 5.2 4.3 5.2 5.21c0 .9.62 1.63 1.68 1.63z"/></svg>
+            </a>
           </div>
         </div>
         <div>
