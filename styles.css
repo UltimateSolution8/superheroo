@@ -383,7 +383,7 @@ p { color: var(--text-muted); }
 .cta__btn-text small { display: block; font-size: 0.65rem; }
 .cta__btn-text strong { display: block; font-size: 0.9rem; }
 .cta__img-wrapper { position: relative; height: 100%; display: flex; align-items: flex-end; justify-content: center; overflow: visible; }
-.cta__img { width: 320px; margin-bottom: -60px; position: relative; z-index: 2; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4)); background: transparent; }
+.cta__img { width: 360px; margin-bottom: -60px; position: relative; z-index: 2; }
 .cta__badge {
   position: absolute; top: 80px; left: 40px; z-index: 3;
   background: var(--amber); padding: 8px 16px; border-radius: 8px;
