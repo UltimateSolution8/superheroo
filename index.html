@@ -330,6 +330,95 @@
     </div>
   </section>
 
+  <!-- FAQ SECTION -->
+  <section class="faq-section" id="faq">
+    <div class="wrap">
+      <div class="faq-section__header">
+        <span class="small-label">Got Questions?</span>
+        <h2>Frequently Asked Questions</h2>
+        <p>Everything you need to know about Superherooo.</p>
+      </div>
+      <div class="faq-list">
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>What is Superherooo?</span>
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Superherooo is India's premium on-demand home services platform. We connect you with background-verified, skilled professionals — from electricians and plumbers to deep cleaning experts — available at your doorstep across major Indian cities.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>How are the professionals verified?</span>
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Every hero on our platform undergoes a rigorous 3-step verification process: government ID verification, police background check, and a skill assessment test conducted by our expert team. Only the top performers make it onto the platform.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>How do I book a service?</span>
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Simply download the Superherooo app, select your service, choose a time slot, and confirm your booking. A verified Hero will arrive at your door at the scheduled time. You can also track your Hero in real-time through the app.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>What if I'm not satisfied with the service?</span>
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Your satisfaction is our priority. If you're not happy with the service, contact our 24/7 support team within 24 hours and we'll arrange a free re-service or provide a full refund — no questions asked.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>How can I become a Superherooo professional?</span>
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Click on "Become a Hero" in the navigation menu or visit our Partner page. Fill in your details, select your primary skill, and submit your application. Our team will contact you within 48 hours to guide you through the onboarding and verification process.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>What cities is Superherooo available in?</span>
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Superherooo is currently operational in Delhi NCR, Mumbai, Bengaluru, Hyderabad, Chennai, and Pune. We are rapidly expanding and will be live in 20+ cities by the end of 2026. Download the app and check availability in your area.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>Is my payment secure?</span>
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Absolutely. All payments are processed through our escrow-style payment system, which means your money is only released to the professional after you confirm the job is done to your satisfaction. We support UPI, credit/debit cards, and net banking.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SCROLL TO TOP BUTTON -->
+  <button class="scroll-top" id="scrollTopBtn" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><path d="M5 15l7-7 7 7"/></svg>
+  </button>
+
   <!-- 13. FOOTER -->
   <footer class="footer">
     <div class="wrap">
@@ -365,7 +454,7 @@
   </footer>
 
   <script>
-    // Hamburger / Mobile Nav
+    // ── Hamburger / Mobile Nav ───────────────────────────
     const hamburger = document.querySelector('.hamburger');
     const mobileNav = document.getElementById('mobileNav');
     const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
@@ -385,7 +474,7 @@
     hamburger.addEventListener('click', openMobileNav);
     mobileNavClose.addEventListener('click', closeMobileNav);
 
-    // Smooth scroll for all anchor links
+    // ── Smooth Scroll ────────────────────────────────────
     document.querySelectorAll('a[href^="#"]').forEach(link => {
       link.addEventListener('click', (e) => {
         const id = link.getAttribute('href');
@@ -397,6 +486,40 @@
           setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 100);
         }
       });
+    });
+
+    // ── FAQ Accordion ────────────────────────────────────
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+
+        // Close all
+        document.querySelectorAll('.faq-item.open').forEach(el => {
+          el.classList.remove('open');
+          el.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+          el.querySelector('.faq-answer').style.maxHeight = null;
+        });
+
+        // Open clicked (if it was closed)
+        if (!isOpen) {
+          item.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+          const answer = item.querySelector('.faq-answer');
+          answer.style.maxHeight = answer.scrollHeight + 'px';
+        }
+      });
+    });
+
+    // ── Scroll-to-Top Button ─────────────────────────────
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+    });
+
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   </script>
 </body>

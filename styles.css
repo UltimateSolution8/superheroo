@@ -86,8 +86,9 @@ p { color: var(--text-muted); }
    1. HEADER
    ========================================= */
 .header {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 100;
-  padding: 24px 0;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  padding: 16px 0;
+  transition: background 0.3s, box-shadow 0.3s;
 }
 .header__inner {
   display: flex; align-items: center; justify-content: space-between;
@@ -768,4 +769,138 @@ textarea.form-control {
 .service-dir-card h3 {
   font-size: 1.3rem;
   margin-bottom: 12px;
+}
+
+/* =========================================
+   FAQ SECTION
+   ========================================= */
+.faq-section {
+  padding: 100px 0;
+  background: var(--white);
+}
+.faq-section__header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.faq-section__header h2 {
+  font-size: 2.8rem;
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+.faq-section__header p {
+  color: var(--text-mid);
+  font-size: 1.05rem;
+}
+
+.faq-list {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.faq-item {
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.faq-item:first-child {
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+.faq-question span {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.4;
+  transition: color 0.2s;
+}
+.faq-question:hover span { color: var(--amber); }
+
+.faq-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  color: var(--navy);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), color 0.2s;
+}
+.faq-item.open .faq-icon {
+  transform: rotate(180deg);
+  color: var(--amber);
+}
+.faq-item.open .faq-question span {
+  color: var(--amber);
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.faq-answer p {
+  padding: 0 4px 24px;
+  font-size: 0.97rem;
+  color: var(--text-mid);
+  line-height: 1.75;
+}
+
+/* =========================================
+   SCROLL-TO-TOP BUTTON
+   ========================================= */
+.scroll-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 999;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s, background 0.2s;
+}
+.scroll-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+.scroll-top:hover {
+  background: var(--amber);
+  color: var(--navy);
+}
+
+/* =========================================
+   HERO PADDING FIX (for fixed navbar)
+   ========================================= */
+.hero {
+  padding-top: 100px !important;
+}
+
+@media (max-width: 768px) {
+  .scroll-top { bottom: 20px; right: 20px; width: 42px; height: 42px; }
+  .faq-section { padding: 64px 0; }
+  .faq-section__header h2 { font-size: 2rem; }
+  .faq-question span { font-size: 0.97rem; }
+  .hero { padding-top: 90px !important; }
 }
