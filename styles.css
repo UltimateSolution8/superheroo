@@ -536,9 +536,12 @@ p { color: var(--text-muted); }
   .stats__num { font-size: 2rem; }
 
   /* Values */
-  .values__cards { height: auto; display: flex; flex-direction: column; gap: 20px; }
-  .values__card { position: relative; width: 100%; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; }
-  .values__grid { grid-template-columns: 1fr; }
+  .values__cards { height: auto; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+  .values__card { position: relative; width: 100%; max-width: 400px; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; }
+  .values__grid { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .values__content { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .values__list { width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .values__item { flex-direction: column; text-align: center; align-items: center; }
 
   /* Services grid */
   .services [style*="grid"] { grid-template-columns: 1fr !important; }
@@ -563,7 +566,7 @@ p { color: var(--text-muted); }
   .faq__grid { grid-template-columns: 1fr; }
 
   /* CTA section */
-  .cta__card { grid-template-columns: 1fr; padding: 32px 24px; text-align: center; }
+  .cta__card { grid-template-columns: 1fr; padding: 32px 24px; text-align: center; justify-items: center; gap: 40px; }
   .cta__img-wrapper { display: none; }
   .cta__buttons { justify-content: center; flex-direction: row; flex-wrap: wrap; }
 
@@ -571,8 +574,12 @@ p { color: var(--text-muted); }
   section { scroll-margin-top: 80px; }
 
   /* Footer */
-  .footer__grid { grid-template-columns: 1fr; }
-  .footer__desc { max-width: 100%; }
+  .footer { text-align: center; }
+  .footer__grid { grid-template-columns: 1fr; justify-items: center; gap: 40px; }
+  .footer__desc { max-width: 100%; margin: 0 auto; }
+  .footer__logo { display: inline-block; margin: 0 auto; }
+  .footer__social { justify-content: center; }
+  .footer ul { display: flex; flex-direction: column; align-items: center; }
 
   /* Wrap padding */
   .wrap { padding-left: 20px; padding-right: 20px; }
