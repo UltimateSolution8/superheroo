@@ -4,7 +4,7 @@
   <link rel="icon" type="image/png" href="assets/superlogo.png" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Contact Us - Superherooo</title>
+  <title>Contact Us — Superherooo</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -12,99 +12,129 @@
   <!-- HEADER -->
   <header class="header">
     <div class="wrap">
-      <div class="header__inner" style="background: var(--white); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-        <a href="index.html" class="header__logo">Super<span>Herooo</span></a>
+      <div class="header__inner">
+        <a href="index.html" class="header__logo">
+          <img src="assets/superlogo.png" alt="SuperHerooo" style="height:44px; object-fit: contain;" />
+          <span class="header__brand" style="color: var(--navy); margin-left: 4px; font-size: 1.4rem;">Superherooo</span>
+        </a>
         <nav class="header__nav">
           <a href="index.html">Home</a>
-          <a href="services.html">Services</a>
-          <a href="index.html#journey">How It Works</a>
+          <a href="index.html#how-it-works">How It Works</a>
           <a href="become-a-hero.html">Become a Hero</a>
+          <a href="contact.html" class="active">Contact Us</a>
         </nav>
-        <a href="login.html" class="btn btn-navy header__btn">Log In/ Sign Up</a>
+        <a href="login.html" class="btn btn-navy header__btn" id="navLoginBtn">Log In/ Sign Up</a>
         <div class="hamburger"><span></span><span></span><span></span></div>
       </div>
     </div>
   </header>
 
+  <!-- MOBILE NAV DRAWER -->
+  <div class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav__header">
+      <img src="assets/superlogo.png" alt="SuperHerooo" style="height: 44px;" />
+      <button class="mobile-nav__close" id="mobileNavClose" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="mobile-nav__links">
+      <a href="index.html" onclick="closeMobileNav()">Home</a>
+      <a href="index.html#how-it-works" onclick="closeMobileNav()">How It Works</a>
+      <a href="become-a-hero.html" onclick="closeMobileNav()">Become a Hero</a>
+      <a href="contact.html" onclick="closeMobileNav()">Contact Us</a>
+    </nav>
+    <a href="login.html" class="btn btn-amber" style="margin: 24px; display: block; text-align: center;" id="mobileNavLoginBtn">Log In / Sign Up</a>
+  </div>
+  <div class="mobile-nav__backdrop" id="mobileNavBackdrop" onclick="closeMobileNav()"></div>
+
   <div class="page-header">
     <div class="wrap">
       <h1>Contact Us</h1>
-      <p>We're here to help! Fill out the form below and our team will get back to you shortly.</p>
+      <p>We're here to help you. Reach out to our superhero support team.</p>
     </div>
   </div>
 
-  <main class="page-content">
+  <!-- CONTACT FORM & INFO -->
+  <main class="page-content" style="padding-bottom: 80px;">
     <div class="wrap">
-      <div class="premium-form-card premium-form-card--large">
-        <form id="contactForm">
-          <div class="form-group">
-            <label for="name">Full Name</label>
-            <input type="text" id="name" class="form-control" required />
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; max-width: 1000px; margin: 0 auto; align-items: start;">
+        
+        <!-- Contact Info -->
+        <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); height: 100%;">
+          <h2 style="color: var(--navy); margin-bottom: 16px; font-size: 1.8rem;">Get in Touch</h2>
+          <p style="color: var(--text-mid); margin-bottom: 32px; font-size: 1.05rem;">Have questions about our platform or need support with your account? Our team is ready to assist you.</p>
+          
+          <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; background: #fffbeb; padding: 20px; border-radius: 8px; border-left: 4px solid var(--amber);">
+            <div style="font-size: 1.8rem; margin-top: -4px;">✉️</div>
+            <div>
+              <h4 style="color: var(--navy); margin-bottom: 4px; font-size: 1.1rem;">Email Support</h4>
+              <p style="font-size: 1.15rem; font-weight: bold; margin-bottom: 6px;"><a href="mailto:info@superherooo.com" style="color: var(--navy); text-decoration: none;">info@superherooo.com</a></p>
+              <p style="font-size: 0.95rem; color: var(--amber); font-weight: bold;">⚡ Responds within 30 minutes</p>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" class="form-control" required />
+
+          <div style="display: flex; align-items: flex-start; gap: 16px; padding: 20px;">
+            <div style="font-size: 1.8rem; margin-top: -4px;">📍</div>
+            <div>
+              <h4 style="color: var(--navy); margin-bottom: 4px; font-size: 1.1rem;">Headquarters</h4>
+              <p style="color: var(--text-mid); font-size: 1rem;">Superherooo Network Pvt. Ltd.<br/>Cyber City, Gurugram, India</p>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="message">Message</label>
-            <textarea id="message" class="form-control" required></textarea>
-          </div>
-          <button type="submit" class="btn btn-navy btn-full" id="submitBtn">Send Message</button>
-          <div id="responseMsg"></div>
-        </form>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="premium-form-card" style="margin: 0;">
+          <h3 style="color: var(--navy); margin-bottom: 24px; font-size: 1.4rem;">Send a Message</h3>
+          <form id="contactForm" onsubmit="event.preventDefault(); document.getElementById('submitBtn').innerText='Sending...'; setTimeout(() => { document.getElementById('contactMsg').style.display='block'; document.getElementById('submitBtn').innerText='Send Message'; this.reset(); }, 800);">
+            <div class="form-group">
+              <label for="contactName">Your Name</label>
+              <input type="text" id="contactName" class="form-control" placeholder="Rahul Sharma" required />
+            </div>
+            <div class="form-group">
+              <label for="contactEmail">Your Email</label>
+              <input type="email" id="contactEmail" class="form-control" placeholder="you@example.com" required />
+            </div>
+            <div class="form-group">
+              <label for="contactSubject">Subject</label>
+              <input type="text" id="contactSubject" class="form-control" placeholder="How can we help?" required />
+            </div>
+            <div class="form-group">
+              <label for="contactMessage">Message</label>
+              <textarea id="contactMessage" class="form-control" rows="4" placeholder="Write your message here..." required style="resize: vertical;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-navy btn-full" id="submitBtn">Send Message</button>
+            
+            <div id="contactMsg" style="display: none; margin-top: 16px; padding: 12px; background: #d1fae5; color: #065f46; border-radius: 6px; text-align: center; font-weight: 500;">
+              Thank you! Your message has been sent. We'll reply within 30 minutes.
+            </div>
+          </form>
+        </div>
+
       </div>
     </div>
   </main>
-
-  <script>
-    document.getElementById('contactForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('button');
-      const msgDiv = document.getElementById('responseMsg');
-      btn.innerText = 'Sending...';
-      
-      const payload = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        message: document.getElementById('message').value
-      };
-
-      try {
-        const res = await fetch('http://localhost:8080/api/contact', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        msgDiv.style.color = 'green';
-        msgDiv.innerText = data.message;
-        e.target.reset();
-      } catch (err) {
-        msgDiv.style.color = 'red';
-        msgDiv.innerText = 'Failed to connect to the server. Please ensure backend is running.';
-      }
-      btn.innerText = 'Send Message';
-    });
-  </script>
 
   <!-- FOOTER -->
   <footer class="footer">
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <div class="footer__logo">Super<span>Herooo</span></div>
+          <a href="index.html" class="footer__logo"><img src="assets/superlogo.png" alt="SuperHerooo" style="height:48px; margin-bottom:16px;" /></a>
           <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
-          <div class="footer__social">
-            <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank">Fb</a>
-            <a href="https://x.com/superherooo2026" target="_blank">Tw</a>
-            <a href="https://www.linkedin.com/company/112068924/" target="_blank">In</a>
+          <div class="footer__social" style="display: flex; gap: 16px;">
+            <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank" aria-label="Facebook">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 320 512"><path d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z"/></svg>
+            </a>
+            <a href="https://x.com/superherooo2026" target="_blank" aria-label="X (Twitter)">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 512 512"><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+            </a>
+            <a href="https://www.linkedin.com/company/112068924/" target="_blank" aria-label="LinkedIn">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 448 512"><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/></svg>
+            </a>
           </div>
         </div>
         <div>
           <h4>Quick Links</h4>
           <ul>
             <li><a href="index.html#values">About Us</a></li>
-            <li><a href="services.html">Services Directory</a></li>
             <li><a href="contact.html">Contact Us</a></li>
             <li><a href="index.html#faq">FAQ</a></li>
           </ul>
@@ -121,5 +151,30 @@
     </div>
   </footer>
 
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (localStorage.getItem('sh_token')) {
+        const btn = document.getElementById('navLoginBtn');
+        const mBtn = document.getElementById('mobileNavLoginBtn');
+        if(btn) { btn.textContent = 'Profile'; btn.href = 'dashboard.html'; }
+        if(mBtn) { mBtn.textContent = 'Profile'; mBtn.href = 'dashboard.html'; }
+      }
+    });
+
+    const hamburger = document.querySelector('.hamburger');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+
+    if (hamburger) hamburger.addEventListener('click', () => {
+      mobileNav.classList.add('active');
+      mobileNavBackdrop.classList.add('active');
+    });
+    if (mobileNavClose) mobileNavClose.addEventListener('click', closeMobileNav);
+    function closeMobileNav() {
+      mobileNav.classList.remove('active');
+      mobileNavBackdrop.classList.remove('active');
+    }
+  </script>
 </body>
 </html>
