@@ -75,7 +75,7 @@
             <div style="font-size: 1.8rem; margin-top: -4px;">📍</div>
             <div>
               <h4 style="color: var(--navy); margin-bottom: 4px; font-size: 1.1rem;">Headquarters</h4>
-              <p style="color: var(--text-mid); font-size: 1rem;">Superherooo Network Pvt. Ltd.<br/>Cyber City, Gurugram, India</p>
+              <p style="color: var(--text-mid); font-size: 1rem;">Superherooo Network Pvt. Ltd.<br/>Kondapur, Hyderabad, India</p>
             </div>
           </div>
         </div>
@@ -167,13 +167,13 @@
     const mobileNavClose = document.getElementById('mobileNavClose');
 
     if (hamburger) hamburger.addEventListener('click', () => {
-      mobileNav.classList.add('active');
-      mobileNavBackdrop.classList.add('active');
+      mobileNav.classList.add('open');
+      mobileNavBackdrop.classList.add('open');
     });
     if (mobileNavClose) mobileNavClose.addEventListener('click', closeMobileNav);
     function closeMobileNav() {
-      mobileNav.classList.remove('active');
-      mobileNavBackdrop.classList.remove('active');
+      mobileNav.classList.remove('open');
+      mobileNavBackdrop.classList.remove('open');
     }
   </script>
 </body>

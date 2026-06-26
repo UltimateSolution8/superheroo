@@ -219,22 +219,7 @@
             </div>
           </div>
 
-          <!-- ── BANK DETAILS ───────────────────────────── -->
-          <div class="section-divider">
-            <h3>🏦 Bank Details <span class="optional-label" style="font-size:0.85rem;">(Optional — for payouts)</span></h3>
-            <p>Required only when you want to withdraw your earnings</p>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="bank_account">Account Number <span class="optional-label">(optional)</span></label>
-              <input type="text" id="bank_account" class="form-control" placeholder="Bank account number" />
-            </div>
-            <div class="form-group">
-              <label for="ifsc_code">IFSC Code <span class="optional-label">(optional)</span></label>
-              <input type="text" id="ifsc_code" class="form-control" placeholder="e.g. SBIN0001234" style="text-transform:uppercase;" />
-            </div>
-          </div>
+          <!-- ── BANK DETAILS (REMOVED) ───────────────────────────── -->
 
           <button type="submit" class="btn btn-navy btn-full" id="submitBtn" style="margin-top:8px; font-size:1rem; padding:16px;">
             🚀 Submit Application
@@ -295,21 +280,28 @@
           btn.href = 'dashboard.html';
         }
       }
+
+      const hamburger = document.querySelector('.hamburger');
+      const mobileNav = document.getElementById('mobileNav');
+      const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
+      const mobileNavClose = document.getElementById('mobileNavClose');
+
+      if (hamburger && mobileNav) {
+        hamburger.addEventListener('click', () => {
+          mobileNav.classList.add('open');
+          mobileNavBackdrop.classList.add('open');
+        });
+      }
+      if (mobileNavClose) {
+        mobileNavClose.addEventListener('click', closeMobileNav);
+      }
     });
 
-    const hamburger = document.querySelector('.hamburger');
-    const mobileNav = document.getElementById('mobileNav');
-    const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
-    const mobileNavClose = document.getElementById('mobileNavClose');
-
-    if (hamburger) hamburger.addEventListener('click', () => {
-      mobileNav.classList.add('active');
-      mobileNavBackdrop.classList.add('active');
-    });
-    if (mobileNavClose) mobileNavClose.addEventListener('click', closeMobileNav);
     function closeMobileNav() {
-      mobileNav.classList.remove('active');
-      mobileNavBackdrop.classList.remove('active');
+      const mobileNav = document.getElementById('mobileNav');
+      const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
+      if (mobileNav) mobileNav.classList.remove('open');
+      if (mobileNavBackdrop) mobileNavBackdrop.classList.remove('open');
     }
 
     const API_BASE = 'https://142-93-208-120.sslip.io/api';
@@ -367,9 +359,7 @@
         pincode:            pincode || null,
         address:            document.getElementById('address').value.trim() || null,
         aadhar_number:      aadhar || null,
-        pan_number:         pan || null,
-        bank_account:       document.getElementById('bank_account').value.trim() || null,
-        ifsc_code:          document.getElementById('ifsc_code').value.trim().toUpperCase() || null,
+        pan_number:         pan || null
       };
 
       btn.disabled = true; btn.innerText = 'Submitting…';

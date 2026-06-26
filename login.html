@@ -189,21 +189,28 @@
         }
         window.location.href = 'dashboard.html';
       }
+
+      const hamburger = document.querySelector('.hamburger');
+      const mobileNav = document.getElementById('mobileNav');
+      const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
+      const mobileNavClose = document.getElementById('mobileNavClose');
+
+      if (hamburger && mobileNav) {
+        hamburger.addEventListener('click', () => {
+          mobileNav.classList.add('open');
+          mobileNavBackdrop.classList.add('open');
+        });
+      }
+      if (mobileNavClose) {
+        mobileNavClose.addEventListener('click', closeMobileNav);
+      }
     });
 
-    const hamburger = document.querySelector('.hamburger');
-    const mobileNav = document.getElementById('mobileNav');
-    const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
-    const mobileNavClose = document.getElementById('mobileNavClose');
-
-    if (hamburger) hamburger.addEventListener('click', () => {
-      mobileNav.classList.add('active');
-      mobileNavBackdrop.classList.add('active');
-    });
-    if (mobileNavClose) mobileNavClose.addEventListener('click', closeMobileNav);
     function closeMobileNav() {
-      mobileNav.classList.remove('active');
-      mobileNavBackdrop.classList.remove('active');
+      const mobileNav = document.getElementById('mobileNav');
+      const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
+      if (mobileNav) mobileNav.classList.remove('open');
+      if (mobileNavBackdrop) mobileNavBackdrop.classList.remove('open');
     }
 
     function switchTab(tab) {
