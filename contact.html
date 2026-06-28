@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/png" href="assets/superlogo.png" />
+  <link rel="icon" type="image/png" href="assets/finallogo.png" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Contact Us — Superherooo</title>
@@ -14,7 +14,7 @@
     <div class="wrap">
       <div class="header__inner">
         <a href="index.html" class="header__logo">
-          <img src="assets/superlogo.png" alt="SuperHerooo" style="height:44px; object-fit: contain;" />
+          <img src="assets/finallogo.png" alt="SuperHerooo" style="height:44px; object-fit: contain;" />
           <span class="header__brand" style="color: var(--navy); margin-left: 4px; font-size: 1.4rem;">Superherooo</span>
         </a>
         <nav class="header__nav">
@@ -32,7 +32,7 @@
   <!-- MOBILE NAV DRAWER -->
   <div class="mobile-nav" id="mobileNav">
     <div class="mobile-nav__header">
-      <img src="assets/superlogo.png" alt="SuperHerooo" style="height: 44px;" />
+      <img src="assets/finallogo.png" alt="SuperHerooo" style="height: 44px;" />
       <button class="mobile-nav__close" id="mobileNavClose" aria-label="Close Menu">✕</button>
     </div>
     <nav class="mobile-nav__links">
@@ -75,7 +75,7 @@
             <div style="font-size: 1.8rem; margin-top: -4px;">📍</div>
             <div>
               <h4 style="color: var(--navy); margin-bottom: 4px; font-size: 1.1rem;">Headquarters</h4>
-              <p style="color: var(--text-mid); font-size: 1rem;">Superherooo private limited<br/>Kondapur, Hyderabad, India</p>
+              <p style="color: var(--text-mid); font-size: 1rem;">Superherooo pvt ltd<br/>Kondapur, Hyderabad, India</p>
             </div>
           </div>
         </div>
@@ -83,7 +83,7 @@
         <!-- Contact Form -->
         <div class="premium-form-card" style="margin: 0;">
           <h3 style="color: var(--navy); margin-bottom: 24px; font-size: 1.4rem;">Send a Message</h3>
-          <form id="contactForm" onsubmit="event.preventDefault(); document.getElementById('submitBtn').innerText='Sending...'; setTimeout(() => { document.getElementById('contactMsg').style.display='block'; document.getElementById('submitBtn').innerText='Send Message'; this.reset(); }, 800);">
+          <form id="contactForm">
             <div class="form-group">
               <label for="contactName">Your Name</label>
               <input type="text" id="contactName" class="form-control" placeholder="Rahul Sharma" required />
@@ -102,9 +102,7 @@
             </div>
             <button type="submit" class="btn btn-navy btn-full" id="submitBtn">Send Message</button>
             
-            <div id="contactMsg" style="display: none; margin-top: 16px; padding: 12px; background: #d1fae5; color: #065f46; border-radius: 6px; text-align: center; font-weight: 500;">
-              Thank you! Your message has been sent. We'll reply within 30 minutes.
-            </div>
+            <div id="contactMsg" style="display: none; margin-top: 16px; padding: 12px; border-radius: 6px; text-align: center; font-weight: 500;"></div>
           </form>
         </div>
 
@@ -117,7 +115,7 @@
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <a href="index.html" class="footer__logo"><img src="assets/superlogo.png" alt="SuperHerooo" style="height:48px; margin-bottom:16px;" /></a>
+          <a href="index.html" class="footer__logo"><img src="assets/finallogo.png" alt="SuperHerooo" style="height:48px; margin-bottom:16px;" /></a>
           <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
           <div class="footer__social" style="display: flex; gap: 16px;">
             <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank" aria-label="Facebook">
@@ -175,6 +173,53 @@
       mobileNav.classList.remove('open');
       mobileNavBackdrop.classList.remove('open');
     }
+
+    const API_BASE = 'https://142-93-208-120.sslip.io/api';
+
+    document.getElementById('contactForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const msgBox = document.getElementById('contactMsg');
+      
+      const payload = {
+        name: document.getElementById('contactName').value.trim(),
+        email: document.getElementById('contactEmail').value.trim(),
+        subject: document.getElementById('contactSubject').value.trim(),
+        message: document.getElementById('contactMessage').value.trim(),
+      };
+
+      btn.disabled = true;
+      btn.innerText = 'Sending...';
+
+      try {
+        const res = await fetch(`${API_BASE}/contact`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        
+        msgBox.style.display = 'block';
+        if (data.success) {
+          msgBox.style.background = '#d1fae5';
+          msgBox.style.color = '#065f46';
+          msgBox.innerText = data.message;
+          document.getElementById('contactForm').reset();
+        } else {
+          msgBox.style.background = '#fee2e2';
+          msgBox.style.color = '#991b1b';
+          msgBox.innerText = data.message || 'Failed to send message.';
+        }
+      } catch (err) {
+        msgBox.style.display = 'block';
+        msgBox.style.background = '#fee2e2';
+        msgBox.style.color = '#991b1b';
+        msgBox.innerText = 'Network error. Please try again.';
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Send Message';
+      }
+    });
   </script>
 </body>
 </html>

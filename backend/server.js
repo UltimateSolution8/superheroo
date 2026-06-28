@@ -6,6 +6,8 @@ const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/auth');
 const heroRoutes = require('./routes/hero');
+const adminRoutes = require('./routes/admin');
+const contactRoutes = require('./routes/contact');
 const supabase   = require('./db');
 
 const app  = express();
@@ -31,6 +33,8 @@ app.use('/api/auth/', authLimiter);
 // ── Routes ────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/hero', heroRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/contact', contactRoutes);
 
 // ── Health check ──────────────────────────────────────────
 app.get('/health', async (req, res) => {

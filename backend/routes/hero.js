@@ -37,7 +37,7 @@ router.post('/apply', heroRules, async (req, res) => {
   const {
     full_name, email, mobile, password, primary_service,
     secondary_services, experience_years, city, pincode, address,
-    aadhar_number, pan_number, bank_account, ifsc_code,
+    aadhar_number, pan_number,
     bio, languages, availability,
   } = req.body;
 
@@ -80,8 +80,6 @@ router.post('/apply', heroRules, async (req, res) => {
         address:             address            || null,
         aadhar_number:       aadhar_number      || null,
         pan_number:          pan_number         || null,
-        bank_account:        bank_account       || null,
-        ifsc_code:           ifsc_code          || null,
         bio:                 bio                || null,
         languages:           languages          || [],
         availability:        availability       || null,

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/png" href="assets/superlogo.png" />
+  <link rel="icon" type="image/png" href="assets/finallogo.png" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Become a Hero - Superherooo</title>
@@ -33,7 +33,7 @@
     <div class="wrap">
       <div class="header__inner">
         <a href="index.html" class="header__logo">
-          <img src="assets/superlogo.png" alt="SuperHerooo" style="height:44px; object-fit: contain;" />
+          <img src="assets/finallogo.png" alt="SuperHerooo" style="height:44px; object-fit: contain;" />
           <span class="header__brand" style="color: var(--navy); margin-left: 4px; font-size: 1.4rem;">Superherooo</span>
         </a>
         <nav class="header__nav">
@@ -51,7 +51,7 @@
   <!-- MOBILE NAV DRAWER -->
   <div class="mobile-nav" id="mobileNav">
     <div class="mobile-nav__header">
-      <img src="assets/superlogo.png" alt="SuperHerooo" style="height: 44px;" />
+      <img src="assets/finallogo.png" alt="SuperHerooo" style="height: 44px;" />
       <button class="mobile-nav__close" id="mobileNavClose" aria-label="Close Menu">✕</button>
     </div>
     <nav class="mobile-nav__links">
@@ -116,51 +116,7 @@
             </div>
           </div>
 
-          <!-- ── SERVICE DETAILS ───────────────────────── -->
-          <div class="section-divider">
-            <h3>🛠️ Skills & Service</h3>
-            <p>Tell us what you specialise in</p>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="primary_service">Primary Service *</label>
-              <select id="primary_service" class="form-control" required>
-                <option value="">Select primary skill…</option>
-                <option>Premium Cleaning</option>
-                <option>Electrical Repairs</option>
-                <option>Plumbing</option>
-                <option>Carpentry & Furniture</option>
-                <option>Painting</option>
-                <option>AC Repair & Service</option>
-                <option>Pest Control</option>
-                <option>Appliance Repair</option>
-                <option>Laundry & Ironing</option>
-                <option>Security Guard</option>
-                <option>Driver / Chauffeur</option>
-                <option>Gardening</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="experience_years">Years of Experience <span class="optional-label">(optional)</span></label>
-              <input type="number" id="experience_years" class="form-control" placeholder="e.g. 5" min="0" max="50" />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Secondary Services <span class="optional-label">(optional — select all that apply)</span></label>
-            <div class="checkbox-group" id="secondaryServices">
-              <label><input type="checkbox" value="Cleaning" /><span>Cleaning</span></label>
-              <label><input type="checkbox" value="Electrical" /><span>Electrical</span></label>
-              <label><input type="checkbox" value="Plumbing" /><span>Plumbing</span></label>
-              <label><input type="checkbox" value="Carpentry" /><span>Carpentry</span></label>
-              <label><input type="checkbox" value="Painting" /><span>Painting</span></label>
-              <label><input type="checkbox" value="AC Repair" /><span>AC Repair</span></label>
-              <label><input type="checkbox" value="Appliance Repair" /><span>Appliance Repair</span></label>
-              <label><input type="checkbox" value="Pest Control" /><span>Pest Control</span></label>
-            </div>
-          </div>
+          <!-- Skills & Services section removed -->
 
           <div class="form-group">
             <label for="availability">Preferred Availability <span class="optional-label">(optional)</span></label>
@@ -236,7 +192,7 @@
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <a href="index.html" class="footer__logo"><img src="assets/superlogo.png" alt="SuperHerooo" style="height:48px; margin-bottom:16px;" /></a>
+          <a href="index.html" class="footer__logo"><img src="assets/finallogo.png" alt="SuperHerooo" style="height:48px; margin-bottom:16px;" /></a>
           <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
           <div class="footer__social" style="display: flex; gap: 16px;">
             <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank" aria-label="Facebook">
@@ -335,11 +291,6 @@
         return showMsg('error', 'Enter a valid PAN number (e.g. ABCDE1234F).');
       }
 
-      // Collect secondary services
-      const secondaryServices = Array.from(
-        document.querySelectorAll('#secondaryServices input:checked')
-      ).map(cb => cb.value);
-
       // Collect languages
       const langStr = document.getElementById('languages').value.trim();
       const languages = langStr ? langStr.split(',').map(l => l.trim()).filter(Boolean) : [];
@@ -349,10 +300,10 @@
         email:              document.getElementById('email').value.trim(),
         mobile,
         password:           document.getElementById('password').value,
-        primary_service:    document.getElementById('primary_service').value,
+        primary_service:    'General Superhero',
         city:               document.getElementById('city').value,
-        secondary_services: secondaryServices,
-        experience_years:   document.getElementById('experience_years').value || null,
+        secondary_services: [],
+        experience_years:   null,
         availability:       document.getElementById('availability').value || null,
         languages,
         bio:                document.getElementById('bio').value.trim() || null,

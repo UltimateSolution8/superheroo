@@ -41,6 +41,16 @@ CREATE TABLE IF NOT EXISTS professionals (
   updated_at       TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- CONTACT MESSAGES table
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id           SERIAL PRIMARY KEY,
+  name         VARCHAR(120) NOT NULL,
+  email        VARCHAR(255) NOT NULL,
+  subject      VARCHAR(200),
+  message      TEXT NOT NULL,
+  created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Update trigger for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
