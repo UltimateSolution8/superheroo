@@ -9,30 +9,45 @@
     }
   }
 
-  // Chat History Array
+  // Load persistent Session History
   let chatHistory = [];
+  try {
+    const saved = sessionStorage.getItem('superherooo_ai_chat_history');
+    if (saved) chatHistory = JSON.parse(saved);
+  } catch (e) {
+    chatHistory = [];
+  }
+
+  function saveHistory() {
+    try {
+      sessionStorage.setItem('superherooo_ai_chat_history', JSON.stringify(chatHistory.slice(-20)));
+    } catch (e) {}
+  }
 
   // Inject HTML Shell into Page
   function injectChatbotShell() {
-    if (document.getElementById('hb-chat-fab')) return; // Avoid duplicate injection
+    if (document.getElementById('hb-chat-fab')) return;
 
     const fab = document.createElement('button');
     fab.id = 'hb-chat-fab';
-    fab.setAttribute('aria-label', 'Open AI Assistant');
-    fab.innerHTML = '🤖<span id="hb-chat-badge">1</span>';
+    fab.setAttribute('aria-label', 'Open Superherooo AI Assistant');
+    fab.innerHTML = '⚡<span id="hb-chat-badge">1</span>';
 
     const win = document.createElement('div');
     win.id = 'hb-chat-window';
     win.innerHTML = `
       <div class="hb-header">
         <div class="hb-header-title">
-          <div class="hb-avatar">🤖</div>
+          <div class="hb-avatar">⚡</div>
           <div>
-            <h4 class="hb-bot-name">HeroBot AI</h4>
-            <div class="hb-status-dot"><span>●</span> Online • Powered by Kimi K3</div>
+            <h4 class="hb-bot-name">Superherooo AI</h4>
+            <div class="hb-status-dot"><span>●</span> Online • Powered by Superherooo AI</div>
           </div>
         </div>
-        <button class="hb-close-btn" id="hb-chat-close">✕</button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="hb-close-btn" id="hb-chat-clear" title="Clear Conversation">🧹</button>
+          <button class="hb-close-btn" id="hb-chat-close" title="Close Chat">✕</button>
+        </div>
       </div>
 
       <div class="hb-messages" id="hb-messages"></div>
@@ -45,7 +60,7 @@
       </div>
 
       <form class="hb-input-area" id="hb-chat-form">
-        <input type="text" id="hb-chat-input" class="hb-input" placeholder="Ask HeroBot anything..." required autocomplete="off" />
+        <input type="text" id="hb-chat-input" class="hb-input" placeholder="Ask Superherooo AI anything..." required autocomplete="off" />
         <button type="submit" class="hb-send-btn">Send</button>
       </form>
     `;
@@ -97,6 +112,22 @@
       msgDiv.textContent = text;
     } else {
       msgDiv.innerHTML = parseMarkdown(text);
+
+      // Add Text-To-Speech (TTS) button for bot messages
+      if ('speechSynthesis' in window) {
+        const ttsBtn = document.createElement('button');
+        ttsBtn.className = 'hb-tts-btn';
+        ttsBtn.innerHTML = '🔊';
+        ttsBtn.title = 'Listen to response';
+        ttsBtn.addEventListener('click', () => {
+          const plainText = text.replace(/\[(.*?)\]\((.*?)\)/g, '$1').replace(/[*#]/g, '');
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(plainText);
+          utterance.rate = 1.0;
+          window.speechSynthesis.speak(utterance);
+        });
+        msgDiv.appendChild(ttsBtn);
+      }
     }
 
     container.appendChild(msgDiv);
@@ -122,7 +153,7 @@
   function getLocalAnswer(query) {
     const q = (query || '').trim().toLowerCase();
     if (q === 'hi' || q === 'hello' || q === 'hey' || q === 'namaste' || q.startsWith('hi ') || q.startsWith('hello ') || q.startsWith('hey ') || q.includes('good morning') || q.includes('good afternoon') || q.includes('how are you')) {
-      return 'Hello! 👋 Warm greetings from **Superherooo**!\n\nI am HeroBot, your AI Assistant. How can I help you today?\n\n• Looking to post a task? Click [⚡ Post a Task](/login.html)\n• Want to earn as a Hero? Click [👥 Become a Hero](/become-a-hero.html)\n• Explore services? Click [📜 View Services](/services.html)';
+      return 'Hello! 👋 Warm greetings from **Superherooo AI**!\n\nI am your intelligent AI Assistant. How can I assist you today?\n\n• Looking to post a task? Click [⚡ Post a Task](/login.html)\n• Want to earn as a Hero? Click [👥 Become a Hero](/become-a-hero.html)\n• Explore services? Click [📜 View Services](/services.html)';
     }
     if (q.includes('hero') || q.includes('register') || q.includes('earn') || q.includes('join') || q.includes('work') || q.includes('job')) {
       return 'To register as a **Hero** and start earning money:\n\n1. Visit our [👥 Become a Hero Page](/become-a-hero.html).\n2. Fill out your basic profile (Name, Phone & City).\n3. Complete your live selfie & Aadhaar KYC verification.\n\nOnce verified, you will receive nearby task alerts and keep **100% of your task earnings**!';
@@ -136,7 +167,7 @@
     if (q.includes('support') || q.includes('contact') || q.includes('help') || q.includes('agent')) {
       return 'Need assistance from a human support agent?\n\nYou can reach our 24/7 Support Team directly on our [📞 Contact Support Page](/contact.html) or open a ticket in your account dashboard!';
     }
-    return 'Superherooo connects you with verified local service heroes in minutes. You can [⚡ Post a Task](/login.html), explore our [📜 Services](/services.html), or [👥 Become a Hero](/become-a-hero.html) to start earning!';
+    return 'Superherooo AI connects you with verified local service heroes in minutes. You can [⚡ Post a Task](/login.html), explore our [📜 Services](/services.html), or [👥 Become a Hero](/become-a-hero.html) to start earning!';
   }
 
   async function sendMessage(userText) {
@@ -168,12 +199,21 @@
         appendMessage('bot', data.reply);
         chatHistory.push({ role: 'user', content: userText });
         chatHistory.push({ role: 'assistant', content: data.reply });
+        saveHistory();
       } else {
-        appendMessage('bot', getLocalAnswer(userText));
+        const fallback = getLocalAnswer(userText);
+        appendMessage('bot', fallback);
+        chatHistory.push({ role: 'user', content: userText });
+        chatHistory.push({ role: 'assistant', content: fallback });
+        saveHistory();
       }
     } catch (err) {
       hideTypingIndicator();
-      appendMessage('bot', getLocalAnswer(userText));
+      const fallback = getLocalAnswer(userText);
+      appendMessage('bot', fallback);
+      chatHistory.push({ role: 'user', content: userText });
+      chatHistory.push({ role: 'assistant', content: fallback });
+      saveHistory();
     }
   }
 
@@ -184,24 +224,43 @@
     const fab = document.getElementById('hb-chat-fab');
     const win = document.getElementById('hb-chat-window');
     const closeBtn = document.getElementById('hb-chat-close');
+    const clearBtn = document.getElementById('hb-chat-clear');
     const form = document.getElementById('hb-chat-form');
     const input = document.getElementById('hb-chat-input');
     const pills = document.getElementById('hb-pills');
 
     if (!fab || !win) return;
 
+    // Render stored session history
+    const container = document.getElementById('hb-messages');
+    if (container && container.children.length === 0) {
+      if (chatHistory.length > 0) {
+        chatHistory.forEach(item => {
+          appendMessage(item.role === 'assistant' ? 'bot' : 'user', item.content);
+        });
+      } else {
+        appendMessage('bot', 'Welcome to **Superherooo**! ⚡ I am **Superherooo AI**, your intelligent assistant.\n\nHow can I help you today? You can ask about our service directory, task pricing, or becoming a verified Hero!');
+      }
+    }
+
     fab.addEventListener('click', () => {
       win.classList.toggle('hb-active');
       const badge = document.getElementById('hb-chat-badge');
       if (badge) badge.remove();
-      if (win.classList.contains('hb-active') && document.getElementById('hb-messages').children.length === 0) {
-        appendMessage('bot', 'Welcome to **Superherooo**! ⚡ I am HeroBot, your AI Assistant powered by Kimi K3.\n\nHow can I assist you today? You can ask about our service directory, task pricing, or becoming a verified Hero!');
-      }
     });
 
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
         win.classList.remove('hb-active');
+      });
+    }
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        chatHistory = [];
+        sessionStorage.removeItem('superherooo_ai_chat_history');
+        if (container) container.innerHTML = '';
+        appendMessage('bot', 'Conversation cleared! 👋 I am **Superherooo AI**. How can I help you today?');
       });
     }
 

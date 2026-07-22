@@ -187,6 +187,21 @@
 .hb-msg-bot ul { margin: 6px 0; padding-left: 18px; }
 .hb-msg-bot a { color: var(--hb-amber); text-decoration: underline; }
 
+.hb-tts-btn {
+  background: transparent;
+  border: none;
+  color: var(--hb-amber);
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 6px;
+  display: block;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.hb-tts-btn:hover {
+  opacity: 1;
+}
+
 /* Quick Actions Pills */
 .hb-pills {
   padding: 8px 16px;
