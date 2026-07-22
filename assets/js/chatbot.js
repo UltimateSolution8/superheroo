@@ -120,17 +120,23 @@
   }
 
   function getLocalAnswer(query) {
-    const q = (query || '').toLowerCase();
-    if (q.includes('hero') || q.includes('register') || q.includes('earn') || q.includes('join') || q.includes('work')) {
-      return 'To register as a **Hero** and start earning money:\n\n1. Visit our [Become a Hero Page](/become-a-hero.html).\n2. Fill out your basic details (Name, Phone & City).\n3. Complete your live selfie & Aadhaar KYC verification.\n\nOnce verified, you will immediately start receiving nearby task alerts and keep **100% of your task earnings**!';
+    const q = (query || '').trim().toLowerCase();
+    if (q === 'hi' || q === 'hello' || q === 'hey' || q === 'namaste' || q.startsWith('hi ') || q.startsWith('hello ') || q.startsWith('hey ') || q.includes('good morning') || q.includes('good afternoon') || q.includes('how are you')) {
+      return 'Hello! 👋 Warm greetings from **Superherooo**!\n\nI am HeroBot, your AI Assistant. How can I help you today?\n\n• Looking to post a task? Click [⚡ Post a Task](/login.html)\n• Want to earn as a Hero? Click [👥 Become a Hero](/become-a-hero.html)\n• Explore services? Click [📜 View Services](/services.html)';
     }
-    if (q.includes('book') || q.includes('errand') || q.includes('queue') || q.includes('clean') || q.includes('service')) {
-      return 'To book a local helper:\n\n1. Click [Log In / Sign Up](/login.html) or open our mobile app.\n2. Post your task (e.g., Grocery delivery, queue standing, moving boxes, basic house help).\n3. Verified local Heroes near you will be dispatched within minutes!';
+    if (q.includes('hero') || q.includes('register') || q.includes('earn') || q.includes('join') || q.includes('work') || q.includes('job')) {
+      return 'To register as a **Hero** and start earning money:\n\n1. Visit our [👥 Become a Hero Page](/become-a-hero.html).\n2. Fill out your basic profile (Name, Phone & City).\n3. Complete your live selfie & Aadhaar KYC verification.\n\nOnce verified, you will receive nearby task alerts and keep **100% of your task earnings**!';
     }
-    if (q.includes('illegal') || q.includes('policy') || q.includes('prohibited') || q.includes('restricted')) {
-      return 'Superherooo strictly prohibits:\n- Illegal drugs, weapons, alcohol delivery without license.\n- Adult/escort services or harassment.\n- SIM cloning, CCTV tampering, theft, or exam cheating.\n\nWe focus strictly on safe, everyday no-skill help & errands!';
+    if (q.includes('book') || q.includes('errand') || q.includes('queue') || q.includes('clean') || q.includes('service') || q.includes('post') || q.includes('task')) {
+      return 'To book a verified local helper:\n\n1. Click [⚡ Log In / Post a Task](/login.html) or open our mobile app.\n2. Describe your request (Grocery pickup, queue standing, moving boxes, balcony cleaning).\n3. Verified Heroes near you will be dispatched within minutes!\n\nCheck out our full [📜 Services Directory](/services.html).';
     }
-    return 'Superherooo connects you with verified local service heroes in minutes. You can [Post a Task](/login.html) or [Become a Hero](/become-a-hero.html) to start earning!';
+    if (q.includes('illegal') || q.includes('policy') || q.includes('prohibited') || q.includes('restricted') || q.includes('safety')) {
+      return 'Superherooo strictly prohibits:\n- Illegal drugs, weapons, alcohol delivery without license.\n- Adult/escort services or harassment.\n- SIM cloning, CCTV tampering, theft, or exam cheating.\n\nWe focus strictly on safe, everyday no-skill help & errands! Read our [🛡️ Insurance Policy](/insurance.html) & [📋 Terms of Service](/terms.html).';
+    }
+    if (q.includes('support') || q.includes('contact') || q.includes('help') || q.includes('agent')) {
+      return 'Need assistance from a human support agent?\n\nYou can reach our 24/7 Support Team directly on our [📞 Contact Support Page](/contact.html) or open a ticket in your account dashboard!';
+    }
+    return 'Superherooo connects you with verified local service heroes in minutes. You can [⚡ Post a Task](/login.html), explore our [📜 Services](/services.html), or [👥 Become a Hero](/become-a-hero.html) to start earning!';
   }
 
   async function sendMessage(userText) {
