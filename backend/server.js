@@ -49,6 +49,10 @@ app.get('/health', async (req, res) => {
   }
 });
 
+app.get('/googlec610d08977be8646.html', (req, res) => {
+  res.send('google-site-verification: googlec610d08977be8646.html');
+});
+
 app.get('/', (req, res) => {
   res.json({ message: 'Superherooo API v1.0', status: 'running' });
 });
