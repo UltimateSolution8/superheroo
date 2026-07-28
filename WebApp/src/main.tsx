@@ -4,8 +4,48 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate, useParams, u
 import { io, type Socket } from 'socket.io-client';
 import { api, searchLocations, resolveLocationCoords, reverseGeocode, type LocationSuggestion } from './api';
 import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
+import {
+  Package,
+  ShoppingCart,
+  Home,
+  Users,
+  HeartHandshake,
+  Ticket,
+  ShieldCheck,
+  Sparkles,
+  Pin,
+  FileText,
+  Clock,
+  Calendar,
+  Mic,
+  Zap,
+  Banknote,
+  MapPin,
+  CheckCircle2,
+  AlertTriangle,
+  Mail,
+  PlusCircle,
+  ListOrdered,
+  User,
+  LogOut,
+  ChevronRight,
+  Briefcase,
+  Search,
+  ArrowRight,
+  Lock,
+  Phone,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  Navigation,
+  Globe,
+  Tag,
+  Camera,
+  MessageCircle,
+} from 'lucide-react';
 import './styles.css';
 import logo from "../public/superlogo.png";
+import superhero from "../public/hero.jpeg"
 
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://realtime.mysuperhero.xyz').replace(/\/+$/, '');
 const showDevOtp = String(import.meta.env.VITE_DEV_SHOW_OTP || 'false').toLowerCase() === 'true';
@@ -269,7 +309,7 @@ function VoiceMicInput({ onTranscript }: { onTranscript: (text: string) => void 
       title="Dictate with Voice"
       aria-label="Dictate text with voice"
     >
-      🎙️
+      <Mic size={16} />
     </button>
   );
 }
@@ -551,15 +591,15 @@ function MobileBottomNav() {
   return (
     <div className="mobile-bottom-nav">
       <Link className={`mobile-nav-item ${location.pathname === dashboardPath ? 'active' : ''}`} to={dashboardPath}>
-        <span className="icon">⚡</span>
+        <span className="icon"><Zap size={20} /></span>
         <span>Dashboard</span>
       </Link>
       <Link className={`mobile-nav-item ${location.pathname.includes('/profile') ? 'active' : ''}`} to={profilePath}>
-        <span className="icon">👤</span>
+        <span className="icon"><User size={20} /></span>
         <span>Profile</span>
       </Link>
       <a className="mobile-nav-item" href="/">
-        <span className="icon">🌐</span>
+        <span className="icon"><Globe size={20} /></span>
         <span>Website</span>
       </a>
     </div>
@@ -581,30 +621,44 @@ function Shell({ children }: { children: React.ReactNode }) {
       <OfflineBanner />
       <header className="topbar">
         <Link className="brand" to="/">
-          <img src={logo} alt="Superherooo" />
+          <img
+            src={`${import.meta.env.BASE_URL}superlogo.png`}
+            alt="Superherooo"
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              if (!target.dataset.tried) {
+                target.dataset.tried = 'true';
+                target.src = 'superlogo.png';
+              }
+            }}
+          />
           <span>Superherooo</span>
         </Link>
         <nav aria-label="Main Navigation">
           {user?.role === 'BUYER' && (
             <Link className={`nav-link ${location.pathname === '/citizen' ? 'active' : ''}`} to="/citizen">
-              Citizen
+              <Zap size={16} /> Citizen
             </Link>
           )}
           {user?.role === 'HELPER' && (
             <Link className={`nav-link ${location.pathname === '/partner' ? 'active' : ''}`} to="/partner">
-              Partner
+              <Briefcase size={16} /> Partner
             </Link>
           )}
           {user && (
             <Link className={`nav-link ${location.pathname.includes('/profile') ? 'active' : ''}`} to={getProfileLink()}>
-              👤 Profile
+              <User size={16} /> Profile
             </Link>
           )}
-          <a className="nav-link" href="/">Website</a>
+          <a className="nav-link" href="/"><Globe size={16} /> Website</a>
           {user ? (
-            <button className="link-button" onClick={logout}>Sign out</button>
+            <button className="link-button" onClick={logout} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <LogOut size={16} /> Sign out
+            </button>
           ) : (
-            <Link className="nav-link active" to="/login">Sign in</Link>
+            <Link className="nav-link active" to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Lock size={16} /> Sign in
+            </Link>
           )}
         </nav>
       </header>
@@ -687,9 +741,9 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           <h1>{mode === 'signup' ? 'Create your account' : 'Sign in to Superherooo'}</h1>
           <p>Book urgent non-skilled help or accept nearby jobs directly from your browser in minutes.</p>
           <div className="trust-row">
-            <span>🛡️ OTP Verified</span>
-            <span>📍 Realtime Location</span>
-            <span>💳 Pay After Service</span>
+            <span><ShieldCheck size={14} style={{ color: 'var(--teal)' }} /> OTP Verified</span>
+            <span><MapPin size={14} style={{ color: 'var(--blue)' }} /> Realtime Location</span>
+            <span><Banknote size={14} style={{ color: 'var(--green)' }} /> Pay After Service</span>
           </div>
           <div className="app-visual" aria-hidden="true" style={{ marginTop: '24px' }}>
             <img
@@ -706,12 +760,12 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             />
             <div className="visual-card visual-card-main">
               <span>Live dispatch</span>
-              <strong>⚡ 4 min avg</strong>
+              <strong><Zap size={16} style={{ color: 'var(--amber)' }} /> 4 min avg</strong>
               <p>Nearby partner assigned</p>
             </div>
             <div className="visual-card visual-card-float">
               <span>Security</span>
-              <strong>📸 Photo + OTP Verified</strong>
+              <strong><Camera size={14} style={{ color: 'var(--blue)' }} /> Photo + OTP Verified</strong>
             </div>
           </div>
         </section>
@@ -722,11 +776,11 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           </div>
 
           <div className="segmented">
-            <button type="button" className={role === 'BUYER' ? 'active' : ''} onClick={() => setRole('BUYER')}>
-              👤 Citizen
+            <button type="button" className={role === 'BUYER' ? 'active' : ''} onClick={() => setRole('BUYER')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <User size={15} /> Citizen
             </button>
-            <button type="button" className={role === 'HELPER' ? 'active' : ''} onClick={() => setRole('HELPER')}>
-              ⚡ Partner
+            <button type="button" className={role === 'HELPER' ? 'active' : ''} onClick={() => setRole('HELPER')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <Briefcase size={15} /> Partner
             </button>
           </div>
 
@@ -734,7 +788,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             <label className="input-group">
               <span className="label-text">Full Name</span>
               <div className="input-icon-wrapper">
-                <span className="input-icon">👤</span>
+                <span className="input-icon"><User size={18} /></span>
                 <input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
@@ -747,7 +801,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           <label className="input-group">
             <span className="label-text">Email Address</span>
             <div className="input-icon-wrapper">
-              <span className="input-icon">✉️</span>
+              <span className="input-icon"><Mail size={18} /></span>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -762,7 +816,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           <label className="input-group">
             <span className="label-text">Password</span>
             <div className="input-icon-wrapper">
-              <span className="input-icon">🔒</span>
+              <span className="input-icon"><Lock size={18} /></span>
               <input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -778,7 +832,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 tabIndex={-1}
                 aria-label="Toggle password visibility"
               >
-                {showPassword ? '👁️' : '🙈'}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </label>
@@ -787,7 +841,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             <label className="input-group">
               <span className="label-text">Mobile Phone</span>
               <div className="input-icon-wrapper">
-                <span className="input-icon">📱</span>
+                <span className="input-icon"><Phone size={18} /></span>
                 <input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -832,6 +886,7 @@ function EmailVerificationCard() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   if (!user?.email || user.emailVerified) return null;
 
@@ -853,7 +908,12 @@ function EmailVerificationCard() {
   };
 
   const verify = async () => {
+    if (!otp.trim()) {
+      showToast('Please enter 6-digit OTP first.', 'error');
+      return;
+    }
     setError(null);
+    setVerifying(true);
     try {
       const auth = await api.verifyEmailOtp(user.email!, otp);
       applyAuth(auth);
@@ -863,31 +923,68 @@ function EmailVerificationCard() {
       const msg = err instanceof Error ? err.message : 'Invalid OTP.';
       setError(msg);
       showToast(msg, 'error');
+    } finally {
+      setVerifying(false);
     }
   };
 
   return (
-    <div className="panel warning-panel">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{ fontSize: '1.4rem' }}>✉️</span>
-        <div>
-          <h3 style={{ margin: 0 }}>Verify your email address</h3>
-          <p className="muted" style={{ margin: '2px 0 0 0', fontSize: '0.88rem' }}>
-            Email verification helps secure your bookings and partner payouts.
-          </p>
+    <section className="email-verify-card">
+      <div className="email-verify-header">
+        <div className="email-verify-left">
+          <div className="email-verify-icon-badge"><Mail size={22} /></div>
+          <div className="email-verify-titles">
+            <h3>Verify Your Email Address</h3>
+            <p>
+              Verification unlocks secure bookings and instant notifications for <strong>{user.email}</strong>.
+            </p>
+          </div>
         </div>
+        <span className="email-verify-status-badge"><AlertTriangle size={13} /> Action Required</span>
       </div>
-      <div className="inline-form" style={{ marginTop: '6px' }}>
-        <button className="secondary" type="button" disabled={sending} onClick={send}>
-          {sending ? 'Sending...' : 'Send OTP'}
+
+      <div className="email-verify-form-row">
+        <button className="secondary" type="button" disabled={sending} onClick={send} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          {sending ? (
+            <>
+              <span className="spinner" style={{ borderColor: 'rgba(0,0,0,0.2)', borderTopColor: 'var(--navy)' }} /> Sending...
+            </>
+          ) : (
+            <><Mail size={16} /> Send OTP</>
+          )}
         </button>
-        <input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter 6-digit OTP" aria-label="Email verification OTP" />
-        <button className="primary" type="button" onClick={verify}>Verify Email</button>
+
+        <div className="email-otp-input-wrapper">
+          <span className="email-otp-input-icon"><Lock size={16} /></span>
+          <input
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            placeholder="Enter 6-digit OTP"
+            maxLength={6}
+            aria-label="Email verification OTP"
+          />
+        </div>
+
+        <button className="accent-btn" type="button" disabled={verifying || !otp.trim()} onClick={verify} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          {verifying ? (
+            <>
+              <span className="spinner" /> Verifying...
+            </>
+          ) : (
+            <><CheckCircle2 size={16} /> Verify Email</>
+          )}
+        </button>
       </div>
-      {devOtp && <div className="notice">Dev OTP: <strong>{devOtp}</strong></div>}
+
+      {devOtp && (
+        <div className="dev-otp-badge">
+          <span>🛠️ Dev Mode Active OTP:</span>
+          <strong>{devOtp}</strong>
+        </div>
+      )}
       {message && <div className="notice success">{message}</div>}
       {error && <div className="notice error">{error}</div>}
-    </div>
+    </section>
   );
 }
 
@@ -927,15 +1024,15 @@ function CitizenDashboard() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeoutRef = useRef<any>(null);
 
-  const nonSkilledChips = [
-    '📦 Package Pickup & Drop',
-    '🛒 Grocery & Errands Shopping',
-    '📦 House Help & Moving Heavy Items',
-    '🧍 Queue Waiting / Spot Holding',
-    '🐕 Pet Walking & Care',
-    '🎟️ Ticket / Counter Booking',
-    '👴 Senior Citizen Assistance',
-    '🧹 Basic House & Yard Cleanup',
+  const PRESET_OPTIONS = [
+    { id: 'package', title: 'Package Pickup & Drop', icon: Package },
+    { id: 'grocery', title: 'Grocery & Errands Shopping', icon: ShoppingCart },
+    { id: 'househelp', title: 'House Help & Moving Heavy Items', icon: Home },
+    { id: 'queue', title: 'Queue Waiting / Spot Holding', icon: Users },
+    { id: 'pet', title: 'Pet Walking & Care', icon: HeartHandshake },
+    { id: 'ticket', title: 'Ticket / Counter Booking', icon: Ticket },
+    { id: 'senior', title: 'Senior Citizen Assistance', icon: ShieldCheck },
+    { id: 'cleanup', title: 'Basic House & Yard Cleanup', icon: Sparkles },
   ];
 
   const load = useCallback(async () => {
@@ -1074,13 +1171,23 @@ function CitizenDashboard() {
             <h1>Book trusted non-skilled help</h1>
             <p>Verified partners for everyday errands, heavy moving, queue waiting, and house assistance.</p>
             <div className="hero-points">
-              <span>⚡ Live Realtime Matching</span>
-              <span>📸 Photo & OTP Verified</span>
-              <span>💵 Pay After Completion</span>
+              <span><Zap size={15} style={{ color: 'var(--amber)' }} /> Live Realtime Matching</span>
+              <span><ShieldCheck size={15} style={{ color: 'var(--teal)' }} /> Photo & OTP Verified</span>
+              <span><Banknote size={15} style={{ color: 'var(--green)' }} /> Pay After Completion</span>
             </div>
           </div>
           <div className="hero-graphic">
-            <img src="/assets/hero-professional.png" alt="Superherooo Professional" />
+            <img
+              src={`${import.meta.env.BASE_URL}hero.jpeg`}
+              alt="Superherooo Professional"
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                if (!target.dataset.tried) {
+                  target.dataset.tried = 'true';
+                  target.src = 'hero.jpeg';
+                }
+              }}
+            />
             <div className="metric">
               <strong>{tasks.filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.status)).length}</strong>
               <span>active bookings</span>
@@ -1089,23 +1196,39 @@ function CitizenDashboard() {
         </section>
         <div className="grid two">
           <form className="panel task-form" onSubmit={create}>
-            <h2>Create Task</h2>
-            <div className="preset-chips">
-              {nonSkilledChips.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`preset-chip ${form.title === t ? 'active' : ''}`}
-                  onClick={() => setForm({ ...form, title: t })}
-                >
-                  {t}
-                </button>
-              ))}
+            <div className="task-form-header">
+              <div>
+                <h2>Create New Task</h2>
+                <p>Select a quick preset or customize your task instructions below.</p>
+              </div>
+              <span className="task-form-badge"><Zap size={14} /> Instant Dispatch</span>
             </div>
 
-            <label>
-              Task Title
-              <div className="mic-input-wrapper">
+            <div className="form-section">
+              <span className="section-label"><Zap size={14} style={{ color: 'var(--amber)' }} /> Quick Presets</span>
+              <div className="preset-chips">
+                {PRESET_OPTIONS.map((item) => {
+                  const IconComp = item.icon;
+                  const isActive = form.title === item.title;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`preset-chip ${isActive ? 'active' : ''}`}
+                      onClick={() => setForm({ ...form, title: item.title })}
+                    >
+                      <IconComp className="chip-icon" size={15} />
+                      <span>{item.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <label className="input-group">
+              <span className="label-text">Task Title</span>
+              <div className="input-icon-wrapper mic-input-wrapper">
+                <span className="input-icon"><Pin size={18} /></span>
                 <input
                   required
                   value={form.title}
@@ -1117,14 +1240,15 @@ function CitizenDashboard() {
               </div>
             </label>
 
-            <label>
-              Description & Instructions
-              <div className="mic-input-wrapper">
+            <label className="input-group">
+              <span className="label-text">Description & Instructions</span>
+              <div className="input-icon-wrapper textarea-wrapper mic-input-wrapper">
+                <span className="input-icon"><FileText size={18} /></span>
                 <textarea
                   required
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="Provide clear instructions for the partner..."
+                  placeholder="Provide clear step-by-step instructions for the partner..."
                   aria-label="Task Description"
                 />
                 <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, description: f.description ? `${f.description} ${text}` : text }))} />
@@ -1132,8 +1256,8 @@ function CitizenDashboard() {
             </label>
 
             <div className="grid two compact">
-              <label>
-                Duration (minutes)
+              <label className="input-group">
+                <span className="label-text" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Clock size={15} /> Duration (minutes)</span>
                 <input
                   type="number"
                   min="1"
@@ -1144,25 +1268,31 @@ function CitizenDashboard() {
                 />
               </label>
 
-              <label>
-                Schedule Later (Optional)
-                <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} aria-label="Schedule datetime" />
+              <label className="input-group">
+                <span className="label-text" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Calendar size={15} /> Schedule Later (Optional)</span>
+                <input
+                  type="datetime-local"
+                  value={form.scheduledAt}
+                  onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
+                  aria-label="Schedule datetime"
+                />
               </label>
             </div>
 
             <div className="price-preview-box">
               <div className="price-preview-left">
                 <span className="strike-price">₹{standardPrice}</span>
-                <span className="discount-badge">50% OFF</span>
+                <span className="discount-badge"><Tag size={13} /> 50% OFF SPECIAL</span>
               </div>
-              <span className="final-price">₹{discountPrice}</span>
+              <div className="price-preview-right">
+                <span className="price-sublabel">Total Payable:</span>
+                <span className="final-price"> ₹{discountPrice}</span>
+              </div>
             </div>
 
             {savedAddresses.length > 0 && (
-              <div>
-                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>
-                  Saved Addresses:
-                </span>
+              <div className="form-section">
+                <span className="section-label"><Home size={14} /> Saved Address Shortcuts</span>
                 <div className="saved-addresses-row">
                   {savedAddresses.map((sa) => (
                     <button
@@ -1178,32 +1308,36 @@ function CitizenDashboard() {
                           lng: String(sa.lng),
                         }))
                       }
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     >
-                      {sa.label === 'Home' ? '🏡 Home' : sa.label === 'Work' ? '💼 Work' : '📍 ' + sa.label}: {sa.addressText.substring(0, 24)}...
+                      {sa.label === 'Home' ? <Home size={14} /> : sa.label === 'Work' ? <Briefcase size={14} /> : <MapPin size={14} />} {sa.label}: {sa.addressText.substring(0, 24)}...
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            <div style={{ position: 'relative' }}>
-              <label>
-                Address
-                <input
-                  required
-                  value={form.addressText}
-                  onChange={(e) => handleAddressChange(e.target.value)}
-                  placeholder="Full address (Search autocomplete)"
-                  autoComplete="off"
-                  aria-label="Full Address"
-                />
+            <div className="location-search-container" style={{ position: 'relative' }}>
+              <label className="input-group">
+                <span className="label-text">Pickup / Service Address</span>
+                <div className="input-icon-wrapper">
+                  <span className="input-icon"><MapPin size={18} /></span>
+                  <input
+                    required
+                    value={form.addressText}
+                    onChange={(e) => handleAddressChange(e.target.value)}
+                    placeholder="Full address (Search autocomplete...)"
+                    autoComplete="off"
+                    aria-label="Full Address"
+                  />
+                </div>
               </label>
               {showSuggestions && suggestions.length > 0 && (
                 <ul className="suggestions-dropdown">
                   {suggestions.map((sug, idx) => (
-                    <li key={idx} onClick={() => selectSuggestion(sug)}>
+                    <li key={idx} onClick={() => selectSuggestion(sug)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span className="suggestion-icon">
-                        {sug.provider === 'ola' ? '🚖' : sug.provider === 'google' ? '📍' : '🗺️'}
+                        <MapPin size={16} />
                       </span>
                       {sug.description}
                     </li>
@@ -1212,21 +1346,48 @@ function CitizenDashboard() {
               )}
             </div>
 
-            <label>
-              Landmark
-              <input value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} placeholder="Nearby landmark (optional)" aria-label="Landmark" />
+            <label className="input-group">
+              <span className="label-text">Building / Landmark (Optional)</span>
+              <div className="input-icon-wrapper">
+                <span className="input-icon"><Home size={18} /></span>
+                <input
+                  value={form.landmark}
+                  onChange={(e) => setForm({ ...form, landmark: e.target.value })}
+                  placeholder="e.g. Near Metro Station, Gate 2, 3rd Floor"
+                  aria-label="Landmark"
+                />
+              </div>
             </label>
 
-            <div className="grid three compact">
-              <button type="button" className="secondary" onClick={fillLocation}>📍 Current Location</button>
-              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Home')}>Save Home</button>
-              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Work')}>Save Work</button>
+            <div className="address-actions-grid">
+              <button type="button" className="secondary-action-btn" onClick={fillLocation} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Navigation size={14} /> Detect Location
+              </button>
+              <button type="button" className="secondary-action-btn" onClick={() => saveCurrentAddress('Home')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Home size={14} /> Save Home
+              </button>
+              <button type="button" className="secondary-action-btn" onClick={() => saveCurrentAddress('Work')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Briefcase size={14} /> Save Work
+              </button>
             </div>
 
-            <div className="notice">Payment Mode: Cash or UPI directly to Partner after completion.</div>
+            <div className="notice payment-notice" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Banknote size={18} style={{ flexShrink: 0, color: 'var(--blue)' }} />
+              <span>Pay After Completion: Cash or UPI directly to Partner after service.</span>
+            </div>
+
             {error && <div className="notice error">{error}</div>}
-            <button className="accent-btn" disabled={busy} style={{ width: '100%', marginTop: '6px' }}>
-              {busy ? 'Creating Task...' : 'Create Task'}
+
+            <button className="accent-btn task-submit-btn" disabled={busy}>
+              {busy ? (
+                <>
+                  <span className="spinner" /> Creating Task...
+                </>
+              ) : (
+                <>
+                  Publish & Find Partner <span className="btn-arrow">→</span>
+                </>
+              )}
             </button>
           </form>
 
@@ -1612,7 +1773,17 @@ function PartnerDashboard() {
             </div>
           </div>
           <div className="hero-graphic partner-graphic">
-            <img src="/assets/female-hero-transparent.png" alt="Superherooo Partner" />
+            <img
+              src={`${import.meta.env.BASE_URL}hero.jpeg`}
+              alt="Superherooo Partner"
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                if (!target.dataset.tried) {
+                  target.dataset.tried = 'true';
+                  target.src = 'hero.jpeg';
+                }
+              }}
+            />
             <button className={online ? 'danger' : 'primary'} onClick={toggleOnline}>
               {online ? '🔴 Go Offline' : '🟢 Go Online'}
             </button>
@@ -1976,55 +2147,75 @@ function TaskDetail({
       </div>
 
       <div className="grid three" style={{ marginTop: '16px' }}>
-        <Info label="When" value={formatWhen(task.scheduledAt)} />
-        <Info label="Duration" value={`${task.timeMinutes} minutes`} />
-        <Info label="Payment" value="Cash or UPI directly to Partner" />
-        <Info label="Address" value={task.addressText || `${task.lat}, ${task.lng}`} />
-        <Info label="Landmark" value={task.landmark || 'Not provided'} />
-        <Info label="Assigned Partner" value={task.helperName || task.helperPhone || 'Searching...'} />
+        <Info label="When" value={formatWhen(task.scheduledAt)} icon={Calendar} />
+        <Info label="Duration" value={`${task.timeMinutes} minutes`} icon={Clock} />
+        <Info label="Payment" value="Cash or UPI directly to Partner" icon={Banknote} />
+        <Info label="Address" value={task.addressText || `${task.lat}, ${task.lng}`} icon={MapPin} />
+        <Info label="Landmark" value={task.landmark || 'Not provided'} icon={Home} />
+        <Info label="Assigned Partner" value={task.helperName || task.helperPhone || 'Searching for nearby partners...'} icon={User} />
       </div>
 
       {['ASSIGNED', 'ARRIVED', 'STARTED'].includes(task.status) && (
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px', padding: '14px', background: 'var(--soft)', borderRadius: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px', padding: '14px', background: 'var(--soft)', borderRadius: '12px', border: '1px solid var(--line)' }}>
           {contactPhone && (
             <a className="secondary" href={`tel:${contactPhone}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              📞 Call {contactName} ({contactPhone})
+              <Phone size={16} /> Call {contactName} ({contactPhone})
             </a>
           )}
-          <button className="accent-btn" onClick={onOpenChat}>
-            💬 Live In-App Chat
+          <button className="accent-btn" onClick={onOpenChat} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <MessageCircle size={16} /> Live In-App Chat
           </button>
           <a className="sos-btn" href="tel:112">
-            🆘 Emergency SOS
+            <AlertTriangle size={16} /> Emergency SOS
           </a>
         </div>
       )}
 
       {role === 'BUYER' && (
         <div className="otp-grid" style={{ marginTop: '16px' }}>
-          <div><span>Arrival OTP</span><strong>{task.arrivalOtp || 'Assigned after booking'}</strong></div>
-          <div><span>Completion OTP</span><strong>{task.completionOtp || 'Assigned after booking'}</strong></div>
+          <div>
+            <span><Lock size={15} style={{ color: 'var(--blue)' }} /> Arrival OTP</span>
+            <strong>{task.arrivalOtp || 'Assigned after booking'}</strong>
+          </div>
+          <div>
+            <span><CheckCircle2 size={15} style={{ color: 'var(--green)' }} /> Completion OTP</span>
+            <strong>{task.completionOtp || 'Assigned after booking'}</strong>
+          </div>
         </div>
       )}
 
       {task.status === 'STARTED' && (
         <div className="notice success" style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span>⏱️ Work In Progress: Timer Running</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <Clock size={18} style={{ color: 'var(--green)' }} /> Work In Progress: Timer Running
+          </span>
           <strong style={{ fontSize: '1.3rem', fontFamily: 'monospace' }}>{formatTimer(elapsedSec)}</strong>
         </div>
       )}
 
-      {helperLoc && <div className="notice" style={{ marginTop: '16px' }}>📍 Partner Live Location: {helperLoc.lat.toFixed(5)}, {helperLoc.lng.toFixed(5)}</div>}
+      {helperLoc && (
+        <div className="notice" style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <Navigation size={16} style={{ color: 'var(--blue)' }} /> Partner Live Location: {helperLoc.lat.toFixed(5)}, {helperLoc.lng.toFixed(5)}
+        </div>
+      )}
 
-      <a className="secondary" style={{ marginTop: '16px', display: 'inline-flex', width: 'fit-content' }} href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
-        🗺️ Open Google Maps Directions
+      <a className="secondary" style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', width: 'fit-content' }} href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
+        <MapPin size={16} /> Open Google Maps Directions
       </a>
     </section>
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
-  return <div className="info"><span>{label}</span><strong>{value}</strong></div>;
+function Info({ label, value, icon: IconComp }: { label: string; value: string; icon?: React.ElementType }) {
+  return (
+    <div className="info-card">
+      <div className="info-card-header">
+        {IconComp && <IconComp size={15} className="info-icon" />}
+        <span>{label}</span>
+      </div>
+      <strong>{value}</strong>
+    </div>
+  );
 }
 
 function ProfileView() {
