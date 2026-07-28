@@ -2036,9 +2036,9 @@ function ProfileView() {
   useEffect(() => {
     if (!accessToken) return;
     if (user?.role === 'HELPER') {
-      api.helperProfile(accessToken).then(setHelperProfile).catch(() => {});
+      api.helperProfile(accessToken).then(setHelperProfile).catch(() => { });
     }
-    api.myTasks(accessToken).then((t) => setTasksCount(t.length)).catch(() => {});
+    api.myTasks(accessToken).then((t) => setTasksCount(t.length)).catch(() => { });
   }, [accessToken, user?.role]);
 
   if (!user) return <Navigate to="/login" replace />;
