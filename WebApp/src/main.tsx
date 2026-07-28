@@ -21,6 +21,67 @@ type AuthContextValue = AuthState & {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/* Toast Notification System */
+type ToastItem = { id: string; message: string; type: 'success' | 'error' | 'info' };
+type ToastContextValue = { showToast: (message: string, type?: 'success' | 'error' | 'info') => void };
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    const id = String(Date.now() + Math.random());
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  }, []);
+
+  return (
+    <ToastContext.Provider value={{ showToast }}>
+      {children}
+      <div className="toast-container" aria-live="polite">
+        {toasts.map((t) => (
+          <div key={t.id} className={`toast ${t.type}`}>
+            <span>{t.type === 'success' ? '✓' : t.type === 'error' ? '⚠️' : 'ℹ️'}</span>
+            <span>{t.message}</span>
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+}
+
+function useToast() {
+  const ctx = useContext(ToastContext);
+  if (!ctx) return { showToast: (msg: string) => console.log(msg) };
+  return ctx;
+}
+
+/* Offline Connection Banner */
+function OfflineBanner() {
+  const [online, setOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setOnline(true);
+    const handleOffline = () => setOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  if (online) return null;
+
+  return (
+    <div className="offline-banner" role="alert">
+      ⚠️ Internet connection lost. Reconnecting to Superherooo...
+    </div>
+  );
+}
+
 function loadStoredAuth(): Omit<AuthState, 'loading'> {
   try {
     const raw = localStorage.getItem(authKey);
@@ -99,7 +160,7 @@ function useSocket() {
   return socket;
 }
 
-/* Audio Chime Synthesizer for Partner Notifications */
+/* Audio Chime Synthesizer */
 function playChimeSound() {
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -108,8 +169,8 @@ function playChimeSound() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
     gain.gain.setValueAtTime(0.25, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
     osc.connect(gain);
@@ -170,7 +231,7 @@ function getLocation(): Promise<{ lat: number; lng: number }> {
   });
 }
 
-/* Voice Dictation Mic Button Component */
+/* Voice Dictation Mic Component */
 function VoiceMicInput({ onTranscript }: { onTranscript: (text: string) => void }) {
   const [listening, setListening] = useState(false);
 
@@ -205,6 +266,7 @@ function VoiceMicInput({ onTranscript }: { onTranscript: (text: string) => void 
       className={`mic-btn ${listening ? 'listening' : ''}`}
       onClick={startListening}
       title="Dictate with Voice"
+      aria-label="Dictate text with voice"
     >
       🎙️
     </button>
@@ -272,9 +334,9 @@ function CelebrationModal({ task, onClose }: { task: Task; onClose: () => void }
     <>
       <ConfettiCanvas />
       <div className="celebration-modal-overlay">
-        <div className="celebration-modal">
+        <div className="celebration-modal" role="dialog" aria-labelledby="celebration-title">
           <div className="celebration-icon-box">🎉</div>
-          <h2>Task Completed!</h2>
+          <h2 id="celebration-title">Task Completed!</h2>
           <p>Superb work! The task has been completed and verified successfully.</p>
           <div className="celebration-stats">
             <div className="celebration-stat-item">
@@ -341,6 +403,7 @@ function SelfiePicker({
               setPreviewUrl(null);
             }}
             title="Remove photo"
+            aria-label="Remove uploaded photo"
           >
             ✕
           </button>
@@ -385,6 +448,7 @@ function SelfiePicker({
 /* In-App Realtime Task Chat Modal */
 function TaskChatModal({ taskId, onClose }: { taskId: string; onClose: () => void }) {
   const { accessToken, user } = useAuth();
+  const { showToast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMsg, setInputMsg] = useState('');
   const [busy, setBusy] = useState(false);
@@ -421,7 +485,7 @@ function TaskChatModal({ taskId, onClose }: { taskId: string; onClose: () => voi
       setMessages((prev) => [...prev, newMsg]);
       setInputMsg('');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Could not send message.');
+      showToast(err instanceof Error ? err.message : 'Could not send message.', 'error');
     } finally {
       setBusy(false);
     }
@@ -429,13 +493,13 @@ function TaskChatModal({ taskId, onClose }: { taskId: string; onClose: () => voi
 
   return (
     <div className="chat-modal-overlay">
-      <div className="chat-modal">
+      <div className="chat-modal" role="dialog" aria-labelledby="chat-title">
         <div className="chat-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '1.2rem' }}>💬</span>
-            <strong>Task Live Chat</strong>
+            <strong id="chat-title">Task Live Chat</strong>
           </div>
-          <button style={{ color: 'white', fontSize: '1.2rem', fontWeight: 800 }} onClick={onClose}>✕</button>
+          <button style={{ color: 'white', fontSize: '1.2rem', fontWeight: 800 }} onClick={onClose} aria-label="Close chat">✕</button>
         </div>
         <div ref={scrollRef} className="chat-messages-scroll">
           {messages.length === 0 ? (
@@ -464,10 +528,39 @@ function TaskChatModal({ taskId, onClose }: { taskId: string; onClose: () => voi
             value={inputMsg}
             onChange={(e) => setInputMsg(e.target.value)}
             placeholder="Type a message..."
+            aria-label="Type a message"
           />
           <button className="accent-btn" disabled={busy || !inputMsg.trim()}>Send</button>
         </form>
       </div>
+    </div>
+  );
+}
+
+/* Mobile Bottom Navigation Bar (< 768px) */
+function MobileBottomNav() {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  if (!user) return null;
+
+  const dashboardPath = user.role === 'BUYER' ? '/citizen' : '/partner';
+  const profilePath = user.role === 'BUYER' ? '/citizen/profile' : '/partner/profile';
+
+  return (
+    <div className="mobile-bottom-nav">
+      <Link className={`mobile-nav-item ${location.pathname === dashboardPath ? 'active' : ''}`} to={dashboardPath}>
+        <span className="icon">⚡</span>
+        <span>Dashboard</span>
+      </Link>
+      <Link className={`mobile-nav-item ${location.pathname.includes('/profile') ? 'active' : ''}`} to={profilePath}>
+        <span className="icon">👤</span>
+        <span>Profile</span>
+      </Link>
+      <a className="mobile-nav-item" href="/">
+        <span className="icon">🌐</span>
+        <span>Website</span>
+      </a>
     </div>
   );
 }
@@ -484,12 +577,13 @@ function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-shell">
+      <OfflineBanner />
       <header className="topbar">
         <Link className="brand" to="/">
           <img src="/assets/finallogo.png" alt="Superherooo" />
           <span>Superherooo</span>
         </Link>
-        <nav>
+        <nav aria-label="Main Navigation">
           {user?.role === 'BUYER' && (
             <Link className={`nav-link ${location.pathname === '/citizen' ? 'active' : ''}`} to="/citizen">
               Citizen
@@ -514,6 +608,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
       {children}
+      <MobileBottomNav />
     </div>
   );
 }
@@ -549,6 +644,7 @@ function StaticHostRedirectBridge() {
 
 function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const { applyAuth } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [role, setRole] = useState<UserRole>('BUYER');
   const [email, setEmail] = useState('');
@@ -568,9 +664,12 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         : await api.login(email, password);
       if (!['BUYER', 'HELPER'].includes(auth.user.role)) throw new Error('This web app supports citizen and partner accounts only.');
       applyAuth(auth);
+      showToast(mode === 'signup' ? 'Account created successfully!' : 'Signed in successfully!', 'success');
       navigate(auth.user.role === 'BUYER' ? '/citizen' : '/partner', { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to continue.');
+      const msg = err instanceof Error ? err.message : 'Unable to continue.';
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setBusy(false);
     }
@@ -639,6 +738,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
 
 function EmailVerificationCard() {
   const { user, applyAuth } = useAuth();
+  const { showToast } = useToast();
   const [otp, setOtp] = useState('');
   const [devOtp, setDevOtp] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -654,8 +754,11 @@ function EmailVerificationCard() {
       const res = await api.startEmailOtp(user.email!);
       setDevOtp(showDevOtp ? res.devOtp || null : null);
       setMessage('Verification OTP sent to ' + user.email);
+      showToast('Verification OTP sent to ' + user.email, 'info');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send OTP.');
+      const msg = err instanceof Error ? err.message : 'Could not send OTP.';
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setSending(false);
     }
@@ -667,8 +770,11 @@ function EmailVerificationCard() {
       const auth = await api.verifyEmailOtp(user.email!, otp);
       applyAuth(auth);
       setMessage('Email successfully verified!');
+      showToast('Email verified successfully!', 'success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid OTP.');
+      const msg = err instanceof Error ? err.message : 'Invalid OTP.';
+      setError(msg);
+      showToast(msg, 'error');
     }
   };
 
@@ -687,7 +793,7 @@ function EmailVerificationCard() {
         <button className="secondary" type="button" disabled={sending} onClick={send}>
           {sending ? 'Sending...' : 'Send OTP'}
         </button>
-        <input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter 6-digit OTP" />
+        <input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter 6-digit OTP" aria-label="Email verification OTP" />
         <button className="primary" type="button" onClick={verify}>Verify Email</button>
       </div>
       {devOtp && <div className="notice">Dev OTP: <strong>{devOtp}</strong></div>}
@@ -699,13 +805,13 @@ function EmailVerificationCard() {
 
 function CitizenDashboard() {
   const { accessToken } = useAuth();
+  const { showToast } = useToast();
   const socket = useSocket();
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // Saved Addresses State
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>(() => {
     try {
       const stored = localStorage.getItem(savedAddressesKey);
@@ -726,7 +832,6 @@ function CitizenDashboard() {
     scheduledAt: '',
   });
 
-  // Calculate auto budget & 50% discount
   const standardPrice = Math.round(form.timeMinutes * 6.5);
   const discountPrice = Math.max(99, Math.round(standardPrice * 0.5));
 
@@ -734,7 +839,6 @@ function CitizenDashboard() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeoutRef = useRef<any>(null);
 
-  // NON-SKILLED Chips only
   const nonSkilledChips = [
     '📦 Package Pickup & Drop',
     '🛒 Grocery & Errands Shopping',
@@ -779,8 +883,10 @@ function CitizenDashboard() {
       if (address) {
         setForm((f) => ({ ...f, addressText: address }));
       }
+      showToast('Current location detected!', 'success');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Location failed.');
+      showToast('Location permission denied.', 'error');
     }
   };
 
@@ -819,7 +925,7 @@ function CitizenDashboard() {
 
   const saveCurrentAddress = (label: string) => {
     if (!form.addressText || !form.lat || !form.lng) {
-      alert('Please fill location first before saving.');
+      showToast('Please fill location first before saving.', 'error');
       return;
     }
     const newAddr: SavedAddress = {
@@ -833,6 +939,7 @@ function CitizenDashboard() {
     const next = [...savedAddresses.filter((a) => a.label !== label), newAddr];
     setSavedAddresses(next);
     localStorage.setItem(savedAddressesKey, JSON.stringify(next));
+    showToast(`Saved as ${label}!`, 'success');
   };
 
   const create = async (e: React.FormEvent) => {
@@ -856,9 +963,12 @@ function CitizenDashboard() {
         verificationMode: 'PHOTO_AND_OTP',
       };
       const res = await api.createTask(accessToken, payload);
+      showToast('Task created successfully!', 'success');
       navigate(`/citizen/tasks/${res.taskId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create task.');
+      const msg = err instanceof Error ? err.message : 'Could not create task.';
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setBusy(false);
     }
@@ -911,6 +1021,7 @@ function CitizenDashboard() {
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   placeholder="e.g. Package pickup, queue waiting, grocery..."
+                  aria-label="Task Title"
                 />
                 <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, title: f.title ? `${f.title} ${text}` : text }))} />
               </div>
@@ -924,6 +1035,7 @@ function CitizenDashboard() {
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Provide clear instructions for the partner..."
+                  aria-label="Task Description"
                 />
                 <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, description: f.description ? `${f.description} ${text}` : text }))} />
               </div>
@@ -938,16 +1050,16 @@ function CitizenDashboard() {
                   max="1440"
                   value={form.timeMinutes}
                   onChange={(e) => setForm({ ...form, timeMinutes: Number(e.target.value) })}
+                  aria-label="Duration in minutes"
                 />
               </label>
 
               <label>
                 Schedule Later (Optional)
-                <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} />
+                <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} aria-label="Schedule datetime" />
               </label>
             </div>
 
-            {/* Auto Budget & 50% Off Display */}
             <div className="price-preview-box">
               <div className="price-preview-left">
                 <span className="strike-price">₹{standardPrice}</span>
@@ -956,7 +1068,6 @@ function CitizenDashboard() {
               <span className="final-price">₹{discountPrice}</span>
             </div>
 
-            {/* Saved Addresses Section */}
             {savedAddresses.length > 0 && (
               <div>
                 <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>
@@ -994,6 +1105,7 @@ function CitizenDashboard() {
                   onChange={(e) => handleAddressChange(e.target.value)}
                   placeholder="Full address (Search autocomplete)"
                   autoComplete="off"
+                  aria-label="Full Address"
                 />
               </label>
               {showSuggestions && suggestions.length > 0 && (
@@ -1012,13 +1124,13 @@ function CitizenDashboard() {
 
             <label>
               Landmark
-              <input value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} placeholder="Nearby landmark (optional)" />
+              <input value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} placeholder="Nearby landmark (optional)" aria-label="Landmark" />
             </label>
 
             <div className="grid three compact">
               <button type="button" className="secondary" onClick={fillLocation}>📍 Current Location</button>
-              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Home')}>Save as Home</button>
-              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Work')}>Save as Work</button>
+              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Home')}>Save Home</button>
+              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Work')}>Save Work</button>
             </div>
 
             <div className="notice">Payment Mode: Cash or UPI directly to Partner after completion.</div>
@@ -1037,13 +1149,24 @@ function CitizenDashboard() {
 
 function TaskList({ title, tasks, basePath }: { title: string; tasks: Task[]; basePath: string }) {
   const [tab, setTab] = useState<'ACTIVE' | 'HISTORY'>('ACTIVE');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   const isCompletedOrCancelled = (s: TaskStatus) => ['COMPLETED', 'CANCELLED', 'ADMIN_REJECTED'].includes(s);
 
   const activeTasks = tasks.filter((t) => !isCompletedOrCancelled(t.status));
   const historyTasks = tasks.filter((t) => isCompletedOrCancelled(t.status));
 
-  const currentList = tab === 'ACTIVE' ? activeTasks : historyTasks;
+  const currentTabTasks = tab === 'ACTIVE' ? activeTasks : historyTasks;
+
+  const filteredTasks = currentTabTasks.filter((t) => {
+    const matchesSearch =
+      !searchTerm ||
+      t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t.addressText && t.addressText.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = statusFilter === 'ALL' || t.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <section className="panel list-panel">
@@ -1057,12 +1180,31 @@ function TaskList({ title, tasks, basePath }: { title: string; tasks: Task[]; ba
         </button>
       </div>
 
-      {currentList.length === 0 ? (
+      <div className="filter-bar">
+        <input
+          className="search-input"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="🔍 Search by title or location..."
+          aria-label="Search tasks"
+        />
+        {tab === 'ACTIVE' && (
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filter status">
+            <option value="ALL">All Statuses</option>
+            <option value="SEARCHING">Searching</option>
+            <option value="ASSIGNED">Assigned</option>
+            <option value="ARRIVED">Arrived</option>
+            <option value="STARTED">In Progress</option>
+          </select>
+        )}
+      </div>
+
+      {filteredTasks.length === 0 ? (
         <p className="muted" style={{ padding: '16px 0' }}>
-          {tab === 'ACTIVE' ? 'No active bookings currently.' : 'No past task records found.'}
+          {searchTerm ? 'No matching tasks found.' : tab === 'ACTIVE' ? 'No active bookings currently.' : 'No past task records found.'}
         </p>
       ) : (
-        currentList.map((task) => (
+        filteredTasks.map((task) => (
           <Link key={task.id} className="task-card" to={`${basePath}/${task.id}`}>
             <div>
               <strong>{task.title}</strong>
@@ -1141,6 +1283,7 @@ function CitizenTaskPage() {
 
 function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; onKycUpdated: () => void }) {
   const { accessToken } = useAuth();
+  const { showToast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [fullName, setFullName] = useState('');
   const [docType, setDocType] = useState('Aadhaar Card');
@@ -1156,10 +1299,12 @@ function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; 
     if (!accessToken) return;
     if (!idFront) {
       setError('Please upload ID front document photo.');
+      showToast('Please upload ID front document photo.', 'error');
       return;
     }
     if (!selfie) {
       setError('Please upload partner selfie photo.');
+      showToast('Please upload partner selfie photo.', 'error');
       return;
     }
     setBusy(true);
@@ -1167,9 +1312,12 @@ function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; 
     try {
       await api.submitKyc(accessToken, fullName, docType, idNumber, idFront, idBack, selfie);
       setShowForm(false);
+      showToast('KYC submitted for review!', 'success');
       onKycUpdated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'KYC submission failed.');
+      const msg = err instanceof Error ? err.message : 'KYC submission failed.';
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setBusy(false);
     }
@@ -1210,12 +1358,12 @@ function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; 
         <form onSubmit={submitKyc} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px', borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
           <label>
             Full Name (As per ID Document)
-            <input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Legal Name" />
+            <input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Legal Name" aria-label="Legal Full Name" />
           </label>
           <div className="grid two compact">
             <label>
               Document Type
-              <select value={docType} onChange={(e) => setDocType(e.target.value)}>
+              <select value={docType} onChange={(e) => setDocType(e.target.value)} aria-label="Document type">
                 <option value="Aadhaar Card">Aadhaar Card</option>
                 <option value="PAN Card">PAN Card</option>
                 <option value="Driving License">Driving License</option>
@@ -1225,7 +1373,7 @@ function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; 
             </label>
             <label>
               Document / ID Number
-              <input required value={idNumber} onChange={(e) => setIdNumber(e.target.value)} placeholder="ID Number" />
+              <input required value={idNumber} onChange={(e) => setIdNumber(e.target.value)} placeholder="ID Number" aria-label="ID Number" />
             </label>
           </div>
 
@@ -1248,6 +1396,7 @@ function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; 
 
 function PartnerDashboard() {
   const { accessToken } = useAuth();
+  const { showToast } = useToast();
   const socket = useSocket();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<HelperProfile | null>(null);
@@ -1276,12 +1425,12 @@ function PartnerDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  /* Web Push & Audio Chime Listener for Partner Offers */
   useEffect(() => {
     if (!socket) return;
     const handleNewOffer = (payload?: any) => {
       load();
       playChimeSound();
+      showToast('⚡ New nearby job offered!', 'info');
       showWebPushNotification('⚡ New Nearby Task Available!', {
         body: payload?.title ? `${payload.title} - ${money(payload.budgetPaise)}` : 'A new task was offered near you.',
       });
@@ -1301,7 +1450,7 @@ function PartnerDashboard() {
       socket.off('task_status_changed');
       socket.off('task.status.changed');
     };
-  }, [socket, load]);
+  }, [socket, load, showToast]);
 
   useEffect(() => {
     if (!online || !socket || !lastLoc) return;
@@ -1318,6 +1467,7 @@ function PartnerDashboard() {
       if (online) {
         await api.helperOnline(accessToken, false);
         setOnline(false);
+        showToast('You are now Offline', 'info');
         return;
       }
       if ('Notification' in window && Notification.permission !== 'granted') {
@@ -1328,9 +1478,12 @@ function PartnerDashboard() {
       setLastLoc(loc);
       setOnline(true);
       socket?.emit('location.update', loc);
+      showToast('You are now Online and receiving job offers!', 'success');
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update online status.');
+      const msg = err instanceof Error ? err.message : 'Could not update online status.';
+      setError(msg);
+      showToast(msg, 'error');
     }
   };
 
@@ -1339,9 +1492,12 @@ function PartnerDashboard() {
     setError(null);
     try {
       await api.acceptTask(accessToken, taskId);
+      showToast('Task accepted!', 'success');
       navigate(`/partner/tasks/${taskId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not accept task.');
+      const msg = err instanceof Error ? err.message : 'Could not accept task.';
+      setError(msg);
+      showToast(msg, 'error');
     }
   };
 
@@ -1446,6 +1602,7 @@ function PartnerDashboard() {
 function PartnerTaskPage() {
   const { taskId = '' } = useParams();
   const { accessToken } = useAuth();
+  const { showToast } = useToast();
   const socket = useSocket();
   const [task, setTask] = useState<Task | null>(null);
   const [otp, setOtp] = useState('');
@@ -1506,11 +1663,14 @@ function PartnerTaskPage() {
       setTask(updated);
       setOtp('');
       setSelfie(null);
+      showToast(`Step completed: ${statusText(targetStatus)}`, 'success');
       if (targetStatus === 'COMPLETED') {
         setShowCelebration(true);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not complete step.');
+      const msg = err instanceof Error ? err.message : 'Could not complete step.';
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setBusy(false);
     }
@@ -1530,7 +1690,6 @@ function PartnerTaskPage() {
                   <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
                 </div>
 
-                {/* Step 1: Mark Arrived */}
                 <div className={`step-card ${stepNumber === 1 ? 'active-step' : ''}`}>
                   <div className="step-header">
                     <h3>Step 1: Arrive at Location</h3>
@@ -1558,7 +1717,6 @@ function PartnerTaskPage() {
                   )}
                 </div>
 
-                {/* Step 2: Start Task with OTP */}
                 <div className={`step-card ${stepNumber === 2 ? 'active-step' : ''}`}>
                   <div className="step-header">
                     <h3>Step 2: Start Work (Citizen OTP)</h3>
@@ -1574,6 +1732,7 @@ function PartnerTaskPage() {
                           value={otp}
                           onChange={(e) => setOtp(e.target.value)}
                           placeholder="Enter 6-digit OTP from citizen"
+                          aria-label="Citizen arrival OTP"
                         />
                       </label>
                       <button
@@ -1587,7 +1746,6 @@ function PartnerTaskPage() {
                   )}
                 </div>
 
-                {/* Step 3: Completion Selfie */}
                 <div className={`step-card ${stepNumber === 3 ? 'active-step' : ''}`}>
                   <div className="step-header">
                     <h3>Step 3: Completion Selfie Photo</h3>
@@ -1616,6 +1774,7 @@ function PartnerTaskPage() {
                               const updated = await api.uploadTaskSelfie(accessToken, task.id, 'COMPLETION', selfie, loc.lat, loc.lng, task.addressText);
                               setTask(updated);
                               setSelfie(null);
+                              showToast('Completion selfie uploaded!', 'success');
                             } catch (err) {
                               setError(err instanceof Error ? err.message : 'Upload failed.');
                             } finally {
@@ -1630,7 +1789,6 @@ function PartnerTaskPage() {
                   )}
                 </div>
 
-                {/* Step 4: End OTP */}
                 <div className={`step-card ${stepNumber === 4 ? 'active-step' : ''}`}>
                   <div className="step-header">
                     <h3>Step 4: End Task (Citizen Completion OTP)</h3>
@@ -1644,6 +1802,7 @@ function PartnerTaskPage() {
                           value={otp}
                           onChange={(e) => setOtp(e.target.value)}
                           placeholder="Enter 6-digit completion OTP from citizen"
+                          aria-label="Citizen completion OTP"
                         />
                       </label>
                       <button
@@ -1724,7 +1883,6 @@ function TaskDetail({
         <Info label="Assigned Partner" value={task.helperName || task.helperPhone || 'Searching...'} />
       </div>
 
-      {/* Call & Realtime In-App Chat Bar */}
       {['ASSIGNED', 'ARRIVED', 'STARTED'].includes(task.status) && (
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px', padding: '14px', background: 'var(--soft)', borderRadius: '12px' }}>
           {contactPhone && (
@@ -1849,21 +2007,23 @@ function ProfileView() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename="/app">
-        <StaticHostRedirectBridge />
-        <Routes>
-          <Route path="/" element={<LandingRedirect />} />
-          <Route path="/login" element={<AuthPage mode="login" />} />
-          <Route path="/signup" element={<AuthPage mode="signup" />} />
-          <Route path="/citizen" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
-          <Route path="/citizen/profile" element={<RequireRole role="BUYER"><ProfileView /></RequireRole>} />
-          <Route path="/citizen/tasks/:taskId" element={<RequireRole role="BUYER"><CitizenTaskPage /></RequireRole>} />
-          <Route path="/partner" element={<RequireRole role="HELPER"><PartnerDashboard /></RequireRole>} />
-          <Route path="/partner/profile" element={<RequireRole role="HELPER"><ProfileView /></RequireRole>} />
-          <Route path="/partner/tasks/:taskId" element={<RequireRole role="HELPER"><PartnerTaskPage /></RequireRole>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter basename="/app">
+          <StaticHostRedirectBridge />
+          <Routes>
+            <Route path="/" element={<LandingRedirect />} />
+            <Route path="/login" element={<AuthPage mode="login" />} />
+            <Route path="/signup" element={<AuthPage mode="signup" />} />
+            <Route path="/citizen" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
+            <Route path="/citizen/profile" element={<RequireRole role="BUYER"><ProfileView /></RequireRole>} />
+            <Route path="/citizen/tasks/:taskId" element={<RequireRole role="BUYER"><CitizenTaskPage /></RequireRole>} />
+            <Route path="/partner" element={<RequireRole role="HELPER"><PartnerDashboard /></RequireRole>} />
+            <Route path="/partner/profile" element={<RequireRole role="HELPER"><ProfileView /></RequireRole>} />
+            <Route path="/partner/tasks/:taskId" element={<RequireRole role="HELPER"><PartnerTaskPage /></RequireRole>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }
