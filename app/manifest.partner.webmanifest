@@ -1,0 +1,23 @@
+{
+  "id": "/app/partner",
+  "name": "Superherooo Partner",
+  "short_name": "SH Partner",
+  "description": "Go online and accept nearby citizen tasks. Track jobs and earnings in realtime.",
+  "start_url": "/app/partner?source=pwa",
+  "scope": "/app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F1932",
+  "theme_color": "#FCB61A",
+  "lang": "en",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "/app/icons/icon-partner-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "/app/icons/icon-partner-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any" },
+    { "src": "/app/icons/icon-partner-maskable-192.png", "type": "image/png", "sizes": "192x192", "purpose": "maskable" },
+    { "src": "/app/icons/icon-partner-maskable-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Go online", "short_name": "Go online", "url": "/app/partner?source=pwa" }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "/app/citizen",
+  "name": "Superherooo Citizen",
+  "short_name": "SH Citizen",
+  "description": "Book instant verified help near you in minutes. Pay with Cash or UPI after service.",
+  "start_url": "/app/citizen?source=pwa",
+  "scope": "/app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F1932",
+  "theme_color": "#0F1932",
+  "lang": "en",
+  "categories": ["lifestyle", "utilities"],
+  "icons": [
+    { "src": "/app/icons/icon-citizen-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "/app/icons/icon-citizen-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any" },
+    { "src": "/app/icons/icon-citizen-maskable-192.png", "type": "image/png", "sizes": "192x192", "purpose": "maskable" },
+    { "src": "/app/icons/icon-citizen-maskable-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Book a task", "short_name": "New task", "url": "/app/citizen?source=pwa" }
+  ]
+}
