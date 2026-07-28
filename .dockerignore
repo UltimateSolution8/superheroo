@@ -1,0 +1,14 @@
+.git/
+.DS_Store
+.env
+.env.*
+!.env.example
+WebApp/node_modules/
+WebApp/dist/
+backend/node_modules/
+downloads/*.apk
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.py
