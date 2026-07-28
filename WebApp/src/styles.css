@@ -535,6 +535,17 @@ button:disabled {
   gap: 14px;
 }
 
+.selfie-control {
+  display: grid;
+  gap: 8px;
+}
+
+.selfie-control span {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
 .center-screen {
   min-height: 100dvh;
   display: grid;
@@ -589,4 +600,44 @@ button:disabled {
   .offer-actions > * {
     flex: 1;
   }
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  max-height: 220px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 4px 0 0 0;
+  padding: 0;
+  z-index: 100;
+}
+
+.suggestions-dropdown li {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--soft);
+}
+
+.suggestions-dropdown li:last-child {
+  border-bottom: none;
+}
+
+.suggestions-dropdown li:hover {
+  background: var(--soft);
+  color: var(--blue);
+}
+
+.suggestion-icon {
+  font-size: 1.1rem;
 }

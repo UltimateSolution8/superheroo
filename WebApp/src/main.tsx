@@ -2,8 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { io, type Socket } from 'socket.io-client';
-import { api, ApiError } from './api';
-import type { AuthResponse, AuthUser, CreateTaskPayload, HelperProfile, Task, TaskStatus, TaskUrgency, UserRole } from './types';
+import { api, ApiError, searchLocations, resolveLocationCoords, reverseGeocode, type LocationSuggestion } from './api';
+import type { AuthResponse, AuthUser, CreateTaskPayload, HelperProfile, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import './styles.css';
 
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://realtime.mysuperhero.xyz').replace(/\/+$/, '');
@@ -335,6 +335,10 @@ function CitizenDashboard() {
     scheduledAt: '',
   });
 
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchTimeoutRef = useRef<any>(null);
+
   const load = useCallback(async () => {
     if (!accessToken) return;
     try {
@@ -364,8 +368,45 @@ function CitizenDashboard() {
     try {
       const loc = await getLocation();
       setForm((f) => ({ ...f, lat: String(loc.lat.toFixed(6)), lng: String(loc.lng.toFixed(6)) }));
+      const address = await reverseGeocode(loc.lat, loc.lng);
+      if (address) {
+        setForm((f) => ({ ...f, addressText: address }));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Location failed.');
+    }
+  };
+
+  const handleAddressChange = (val: string) => {
+    setForm((f) => ({ ...f, addressText: val }));
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (val.trim().length >= 2) {
+      searchTimeoutRef.current = setTimeout(async () => {
+        try {
+          const results = await searchLocations(val);
+          setSuggestions(results);
+          setShowSuggestions(true);
+        } catch (err) {
+          console.error(err);
+        }
+      }, 350);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectSuggestion = async (sug: LocationSuggestion) => {
+    setForm((f) => ({ ...f, addressText: sug.description }));
+    setSuggestions([]);
+    setShowSuggestions(false);
+    try {
+      const coords = await resolveLocationCoords(sug);
+      if (coords) {
+        setForm((f) => ({ ...f, lat: String(coords.lat.toFixed(6)), lng: String(coords.lng.toFixed(6)) }));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not resolve coordinates.');
     }
   };
 
@@ -387,7 +428,7 @@ function CitizenDashboard() {
         scheduledAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : null,
         landmark: form.landmark || null,
         paymentCollectionMode: 'PAY_AFTER_SERVICE',
-        verificationMode: 'OTP_ONLY',
+        verificationMode: 'PHOTO_AND_OTP',
       };
       const res = await api.createTask(accessToken, payload);
       navigate(`/citizen/tasks/${res.taskId}`);
@@ -421,7 +462,29 @@ function CitizenDashboard() {
               <label>Budget ₹<input type="number" min="1" value={form.budgetRupees} onChange={(e) => setForm({ ...form, budgetRupees: Number(e.target.value) })} /></label>
               <label>Schedule later<input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} /></label>
             </div>
-            <label>Address<input value={form.addressText} onChange={(e) => setForm({ ...form, addressText: e.target.value })} placeholder="Full address" /></label>
+            <div style={{ position: 'relative' }}>
+              <label>Address
+                <input
+                  required
+                  value={form.addressText}
+                  onChange={(e) => handleAddressChange(e.target.value)}
+                  placeholder="Full address (Search autocomplete)"
+                  autoComplete="off"
+                />
+              </label>
+              {showSuggestions && suggestions.length > 0 && (
+                <ul className="suggestions-dropdown">
+                  {suggestions.map((sug, idx) => (
+                    <li key={idx} onClick={() => selectSuggestion(sug)}>
+                      <span className="suggestion-icon">
+                        {sug.provider === 'ola' ? '🚖' : sug.provider === 'google' ? '📍' : '🗺️'}
+                      </span>
+                      {sug.description}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <label>Landmark<input value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} placeholder="Nearby landmark" /></label>
             <div className="grid three compact">
               <button type="button" className="secondary" onClick={fillLocation}>Use current location</button>
@@ -652,6 +715,7 @@ function PartnerTaskPage() {
   const socket = useSocket();
   const [task, setTask] = useState<Task | null>(null);
   const [otp, setOtp] = useState('');
+  const [selfie, setSelfie] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -685,14 +749,32 @@ function PartnerTaskPage() {
         ? { status: 'COMPLETED' as TaskStatus, label: 'Complete with end OTP' }
         : null;
 
+  const actionStage: TaskSelfieStage | null = nextAction?.status === 'ARRIVED'
+    ? 'ARRIVAL'
+    : nextAction?.status === 'COMPLETED'
+      ? 'COMPLETION'
+      : null;
+  const actionNeedsOtp = nextAction?.status === 'STARTED' || nextAction?.status === 'COMPLETED';
+  const existingSelfieUrl = actionStage === 'ARRIVAL'
+    ? task?.arrivalSelfieUrl
+    : actionStage === 'COMPLETION'
+      ? task?.completionSelfieUrl
+      : null;
+
   const update = async () => {
     if (!accessToken || !task || !nextAction) return;
     setBusy(true);
     setError(null);
     try {
+      if (actionStage && !existingSelfieUrl) {
+        if (!selfie) throw new Error(actionStage === 'ARRIVAL' ? 'Please capture arrival selfie first.' : 'Please capture completion selfie first.');
+        const loc = await getLocation().catch(() => ({ lat: task.lat, lng: task.lng }));
+        await api.uploadTaskSelfie(accessToken, task.id, actionStage, selfie, loc.lat, loc.lng, task.addressText);
+      }
       const updated = await api.updateTaskStatus(accessToken, task.id, nextAction.status, otp);
       setTask(updated);
       setOtp('');
+      setSelfie(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not update task.');
     } finally {
@@ -710,7 +792,20 @@ function PartnerTaskPage() {
             {nextAction && (
               <section className="panel action-panel">
                 <h2>Partner action</h2>
-                {(nextAction.status === 'STARTED' || nextAction.status === 'COMPLETED') && (
+                {actionStage && (
+                  <div className="selfie-control">
+                    <label>{actionStage === 'ARRIVAL' ? 'Arrival selfie' : 'Completion selfie'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={(e) => setSelfie(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <span>{existingSelfieUrl ? 'Selfie uploaded.' : selfie ? selfie.name : 'Required before status update.'}</span>
+                  </div>
+                )}
+                {actionNeedsOtp && (
                   <label>Citizen OTP<input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Ask citizen for OTP" /></label>
                 )}
                 <button className="primary" disabled={busy} onClick={update}>{busy ? 'Updating...' : nextAction.label}</button>

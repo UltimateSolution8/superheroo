@@ -14,6 +14,8 @@ export type TaskStatus =
   | 'COMPLETED'
   | 'CANCELLED';
 export type TaskUrgency = 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
+export type TaskVerificationMode = 'PHOTO_AND_OTP' | 'OTP_ONLY';
+export type TaskSelfieStage = 'ARRIVAL' | 'COMPLETION';
 
 export type AuthUser = {
   id: string;
@@ -51,6 +53,16 @@ export type Task = {
   helperName?: string | null;
   arrivalOtp?: string | null;
   completionOtp?: string | null;
+  arrivalSelfieUrl?: string | null;
+  arrivalSelfieLat?: number | null;
+  arrivalSelfieLng?: number | null;
+  arrivalSelfieAddress?: string | null;
+  arrivalSelfieCapturedAt?: string | null;
+  completionSelfieUrl?: string | null;
+  completionSelfieLat?: number | null;
+  completionSelfieLng?: number | null;
+  completionSelfieAddress?: string | null;
+  completionSelfieCapturedAt?: string | null;
   workStartedAt?: string | null;
   cancelReason?: string | null;
   cancelledByRole?: string | null;
@@ -58,7 +70,7 @@ export type Task = {
   createdAt: string;
   landmark?: string | null;
   paymentCollectionMode?: 'ONLINE_PREPAID' | 'PAY_AFTER_SERVICE' | null;
-  verificationMode?: 'PHOTO_AND_OTP' | 'OTP_ONLY' | null;
+  verificationMode?: TaskVerificationMode | null;
 };
 
 export type HelperProfile = {
@@ -82,5 +94,5 @@ export type CreateTaskPayload = {
   scheduledAt?: string | null;
   landmark?: string | null;
   paymentCollectionMode: 'PAY_AFTER_SERVICE';
-  verificationMode: 'OTP_ONLY';
+  verificationMode?: TaskVerificationMode | null;
 };
