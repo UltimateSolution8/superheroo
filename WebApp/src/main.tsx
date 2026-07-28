@@ -231,6 +231,18 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             <span>Realtime partner matching</span>
             <span>Cash or UPI</span>
           </div>
+          <div className="app-visual" aria-hidden="true">
+            <div className="visual-card visual-card-main">
+              <span>Live booking</span>
+              <strong>4 min</strong>
+              <p>Nearest partner notified</p>
+            </div>
+            <img src="/assets/worker-portrait-transparent.png" alt="" />
+            <div className="visual-card visual-card-float">
+              <span>Verification</span>
+              <strong>Photo + OTP</strong>
+            </div>
+          </div>
         </section>
         <form className="panel auth-panel" onSubmit={submit}>
           <div className="segmented">
@@ -448,8 +460,16 @@ function CitizenDashboard() {
             <span className="eyebrow">Citizen web app</span>
             <h1>Book a Superherooo now or schedule for later</h1>
             <p>Nearby verified partners are notified in realtime. Pay directly with cash or UPI after completion.</p>
+            <div className="hero-points">
+              <span>Live tracking</span>
+              <span>Photo verified work</span>
+              <span>Pay after service</span>
+            </div>
           </div>
-          <div className="metric"><strong>{tasks.filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.status)).length}</strong><span>active bookings</span></div>
+          <div className="hero-graphic">
+            <img src="/assets/hero-professional.png" alt="" />
+            <div className="metric"><strong>{tasks.filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.status)).length}</strong><span>active bookings</span></div>
+          </div>
         </section>
         <div className="grid two">
           <form className="panel task-form" onSubmit={create}>
@@ -666,8 +686,16 @@ function PartnerDashboard() {
             <span className="eyebrow">Partner web app</span>
             <h1>Go online and accept nearby citizen tasks</h1>
             <p>Offers arrive in realtime when your KYC is approved and your browser location is active.</p>
+            <div className="hero-points">
+              <span>Nearby offers</span>
+              <span>Camera verification</span>
+              <span>Instant status updates</span>
+            </div>
           </div>
-          <button className={online ? 'danger' : 'primary'} onClick={toggleOnline}>{online ? 'Go offline' : 'Go online'}</button>
+          <div className="hero-graphic partner-graphic">
+            <img src="/assets/female-hero-transparent.png" alt="" />
+            <button className={online ? 'danger' : 'primary'} onClick={toggleOnline}>{online ? 'Go offline' : 'Go online'}</button>
+          </div>
         </section>
         {error && <div className="notice error">{error}</div>}
         <div className="grid three">
@@ -791,7 +819,18 @@ function PartnerTaskPage() {
             <TaskDetail task={task} role="HELPER" />
             {nextAction && (
               <section className="panel action-panel">
-                <h2>Partner action</h2>
+                <div className="action-heading">
+                  <div>
+                    <span className="eyebrow">Next step</span>
+                    <h2>{nextAction.label}</h2>
+                  </div>
+                  <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
+                </div>
+                <div className="step-strip">
+                  <span className={task.arrivalSelfieUrl ? 'done' : actionStage === 'ARRIVAL' ? 'active' : ''}>Arrival selfie</span>
+                  <span className={task.status === 'STARTED' || task.status === 'COMPLETED' ? 'done' : nextAction.status === 'STARTED' ? 'active' : ''}>Start OTP</span>
+                  <span className={task.completionSelfieUrl ? 'done' : actionStage === 'COMPLETION' ? 'active' : ''}>Completion selfie</span>
+                </div>
                 {actionStage && (
                   <div className="selfie-control">
                     <label>{actionStage === 'ARRIVAL' ? 'Arrival selfie' : 'Completion selfie'}
