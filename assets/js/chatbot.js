@@ -31,14 +31,37 @@
     const fab = document.createElement('button');
     fab.id = 'hb-chat-fab';
     fab.setAttribute('aria-label', 'Open Superherooo AI Assistant');
-    fab.innerHTML = '⚡<span id="hb-chat-badge">1</span>';
+    fab.innerHTML = `
+      <div class="hb-fab-icon hb-fab-bolt">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="url(#fab-bolt-grad)" stroke="#0A192F" stroke-width="1.2" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="fab-bolt-grad" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FFFFFF" />
+              <stop offset="1" stop-color="#FFF3C4" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="hb-fab-icon hb-fab-close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FCB61A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </div>
+      <span id="hb-chat-badge">1</span>
+    `;
 
     const win = document.createElement('div');
     win.id = 'hb-chat-window';
     win.innerHTML = `
       <div class="hb-header">
         <div class="hb-header-title">
-          <div class="hb-avatar">⚡</div>
+          <div class="hb-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="#0A192F" stroke="#0A192F" stroke-width="1" stroke-linejoin="round"/>
+            </svg>
+          </div>
           <div>
             <h4 class="hb-bot-name">Superherooo AI</h4>
             <div class="hb-status-dot"><span>●</span> Online • Powered by Superherooo AI</div>
@@ -245,6 +268,7 @@
 
     fab.addEventListener('click', () => {
       win.classList.toggle('hb-active');
+      fab.classList.toggle('hb-open');
       const badge = document.getElementById('hb-chat-badge');
       if (badge) badge.remove();
     });
@@ -252,6 +276,7 @@
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
         win.classList.remove('hb-active');
+        fab.classList.remove('hb-open');
       });
     }
 
