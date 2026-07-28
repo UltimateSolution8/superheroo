@@ -5,6 +5,7 @@ import { io, type Socket } from 'socket.io-client';
 import { api, searchLocations, resolveLocationCoords, reverseGeocode, type LocationSuggestion } from './api';
 import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import './styles.css';
+import logo from "../public/superlogo.png";
 
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://realtime.mysuperhero.xyz').replace(/\/+$/, '');
 const showDevOtp = String(import.meta.env.VITE_DEV_SHOW_OTP || 'false').toLowerCase() === 'true';
@@ -580,7 +581,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       <OfflineBanner />
       <header className="topbar">
         <Link className="brand" to="/">
-          <img src="/assets/finallogo.png" alt="Superherooo" />
+          <img src={logo} alt="Superherooo" />
           <span>Superherooo</span>
         </Link>
         <nav aria-label="Main Navigation">
@@ -649,6 +650,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const [role, setRole] = useState<UserRole>('BUYER');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -679,56 +681,142 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     <Shell>
       <main className="auth-layout">
         <section className="auth-copy">
-          <span className="eyebrow">Superherooo Web App</span>
+          <span className="eyebrow">
+            <span className="live-pulse" /> Superherooo Web App
+          </span>
           <h1>{mode === 'signup' ? 'Create your account' : 'Sign in to Superherooo'}</h1>
-          <p>Book urgent non-skilled help or accept nearby jobs directly from your browser.</p>
+          <p>Book urgent non-skilled help or accept nearby jobs directly from your browser in minutes.</p>
           <div className="trust-row">
-            <span>OTP Verified</span>
-            <span>Realtime Location</span>
-            <span>Pay After Service</span>
+            <span>🛡️ OTP Verified</span>
+            <span>📍 Realtime Location</span>
+            <span>💳 Pay After Service</span>
           </div>
           <div className="app-visual" aria-hidden="true" style={{ marginTop: '24px' }}>
+            <img
+              src={`${import.meta.env.BASE_URL}hero.jpeg`}
+              alt="Superherooo Service"
+              className="visual-hero-bg"
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                if (!target.dataset.tried) {
+                  target.dataset.tried = 'true';
+                  target.src = 'hero.jpeg';
+                }
+              }}
+            />
             <div className="visual-card visual-card-main">
               <span>Live dispatch</span>
-              <strong>4 min</strong>
+              <strong>⚡ 4 min avg</strong>
               <p>Nearby partner assigned</p>
             </div>
-            <img src="/assets/worker-portrait-transparent.png" alt="" />
             <div className="visual-card visual-card-float">
               <span>Security</span>
-              <strong>Photo + OTP</strong>
+              <strong>📸 Photo + OTP Verified</strong>
             </div>
           </div>
         </section>
         <form className="panel auth-panel" onSubmit={submit}>
-          <div className="segmented">
-            <button type="button" className={role === 'BUYER' ? 'active' : ''} onClick={() => setRole('BUYER')}>Citizen</button>
-            <button type="button" className={role === 'HELPER' ? 'active' : ''} onClick={() => setRole('HELPER')}>Partner</button>
+          <div className="auth-form-header">
+            <h2>{mode === 'signup' ? 'Get started' : 'Welcome back'}</h2>
+            <p>{mode === 'signup' ? 'Create your account in less than 30 seconds' : 'Sign in to access your account & live bookings'}</p>
           </div>
+
+          <div className="segmented">
+            <button type="button" className={role === 'BUYER' ? 'active' : ''} onClick={() => setRole('BUYER')}>
+              👤 Citizen
+            </button>
+            <button type="button" className={role === 'HELPER' ? 'active' : ''} onClick={() => setRole('HELPER')}>
+              ⚡ Partner
+            </button>
+          </div>
+
           {mode === 'signup' && (
-            <label>
-              Full Name
-              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your full name" />
+            <label className="input-group">
+              <span className="label-text">Full Name</span>
+              <div className="input-icon-wrapper">
+                <span className="input-icon">👤</span>
+                <input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="e.g. Rahul Sharma"
+                />
+              </div>
             </label>
           )}
-          <label>
-            Email address
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" required placeholder="you@domain.com" />
+
+          <label className="input-group">
+            <span className="label-text">Email Address</span>
+            <div className="input-icon-wrapper">
+              <span className="input-icon">✉️</span>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                autoComplete="email"
+                required
+                placeholder="you@domain.com"
+              />
+            </div>
           </label>
-          <label>
-            Password
-            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required placeholder="••••••••" />
+
+          <label className="input-group">
+            <span className="label-text">Password</span>
+            <div className="input-icon-wrapper">
+              <span className="input-icon">🔒</span>
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type={showPassword ? 'text' : 'password'}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                required
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? '👁️' : '🙈'}
+              </button>
+            </div>
           </label>
+
           {mode === 'signup' && (
-            <label>
-              Mobile Phone
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10 digit phone number" />
+            <label className="input-group">
+              <span className="label-text">Mobile Phone</span>
+              <div className="input-icon-wrapper">
+                <span className="input-icon">📱</span>
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="10-digit mobile number"
+                />
+              </div>
             </label>
           )}
+
           {error && <div className="notice error">{error}</div>}
-          <button className="accent-btn" disabled={busy}>{busy ? 'Please wait...' : mode === 'signup' ? 'Create Account' : 'Sign In'}</button>
-          <p className="muted" style={{ textAlign: 'center', marginTop: '8px' }}>
-            {mode === 'signup' ? <>Already have an account? <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 700 }}>Sign in</Link></> : <>New to Superherooo? <Link to="/signup" style={{ color: 'var(--blue)', fontWeight: 700 }}>Create account</Link></>}
+
+          <button className="accent-btn auth-submit-btn" disabled={busy}>
+            {busy ? (
+              <>
+                <span className="spinner" /> Processing...
+              </>
+            ) : (
+              <>
+                {mode === 'signup' ? 'Create Account' : 'Sign In'} <span className="btn-arrow">→</span>
+              </>
+            )}
+          </button>
+
+          <p className="muted" style={{ textAlign: 'center', marginTop: '4px', fontSize: '0.9rem' }}>
+            {mode === 'signup' ? (
+              <>Already have an account? <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 700 }}>Sign in</Link></>
+            ) : (
+              <>New to Superherooo? <Link to="/signup" style={{ color: 'var(--blue)', fontWeight: 700 }}>Create account</Link></>
+            )}
           </p>
         </form>
       </main>
@@ -980,7 +1068,9 @@ function CitizenDashboard() {
         <EmailVerificationCard />
         <section className="hero-band">
           <div>
-            <span className="eyebrow">Citizen Portal</span>
+            <span className="eyebrow">
+              <span className="live-pulse" /> Citizen Portal
+            </span>
             <h1>Book trusted non-skilled help</h1>
             <p>Verified partners for everyday errands, heavy moving, queue waiting, and house assistance.</p>
             <div className="hero-points">
@@ -990,7 +1080,7 @@ function CitizenDashboard() {
             </div>
           </div>
           <div className="hero-graphic">
-            <img src="/assets/hero-professional.png" alt="" />
+            <img src="/assets/hero-professional.png" alt="Superherooo Professional" />
             <div className="metric">
               <strong>{tasks.filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.status)).length}</strong>
               <span>active bookings</span>
@@ -1213,7 +1303,10 @@ function TaskList({ title, tasks, basePath }: { title: string; tasks: Task[]; ba
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
               <b style={{ color: 'var(--navy)', fontSize: '1.1rem' }}>{money(task.budgetPaise)}</b>
-              <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
+              <span className={`status-pill ${task.status.toLowerCase()}`}>
+                {['SEARCHING', 'ASSIGNED', 'ARRIVED', 'STARTED'].includes(task.status) && <span className="live-pulse" />}
+                {statusText(task.status)}
+              </span>
             </div>
           </Link>
         ))
@@ -1507,7 +1600,9 @@ function PartnerDashboard() {
         <EmailVerificationCard />
         <section className="hero-band partner">
           <div>
-            <span className="eyebrow">Partner Portal</span>
+            <span className="eyebrow">
+              <span className="live-pulse" /> Partner Portal
+            </span>
             <h1>Accept nearby jobs & earn instantly</h1>
             <p>Go online to receive live offers in your area. Perform verified service and get paid cash or UPI directly.</p>
             <div className="hero-points">
@@ -1517,7 +1612,7 @@ function PartnerDashboard() {
             </div>
           </div>
           <div className="hero-graphic partner-graphic">
-            <img src="/assets/female-hero-transparent.png" alt="" />
+            <img src="/assets/female-hero-transparent.png" alt="Superherooo Partner" />
             <button className={online ? 'danger' : 'primary'} onClick={toggleOnline}>
               {online ? '🔴 Go Offline' : '🟢 Go Online'}
             </button>
@@ -1587,7 +1682,10 @@ function PartnerDashboard() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
                     <b style={{ color: 'var(--navy)', fontSize: '1.1rem' }}>{money(task.budgetPaise)}</b>
-                    <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
+                    <span className={`status-pill ${task.status.toLowerCase()}`}>
+                      {['SEARCHING', 'ASSIGNED', 'ARRIVED', 'STARTED'].includes(task.status) && <span className="live-pulse" />}
+                      {statusText(task.status)}
+                    </span>
                   </div>
                 </Link>
               ))
@@ -1869,7 +1967,10 @@ function TaskDetail({
           <p style={{ color: 'var(--muted)' }}>{task.description}</p>
         </div>
         <div className="status-stack" style={{ alignItems: 'flex-end', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
+          <span className={`status-pill ${task.status.toLowerCase()}`}>
+            {['SEARCHING', 'ASSIGNED', 'ARRIVED', 'STARTED'].includes(task.status) && <span className="live-pulse" />}
+            {statusText(task.status)}
+          </span>
           <strong style={{ fontSize: '1.8rem', color: 'var(--navy)' }}>{money(task.budgetPaise)}</strong>
         </div>
       </div>
