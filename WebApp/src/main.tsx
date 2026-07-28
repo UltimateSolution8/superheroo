@@ -9,6 +9,7 @@ import './styles.css';
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://realtime.mysuperhero.xyz').replace(/\/+$/, '');
 const showDevOtp = String(import.meta.env.VITE_DEV_SHOW_OTP || 'false').toLowerCase() === 'true';
 const authKey = 'superherooo_web_auth';
+const staticRedirectKey = 'superherooo_app_redirect';
 
 type AuthState = { accessToken: string | null; refreshToken: string | null; user: AuthUser | null; loading: boolean };
 type AuthContextValue = AuthState & {
@@ -174,6 +175,19 @@ function LandingRedirect() {
   if (user?.role === 'HELPER') return <Navigate to="/partner" replace />;
   if (user?.role === 'BUYER') return <Navigate to="/citizen" replace />;
   return <Navigate to="/login" replace />;
+}
+
+function StaticHostRedirectBridge() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const target = sessionStorage.getItem(staticRedirectKey);
+    if (!target) return;
+    sessionStorage.removeItem(staticRedirectKey);
+    if (target.startsWith('/') && !target.startsWith('//')) {
+      navigate(target, { replace: true });
+    }
+  }, [navigate]);
+  return null;
 }
 
 function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
@@ -754,6 +768,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter basename="/app">
+        <StaticHostRedirectBridge />
         <Routes>
           <Route path="/" element={<LandingRedirect />} />
           <Route path="/login" element={<AuthPage mode="login" />} />
