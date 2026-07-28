@@ -28,6 +28,10 @@
   --transition: all 0.3s ease;
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0 20px 40px rgba(15, 25, 50, 0.08);
+
+  /* Safe Area Insets for iOS */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
 }
 
 * {
