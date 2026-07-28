@@ -77,6 +77,11 @@ export type HelperProfile = {
   kycStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   kycRejectionReason?: string | null;
   kycFullName?: string | null;
+  kycIdNumber?: string | null;
+  kycDocFrontUrl?: string | null;
+  kycDocBackUrl?: string | null;
+  kycSelfieUrl?: string | null;
+  kycSubmittedAt?: string | null;
   kycTokenNumber?: string | null;
   kycQueuePosition?: number | null;
   kycEstimatedWaitMinutes?: number | null;

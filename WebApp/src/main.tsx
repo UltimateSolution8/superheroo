@@ -1,8 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { io, type Socket } from 'socket.io-client';
-import { api, ApiError, searchLocations, resolveLocationCoords, reverseGeocode, type LocationSuggestion } from './api';
+import { api, searchLocations, resolveLocationCoords, reverseGeocode, type LocationSuggestion } from './api';
 import type { AuthResponse, AuthUser, CreateTaskPayload, HelperProfile, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import './styles.css';
 
@@ -140,20 +140,216 @@ function getLocation(): Promise<{ lat: number; lng: number }> {
   });
 }
 
+/* Particle Confetti Canvas Component */
+function ConfettiCanvas({ durationMs = 3500 }: { durationMs?: number }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+    const particles = Array.from({ length: 90 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      size: Math.random() * 8 + 5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4,
+      vy: Math.random() * 4 + 3,
+      rotation: Math.random() * 360,
+      vRot: (Math.random() - 0.5) * 6,
+    }));
+
+    let animId: number;
+    const startTime = Date.now();
+
+    const render = () => {
+      if (Date.now() - startTime > durationMs) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.vRot;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+      });
+      animId = requestAnimationFrame(render);
+    };
+
+    animId = requestAnimationFrame(render);
+    return () => cancelAnimationFrame(animId);
+  }, [durationMs]);
+
+  return <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 999 }} />;
+}
+
+/* Celebration Modal Component */
+function CelebrationModal({ task, onClose }: { task: Task; onClose: () => void }) {
+  return (
+    <>
+      <ConfettiCanvas />
+      <div className="celebration-modal-overlay">
+        <div className="celebration-modal">
+          <div className="celebration-icon-box">🎉</div>
+          <h2>Task Completed!</h2>
+          <p>Superb work! The task has been completed and verified successfully.</p>
+          <div className="celebration-stats">
+            <div className="celebration-stat-item">
+              <span>Task</span>
+              <strong>{task.title}</strong>
+            </div>
+            <div className="celebration-stat-item">
+              <span>Amount</span>
+              <strong>{money(task.budgetPaise)}</strong>
+            </div>
+          </div>
+          <button className="accent-btn" style={{ width: '100%' }} onClick={onClose}>
+            Back to Workspace
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* Dual Camera vs Gallery Selfie Picker */
+function SelfiePicker({
+  label,
+  file,
+  onSelect,
+  existingUrl,
+  required,
+}: {
+  label: string;
+  file: File | null;
+  onSelect: (file: File | null) => void;
+  existingUrl?: string | null;
+  required?: boolean;
+}) {
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (existingUrl) {
+      setPreviewUrl(existingUrl);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [file, existingUrl]);
+
+  return (
+    <div className="selfie-picker-box">
+      <span style={{ fontWeight: 800, color: 'var(--navy)', fontSize: '0.94rem' }}>
+        {label} {required && <span style={{ color: 'var(--red)' }}>*</span>}
+      </span>
+      {previewUrl ? (
+        <div className="selfie-preview">
+          <img src={previewUrl} alt={label} />
+          <button
+            type="button"
+            className="selfie-remove-btn"
+            onClick={() => {
+              onSelect(null);
+              setPreviewUrl(null);
+            }}
+            title="Remove photo"
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        <div className="selfie-options-row">
+          <button
+            type="button"
+            className="selfie-btn"
+            onClick={() => cameraInputRef.current?.click()}
+          >
+            📷 Take Camera Photo
+          </button>
+          <button
+            type="button"
+            className="selfie-btn"
+            onClick={() => galleryInputRef.current?.click()}
+          >
+            🖼️ Choose from Gallery
+          </button>
+        </div>
+      )}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="user"
+        style={{ display: 'none' }}
+        onChange={(e) => onSelect(e.target.files?.[0] || null)}
+      />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={(e) => onSelect(e.target.files?.[0] || null)}
+      />
+    </div>
+  );
+}
+
 function Shell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
+  const location = useLocation();
+
+  const getProfileLink = () => {
+    if (user?.role === 'BUYER') return '/citizen/profile';
+    if (user?.role === 'HELPER') return '/partner/profile';
+    return '/profile';
+  };
+
   return (
     <div className="app-shell">
       <header className="topbar">
         <Link className="brand" to="/">
-          <img src="/assets/finallogo.png" alt="" />
+          <img src="/assets/finallogo.png" alt="Superherooo" />
           <span>Superherooo</span>
         </Link>
         <nav>
-          {user?.role === 'BUYER' && <Link to="/citizen">Citizen</Link>}
-          {user?.role === 'HELPER' && <Link to="/partner">Partner</Link>}
-          <a href="/">Website</a>
-          {user ? <button className="link-button" onClick={logout}>Sign out</button> : <Link to="/login">Sign in</Link>}
+          {user?.role === 'BUYER' && (
+            <Link className={`nav-link ${location.pathname === '/citizen' ? 'active' : ''}`} to="/citizen">
+              Citizen
+            </Link>
+          )}
+          {user?.role === 'HELPER' && (
+            <Link className={`nav-link ${location.pathname === '/partner' ? 'active' : ''}`} to="/partner">
+              Partner
+            </Link>
+          )}
+          {user && (
+            <Link className={`nav-link ${location.pathname.includes('/profile') ? 'active' : ''}`} to={getProfileLink()}>
+              👤 Profile
+            </Link>
+          )}
+          <a className="nav-link" href="/">Website</a>
+          {user ? (
+            <button className="link-button" onClick={logout}>Sign out</button>
+          ) : (
+            <Link className="nav-link active" to="/login">Sign in</Link>
+          )}
         </nav>
       </header>
       {children}
@@ -223,23 +419,23 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     <Shell>
       <main className="auth-layout">
         <section className="auth-copy">
-          <span className="eyebrow">Launch web access</span>
-          <h1>{mode === 'signup' ? 'Create your Superherooo web account' : 'Sign in to Superherooo Web'}</h1>
-          <p>Book urgent help or accept nearby jobs from the browser while the Play Store launch is being completed.</p>
+          <span className="eyebrow">Superherooo Web App</span>
+          <h1>{mode === 'signup' ? 'Create your account' : 'Sign in to Superherooo'}</h1>
+          <p>Book urgent help or accept nearby jobs directly from your browser with instant realtime matching.</p>
           <div className="trust-row">
-            <span>OTP verified</span>
-            <span>Realtime partner matching</span>
-            <span>Cash or UPI</span>
+            <span>OTP Verified</span>
+            <span>Realtime Location</span>
+            <span>Pay After Service</span>
           </div>
-          <div className="app-visual" aria-hidden="true">
+          <div className="app-visual" aria-hidden="true" style={{ marginTop: '24px' }}>
             <div className="visual-card visual-card-main">
-              <span>Live booking</span>
+              <span>Live dispatch</span>
               <strong>4 min</strong>
-              <p>Nearest partner notified</p>
+              <p>Nearby partner assigned</p>
             </div>
             <img src="/assets/worker-portrait-transparent.png" alt="" />
             <div className="visual-card visual-card-float">
-              <span>Verification</span>
+              <span>Security</span>
               <strong>Photo + OTP</strong>
             </div>
           </div>
@@ -251,28 +447,28 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           </div>
           {mode === 'signup' && (
             <label>
-              Name
-              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" />
+              Full Name
+              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your full name" />
             </label>
           )}
           <label>
-            Email username
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" required />
+            Email address
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" required placeholder="you@domain.com" />
           </label>
           <label>
             Password
-            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required />
+            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required placeholder="••••••••" />
           </label>
           {mode === 'signup' && (
             <label>
-              Phone
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10 digit mobile number" />
+              Mobile Phone
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10 digit phone number" />
             </label>
           )}
           {error && <div className="notice error">{error}</div>}
-          <button className="primary" disabled={busy}>{busy ? 'Please wait...' : mode === 'signup' ? 'Create account' : 'Sign in'}</button>
-          <p className="muted">
-            {mode === 'signup' ? <>Already have an account? <Link to="/login">Sign in</Link></> : <>New here? <Link to="/signup">Create account</Link></>}
+          <button className="accent-btn" disabled={busy}>{busy ? 'Please wait...' : mode === 'signup' ? 'Create Account' : 'Sign In'}</button>
+          <p className="muted" style={{ textAlign: 'center', marginTop: '8px' }}>
+            {mode === 'signup' ? <>Already have an account? <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 700 }}>Sign in</Link></> : <>New to Superherooo? <Link to="/signup" style={{ color: 'var(--blue)', fontWeight: 700 }}>Create account</Link></>}
           </p>
         </form>
       </main>
@@ -286,39 +482,52 @@ function EmailVerificationCard() {
   const [devOtp, setDevOtp] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
   if (!user?.email || user.emailVerified) return null;
 
   const send = async () => {
     setError(null);
+    setSending(true);
     try {
       const res = await api.startEmailOtp(user.email!);
       setDevOtp(showDevOtp ? res.devOtp || null : null);
-      setMessage('Verification code sent to your email.');
+      setMessage('Verification OTP sent to ' + user.email);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send OTP.');
+    } finally {
+      setSending(false);
     }
   };
+
   const verify = async () => {
     setError(null);
     try {
       const auth = await api.verifyEmailOtp(user.email!, otp);
       applyAuth(auth);
-      setMessage('Email verified. You can now use launch bookings.');
+      setMessage('Email successfully verified!');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid OTP.');
     }
   };
+
   return (
     <div className="panel warning-panel">
-      <div>
-        <h3>Verify your email to use bookings</h3>
-        <p className="muted">We send OTPs to email for the launch MVP. This protects both citizens and partners.</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ fontSize: '1.4rem' }}>✉️</span>
+        <div>
+          <h3 style={{ margin: 0 }}>Verify your email address</h3>
+          <p className="muted" style={{ margin: '2px 0 0 0', fontSize: '0.88rem' }}>
+            Email verification helps secure your bookings and partner payouts.
+          </p>
+        </div>
       </div>
-      <div className="inline-form">
-        <button className="secondary" type="button" onClick={send}>Send email OTP</button>
-        <input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter OTP" />
-        <button className="primary" type="button" onClick={verify}>Verify</button>
+      <div className="inline-form" style={{ marginTop: '6px' }}>
+        <button className="secondary" type="button" disabled={sending} onClick={send}>
+          {sending ? 'Sending...' : 'Send OTP'}
+        </button>
+        <input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter 6-digit OTP" />
+        <button className="primary" type="button" onClick={verify}>Verify Email</button>
       </div>
       {devOtp && <div className="notice">Dev OTP: <strong>{devOtp}</strong></div>}
       {message && <div className="notice success">{message}</div>}
@@ -350,6 +559,8 @@ function CitizenDashboard() {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeoutRef = useRef<any>(null);
+
+  const presetTitles = ['AC Repair & Service', 'Plumbing Assistance', 'Deep House Cleaning', 'Electrician Help', 'Grocery / Parcel Pickup', 'General Helper'];
 
   const load = useCallback(async () => {
     if (!accessToken) return;
@@ -457,38 +668,77 @@ function CitizenDashboard() {
         <EmailVerificationCard />
         <section className="hero-band">
           <div>
-            <span className="eyebrow">Citizen web app</span>
-            <h1>Book a Superherooo now or schedule for later</h1>
-            <p>Nearby verified partners are notified in realtime. Pay directly with cash or UPI after completion.</p>
+            <span className="eyebrow">Citizen Portal</span>
+            <h1>Book trusted help near you</h1>
+            <p>Verified partners are dispatched in minutes. Pay conveniently with Cash or UPI after service.</p>
             <div className="hero-points">
-              <span>Live tracking</span>
-              <span>Photo verified work</span>
-              <span>Pay after service</span>
+              <span>⚡ Live Realtime Matching</span>
+              <span>📸 Photo & OTP Verified</span>
+              <span>💵 Pay After Completion</span>
             </div>
           </div>
           <div className="hero-graphic">
             <img src="/assets/hero-professional.png" alt="" />
-            <div className="metric"><strong>{tasks.filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.status)).length}</strong><span>active bookings</span></div>
+            <div className="metric">
+              <strong>{tasks.filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.status)).length}</strong>
+              <span>active bookings</span>
+            </div>
           </div>
         </section>
         <div className="grid two">
           <form className="panel task-form" onSubmit={create}>
-            <h2>Create task</h2>
-            <label>Task name<input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="AC repair, cleaning, pickup..." /></label>
-            <label>Description<textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Share clear instructions for the partner" /></label>
+            <h2>Create Task</h2>
+            <div className="preset-chips">
+              {presetTitles.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`preset-chip ${form.title === t ? 'active' : ''}`}
+                  onClick={() => setForm({ ...form, title: t })}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            <label>
+              Task Title
+              <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. AC repair, cleaning, delivery..." />
+            </label>
+            <label>
+              Description & Instructions
+              <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Provide details for the partner..." />
+            </label>
             <div className="grid two compact">
-              <label>Urgency<select value={form.urgency} onChange={(e) => setForm({ ...form, urgency: e.target.value as TaskUrgency })}><option>NORMAL</option><option>HIGH</option><option>CRITICAL</option><option>LOW</option></select></label>
-              <label>Duration minutes<input type="number" min="1" max="1440" value={form.timeMinutes} onChange={(e) => setForm({ ...form, timeMinutes: Number(e.target.value) })} /></label>
-              <label>Budget ₹<input type="number" min="1" value={form.budgetRupees} onChange={(e) => setForm({ ...form, budgetRupees: Number(e.target.value) })} /></label>
-              <label>Schedule later<input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} /></label>
+              <label>
+                Urgency
+                <select value={form.urgency} onChange={(e) => setForm({ ...form, urgency: e.target.value as TaskUrgency })}>
+                  <option value="NORMAL">NORMAL</option>
+                  <option value="HIGH">HIGH</option>
+                  <option value="CRITICAL">CRITICAL</option>
+                  <option value="LOW">LOW</option>
+                </select>
+              </label>
+              <label>
+                Est. Duration (minutes)
+                <input type="number" min="1" max="1440" value={form.timeMinutes} onChange={(e) => setForm({ ...form, timeMinutes: Number(e.target.value) })} />
+              </label>
+              <label>
+                Budget (₹)
+                <input type="number" min="1" value={form.budgetRupees} onChange={(e) => setForm({ ...form, budgetRupees: Number(e.target.value) })} />
+              </label>
+              <label>
+                Schedule Later (Optional)
+                <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} />
+              </label>
             </div>
             <div style={{ position: 'relative' }}>
-              <label>Address
+              <label>
+                Address
                 <input
                   required
                   value={form.addressText}
                   onChange={(e) => handleAddressChange(e.target.value)}
-                  placeholder="Full address (Search autocomplete)"
+                  placeholder="Full address (Start typing for autocomplete)"
                   autoComplete="off"
                 />
               </label>
@@ -505,17 +755,22 @@ function CitizenDashboard() {
                 </ul>
               )}
             </div>
-            <label>Landmark<input value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} placeholder="Nearby landmark" /></label>
+            <label>
+              Landmark
+              <input value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} placeholder="Nearby landmark (optional)" />
+            </label>
             <div className="grid three compact">
-              <button type="button" className="secondary" onClick={fillLocation}>Use current location</button>
+              <button type="button" className="secondary" onClick={fillLocation}>📍 Current Location</button>
               <label>Lat<input required value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value })} /></label>
               <label>Lng<input required value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} /></label>
             </div>
-            <div className="notice">Payment: Cash or UPI directly to Partner. No online payment gateway is used for this MVP.</div>
+            <div className="notice">Payment Mode: Cash or UPI directly to Partner after completion.</div>
             {error && <div className="notice error">{error}</div>}
-            <button className="primary" disabled={busy}>{busy ? 'Creating...' : 'Raise request'}</button>
+            <button className="accent-btn" disabled={busy} style={{ width: '100%', marginTop: '6px' }}>
+              {busy ? 'Creating Task...' : 'Create Task'}
+            </button>
           </form>
-          <TaskList title="Your bookings" tasks={tasks} basePath="/citizen/tasks" />
+          <TaskList title="Your Bookings" tasks={tasks} basePath="/citizen/tasks" />
         </div>
       </main>
     </Shell>
@@ -523,21 +778,46 @@ function CitizenDashboard() {
 }
 
 function TaskList({ title, tasks, basePath }: { title: string; tasks: Task[]; basePath: string }) {
+  const [tab, setTab] = useState<'ACTIVE' | 'HISTORY'>('ACTIVE');
+
+  const isCompletedOrCancelled = (s: TaskStatus) => ['COMPLETED', 'CANCELLED', 'ADMIN_REJECTED'].includes(s);
+
+  const activeTasks = tasks.filter((t) => !isCompletedOrCancelled(t.status));
+  const historyTasks = tasks.filter((t) => isCompletedOrCancelled(t.status));
+
+  const currentList = tab === 'ACTIVE' ? activeTasks : historyTasks;
+
   return (
     <section className="panel list-panel">
       <h2>{title}</h2>
-      {tasks.length === 0 ? <p className="muted">No bookings yet.</p> : tasks.map((task) => (
-        <Link key={task.id} className="task-card" to={`${basePath}/${task.id}`}>
-          <div>
-            <strong>{task.title}</strong>
-            <span>{task.addressText || `${task.lat}, ${task.lng}`}</span>
-          </div>
-          <div>
-            <b>{money(task.budgetPaise)}</b>
-            <span>{statusText(task.status)}</span>
-          </div>
-        </Link>
-      ))}
+      <div className="tab-switcher">
+        <button className={`tab-btn ${tab === 'ACTIVE' ? 'active' : ''}`} onClick={() => setTab('ACTIVE')}>
+          Active / Upcoming ({activeTasks.length})
+        </button>
+        <button className={`tab-btn ${tab === 'HISTORY' ? 'active' : ''}`} onClick={() => setTab('HISTORY')}>
+          Past Records ({historyTasks.length})
+        </button>
+      </div>
+
+      {currentList.length === 0 ? (
+        <p className="muted" style={{ padding: '16px 0' }}>
+          {tab === 'ACTIVE' ? 'No active bookings currently.' : 'No past task records found.'}
+        </p>
+      ) : (
+        currentList.map((task) => (
+          <Link key={task.id} className="task-card" to={`${basePath}/${task.id}`}>
+            <div>
+              <strong>{task.title}</strong>
+              <span>{task.addressText || `${task.lat}, ${task.lng}`}</span>
+              <span style={{ fontSize: '0.8rem', marginTop: '2px' }}>{formatWhen(task.createdAt)}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+              <b style={{ color: 'var(--navy)', fontSize: '1.1rem' }}>{money(task.budgetPaise)}</b>
+              <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
+            </div>
+          </Link>
+        ))
+      )}
     </section>
   );
 }
@@ -549,11 +829,18 @@ function CitizenTaskPage() {
   const [task, setTask] = useState<Task | null>(null);
   const [helperLoc, setHelperLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const previousStatusRef = useRef<TaskStatus | null>(null);
 
   const load = useCallback(async () => {
     if (!accessToken || !taskId) return;
     try {
-      setTask(await api.task(accessToken, taskId));
+      const data = await api.task(accessToken, taskId);
+      setTask(data);
+      if (previousStatusRef.current && previousStatusRef.current !== 'COMPLETED' && data.status === 'COMPLETED') {
+        setShowCelebration(true);
+      }
+      previousStatusRef.current = data.status;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load task.');
     }
@@ -586,8 +873,118 @@ function CitizenTaskPage() {
       <main className="workspace">
         {error && <div className="notice error">{error}</div>}
         {task && <TaskDetail task={task} helperLoc={helperLoc} role="BUYER" />}
+        {showCelebration && task && (
+          <CelebrationModal task={task} onClose={() => setShowCelebration(false)} />
+        )}
       </main>
     </Shell>
+  );
+}
+
+function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; onKycUpdated: () => void }) {
+  const { accessToken } = useAuth();
+  const [showForm, setShowForm] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [docType, setDocType] = useState('Aadhaar Card');
+  const [idNumber, setIdNumber] = useState('');
+  const [idFront, setIdFront] = useState<File | null>(null);
+  const [idBack, setIdBack] = useState<File | null>(null);
+  const [selfie, setSelfie] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submitKyc = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!accessToken) return;
+    if (!idFront) {
+      setError('Please upload ID front document photo.');
+      return;
+    }
+    if (!selfie) {
+      setError('Please upload partner selfie photo.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await api.submitKyc(accessToken, fullName, docType, idNumber, idFront, idBack, selfie);
+      setShowForm(false);
+      onKycUpdated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'KYC submission failed.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const status = profile?.kycStatus || 'NOT_SUBMITTED';
+
+  return (
+    <section className="panel">
+      <h2>KYC Verification</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '12px 0' }}>
+        <span className={`status-pill ${status.toLowerCase()}`}>{status}</span>
+        {status !== 'APPROVED' && (
+          <button className="secondary" onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'Cancel Form' : status === 'REJECTED' ? 'Re-submit KYC' : 'Upload KYC Documents'}
+          </button>
+        )}
+      </div>
+
+      {profile?.kycRejectionReason && (
+        <div className="notice error" style={{ margin: '10px 0' }}>
+          Rejection Reason: {profile.kycRejectionReason}
+        </div>
+      )}
+
+      {status === 'PENDING' && (
+        <p className="muted">
+          Your KYC is under review. Token: <strong>{profile?.kycTokenNumber || 'Pending'}</strong>
+          {profile?.kycQueuePosition && ` (Queue Pos: ${profile.kycQueuePosition})`}
+        </p>
+      )}
+
+      {status === 'APPROVED' && (
+        <p className="muted">Your KYC is fully verified. You can go online to accept nearby tasks!</p>
+      )}
+
+      {showForm && (
+        <form onSubmit={submitKyc} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px', borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
+          <label>
+            Full Name (As per ID Document)
+            <input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Legal Name" />
+          </label>
+          <div className="grid two compact">
+            <label>
+              Document Type
+              <select value={docType} onChange={(e) => setDocType(e.target.value)}>
+                <option value="Aadhaar Card">Aadhaar Card</option>
+                <option value="PAN Card">PAN Card</option>
+                <option value="Driving License">Driving License</option>
+                <option value="Voter ID">Voter ID</option>
+                <option value="Passport">Passport</option>
+              </select>
+            </label>
+            <label>
+              Document / ID Number
+              <input required value={idNumber} onChange={(e) => setIdNumber(e.target.value)} placeholder="ID Number" />
+            </label>
+          </div>
+
+          <div className="grid two compact">
+            <SelfiePicker label="ID Document Front" file={idFront} onSelect={setIdFront} required />
+            <SelfiePicker label="ID Document Back (Optional)" file={idBack} onSelect={setIdBack} />
+          </div>
+
+          <SelfiePicker label="Partner Selfie Photo" file={selfie} onSelect={setSelfie} required />
+
+          {error && <div className="notice error">{error}</div>}
+          <button className="accent-btn" disabled={busy}>
+            {busy ? 'Submitting KYC...' : 'Submit KYC Documents'}
+          </button>
+        </form>
+      )}
+    </section>
   );
 }
 
@@ -601,6 +998,7 @@ function PartnerDashboard() {
   const [online, setOnline] = useState(false);
   const [lastLoc, setLastLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<'NEARBY' | 'MY_TASKS'>('NEARBY');
 
   const load = useCallback(async () => {
     if (!accessToken) return;
@@ -612,7 +1010,7 @@ function PartnerDashboard() {
       ]);
       setProfile(profileRes);
       setTasks(available);
-      setActiveTasks(mine.filter((task) => !['COMPLETED', 'CANCELLED'].includes(task.status)));
+      setActiveTasks(mine);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load partner workspace.');
     }
@@ -683,54 +1081,92 @@ function PartnerDashboard() {
         <EmailVerificationCard />
         <section className="hero-band partner">
           <div>
-            <span className="eyebrow">Partner web app</span>
-            <h1>Go online and accept nearby citizen tasks</h1>
-            <p>Offers arrive in realtime when your KYC is approved and your browser location is active.</p>
+            <span className="eyebrow">Partner Portal</span>
+            <h1>Accept nearby jobs & earn instantly</h1>
+            <p>Go online to receive live offers in your area. Perform verified service and get paid cash or UPI directly.</p>
             <div className="hero-points">
-              <span>Nearby offers</span>
-              <span>Camera verification</span>
-              <span>Instant status updates</span>
+              <span>📍 Nearby Job Dispatch</span>
+              <span>📷 Camera Verification</span>
+              <span>💵 Direct Earnings</span>
             </div>
           </div>
           <div className="hero-graphic partner-graphic">
             <img src="/assets/female-hero-transparent.png" alt="" />
-            <button className={online ? 'danger' : 'primary'} onClick={toggleOnline}>{online ? 'Go offline' : 'Go online'}</button>
+            <button className={online ? 'danger' : 'primary'} onClick={toggleOnline}>
+              {online ? '🔴 Go Offline' : '🟢 Go Online'}
+            </button>
           </div>
         </section>
         {error && <div className="notice error">{error}</div>}
+
         <div className="grid three">
+          <KycSection profile={profile} onKycUpdated={load} />
           <section className="panel">
-            <h2>KYC status</h2>
-            <div className={`status-pill ${profile?.kycStatus?.toLowerCase() || ''}`}>{profile?.kycStatus || 'Loading'}</div>
-            {profile?.kycRejectionReason && <p className="muted">{profile.kycRejectionReason}</p>}
-            <p className="muted">Only approved partners can go online and accept tasks.</p>
-          </section>
-          <section className="panel">
-            <h2>Online status</h2>
+            <h2>Online Dispatch</h2>
             <div className={`status-pill ${online ? 'approved' : ''}`}>{online ? 'Online' : 'Offline'}</div>
-            <p className="muted">{lastLoc ? `${lastLoc.lat.toFixed(5)}, ${lastLoc.lng.toFixed(5)}` : 'Location not shared yet.'}</p>
+            <p className="muted" style={{ marginTop: '10px' }}>
+              {lastLoc ? `Lat: ${lastLoc.lat.toFixed(5)}, Lng: ${lastLoc.lng.toFixed(5)}` : 'Location not shared yet.'}
+            </p>
           </section>
           <section className="panel">
-            <h2>Active jobs</h2>
-            <strong className="big-number">{activeTasks.length}</strong>
-            <p className="muted">Finish current jobs before accepting another nearby request.</p>
+            <h2>Active Jobs</h2>
+            <strong className="big-number">{activeTasks.filter(t => !['COMPLETED', 'CANCELLED'].includes(t.status)).length}</strong>
+            <p className="muted" style={{ marginTop: '10px' }}>In-progress assigned tasks</p>
           </section>
         </div>
-        <section className="panel list-panel">
-          <h2>Nearby tasks</h2>
-          {tasks.length === 0 ? <p className="muted">No nearby tasks yet. Stay online to receive live offers.</p> : tasks.map((task) => (
-            <article key={task.id} className="offer-card">
-              <div>
-                <h3>{task.title}</h3>
-                <p>{task.description}</p>
-                <div className="meta-row"><span>{money(task.budgetPaise)}</span><span>{task.timeMinutes} min</span><span>{formatWhen(task.scheduledAt)}</span></div>
-              </div>
-              <div className="offer-actions">
-                <a className="secondary" href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">Directions</a>
-                <button className="primary" onClick={() => accept(task.id)}>Accept</button>
-              </div>
-            </article>
-          ))}
+
+        <section className="panel list-panel" style={{ marginTop: '20px' }}>
+          <div className="tab-switcher">
+            <button className={`tab-btn ${tab === 'NEARBY' ? 'active' : ''}`} onClick={() => setTab('NEARBY')}>
+              Nearby Offers ({tasks.length})
+            </button>
+            <button className={`tab-btn ${tab === 'MY_TASKS' ? 'active' : ''}`} onClick={() => setTab('MY_TASKS')}>
+              My Accepted Jobs ({activeTasks.length})
+            </button>
+          </div>
+
+          {tab === 'NEARBY' ? (
+            tasks.length === 0 ? (
+              <p className="muted" style={{ padding: '16px 0' }}>No nearby tasks offered right now. Stay online to receive jobs.</p>
+            ) : (
+              tasks.map((task) => (
+                <article key={task.id} className="offer-card">
+                  <div>
+                    <h3>{task.title}</h3>
+                    <p style={{ margin: '4px 0 8px 0', color: 'var(--muted)' }}>{task.description}</p>
+                    <div className="meta-row">
+                      <span>{money(task.budgetPaise)}</span>
+                      <span>{task.timeMinutes} mins</span>
+                      <span>{formatWhen(task.scheduledAt)}</span>
+                    </div>
+                  </div>
+                  <div className="offer-actions">
+                    <a className="secondary" href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
+                      🗺️ Directions
+                    </a>
+                    <button className="primary" onClick={() => accept(task.id)}>Accept Job</button>
+                  </div>
+                </article>
+              ))
+            )
+          ) : (
+            activeTasks.length === 0 ? (
+              <p className="muted" style={{ padding: '16px 0' }}>You have not accepted any jobs yet.</p>
+            ) : (
+              activeTasks.map((task) => (
+                <Link key={task.id} className="task-card" to={`/partner/tasks/${task.id}`}>
+                  <div>
+                    <strong>{task.title}</strong>
+                    <span>{task.addressText || `${task.lat}, ${task.lng}`}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                    <b style={{ color: 'var(--navy)', fontSize: '1.1rem' }}>{money(task.budgetPaise)}</b>
+                    <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
+                  </div>
+                </Link>
+              ))
+            )
+          )}
         </section>
       </main>
     </Shell>
@@ -746,6 +1182,7 @@ function PartnerTaskPage() {
   const [selfie, setSelfie] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const load = useCallback(async () => {
     if (!accessToken || !taskId) return;
@@ -769,42 +1206,41 @@ function PartnerTaskPage() {
     };
   }, [socket, taskId, load]);
 
-  const nextAction = task?.status === 'ASSIGNED'
-    ? { status: 'ARRIVED' as TaskStatus, label: 'Mark arrived' }
-    : task?.status === 'ARRIVED'
-      ? { status: 'STARTED' as TaskStatus, label: 'Start with arrival OTP' }
-      : task?.status === 'STARTED'
-        ? { status: 'COMPLETED' as TaskStatus, label: 'Complete with end OTP' }
-        : null;
+  // Determine current active flow step
+  const getStepNumber = () => {
+    if (!task) return 1;
+    if (task.status === 'ASSIGNED') return 1;
+    if (task.status === 'ARRIVED') return 2;
+    if (task.status === 'STARTED' && !task.completionSelfieUrl) return 3;
+    if (task.status === 'STARTED' && task.completionSelfieUrl) return 4;
+    return 4;
+  };
 
-  const actionStage: TaskSelfieStage | null = nextAction?.status === 'ARRIVED'
-    ? 'ARRIVAL'
-    : nextAction?.status === 'COMPLETED'
-      ? 'COMPLETION'
-      : null;
-  const actionNeedsOtp = nextAction?.status === 'STARTED' || nextAction?.status === 'COMPLETED';
-  const existingSelfieUrl = actionStage === 'ARRIVAL'
-    ? task?.arrivalSelfieUrl
-    : actionStage === 'COMPLETION'
-      ? task?.completionSelfieUrl
-      : null;
+  const stepNumber = getStepNumber();
 
-  const update = async () => {
-    if (!accessToken || !task || !nextAction) return;
+  const handleStepAction = async (targetStatus: TaskStatus, stage?: TaskSelfieStage) => {
+    if (!accessToken || !task) return;
     setBusy(true);
     setError(null);
     try {
-      if (actionStage && !existingSelfieUrl) {
-        if (!selfie) throw new Error(actionStage === 'ARRIVAL' ? 'Please capture arrival selfie first.' : 'Please capture completion selfie first.');
-        const loc = await getLocation().catch(() => ({ lat: task.lat, lng: task.lng }));
-        await api.uploadTaskSelfie(accessToken, task.id, actionStage, selfie, loc.lat, loc.lng, task.addressText);
+      if (stage) {
+        if (!selfie && ((stage === 'ARRIVAL' && !task.arrivalSelfieUrl) || (stage === 'COMPLETION' && !task.completionSelfieUrl))) {
+          throw new Error(`Please select or capture ${stage.toLowerCase()} photo first.`);
+        }
+        if (selfie) {
+          const loc = await getLocation().catch(() => ({ lat: task.lat, lng: task.lng }));
+          await api.uploadTaskSelfie(accessToken, task.id, stage, selfie, loc.lat, loc.lng, task.addressText);
+        }
       }
-      const updated = await api.updateTaskStatus(accessToken, task.id, nextAction.status, otp);
+      const updated = await api.updateTaskStatus(accessToken, task.id, targetStatus, otp || undefined);
       setTask(updated);
       setOtp('');
       setSelfie(null);
+      if (targetStatus === 'COMPLETED') {
+        setShowCelebration(true);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update task.');
+      setError(err instanceof Error ? err.message : 'Could not complete step.');
     } finally {
       setBusy(false);
     }
@@ -817,40 +1253,147 @@ function PartnerTaskPage() {
         {task && (
           <>
             <TaskDetail task={task} role="HELPER" />
-            {nextAction && (
-              <section className="panel action-panel">
-                <div className="action-heading">
-                  <div>
-                    <span className="eyebrow">Next step</span>
-                    <h2>{nextAction.label}</h2>
-                  </div>
+            {task.status !== 'COMPLETED' && task.status !== 'CANCELLED' && (
+              <section className="panel step-container" style={{ marginTop: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <h2>Task Execution Steps</h2>
                   <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
                 </div>
-                <div className="step-strip">
-                  <span className={task.arrivalSelfieUrl ? 'done' : actionStage === 'ARRIVAL' ? 'active' : ''}>Arrival selfie</span>
-                  <span className={task.status === 'STARTED' || task.status === 'COMPLETED' ? 'done' : nextAction.status === 'STARTED' ? 'active' : ''}>Start OTP</span>
-                  <span className={task.completionSelfieUrl ? 'done' : actionStage === 'COMPLETION' ? 'active' : ''}>Completion selfie</span>
-                </div>
-                {actionStage && (
-                  <div className="selfie-control">
-                    <label>{actionStage === 'ARRIVAL' ? 'Arrival selfie' : 'Completion selfie'}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        onChange={(e) => setSelfie(e.target.files?.[0] || null)}
-                      />
-                    </label>
-                    <span>{existingSelfieUrl ? 'Selfie uploaded.' : selfie ? selfie.name : 'Required before status update.'}</span>
+
+                {/* Step 1: Mark Arrived */}
+                <div className={`step-card ${stepNumber === 1 ? 'active-step' : ''}`}>
+                  <div className="step-header">
+                    <h3>Step 1: Arrive at Location</h3>
+                    <span className={`step-badge ${task.arrivalSelfieUrl || stepNumber > 1 ? 'done' : ''}`}>
+                      {task.arrivalSelfieUrl || stepNumber > 1 ? '✓ Completed' : 'Pending'}
+                    </span>
                   </div>
-                )}
-                {actionNeedsOtp && (
-                  <label>Citizen OTP<input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Ask citizen for OTP" /></label>
-                )}
-                <button className="primary" disabled={busy} onClick={update}>{busy ? 'Updating...' : nextAction.label}</button>
+                  {stepNumber === 1 && (
+                    <>
+                      <SelfiePicker
+                        label="Arrival Selfie Photo"
+                        file={selfie}
+                        onSelect={setSelfie}
+                        existingUrl={task.arrivalSelfieUrl}
+                        required
+                      />
+                      <button
+                        className="accent-btn"
+                        disabled={busy}
+                        onClick={() => handleStepAction('ARRIVED', 'ARRIVAL')}
+                      >
+                        {busy ? 'Updating...' : 'Mark Arrived'}
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Step 2: Start Task with OTP */}
+                <div className={`step-card ${stepNumber === 2 ? 'active-step' : ''}`}>
+                  <div className="step-header">
+                    <h3>Step 2: Start Work (Citizen OTP)</h3>
+                    <span className={`step-badge ${stepNumber > 2 ? 'done' : ''}`}>
+                      {stepNumber > 2 ? '✓ Completed' : 'Pending'}
+                    </span>
+                  </div>
+                  {stepNumber === 2 && (
+                    <>
+                      <label>
+                        Citizen Arrival OTP
+                        <input
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value)}
+                          placeholder="Enter 6-digit OTP from citizen"
+                        />
+                      </label>
+                      <button
+                        className="accent-btn"
+                        disabled={busy || !otp}
+                        onClick={() => handleStepAction('STARTED')}
+                      >
+                        {busy ? 'Starting...' : 'Start Task'}
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Step 3: Completion Selfie */}
+                <div className={`step-card ${stepNumber === 3 ? 'active-step' : ''}`}>
+                  <div className="step-header">
+                    <h3>Step 3: Completion Selfie Photo</h3>
+                    <span className={`step-badge ${task.completionSelfieUrl ? 'done' : ''}`}>
+                      {task.completionSelfieUrl ? '✓ Uploaded' : 'Pending'}
+                    </span>
+                  </div>
+                  {stepNumber === 3 && (
+                    <>
+                      <SelfiePicker
+                        label="Work Completion Selfie"
+                        file={selfie}
+                        onSelect={setSelfie}
+                        existingUrl={task.completionSelfieUrl}
+                        required
+                      />
+                      <button
+                        className="accent-btn"
+                        disabled={busy || (!selfie && !task.completionSelfieUrl)}
+                        onClick={async () => {
+                          if (selfie && accessToken) {
+                            setBusy(true);
+                            setError(null);
+                            try {
+                              const loc = await getLocation().catch(() => ({ lat: task.lat, lng: task.lng }));
+                              const updated = await api.uploadTaskSelfie(accessToken, task.id, 'COMPLETION', selfie, loc.lat, loc.lng, task.addressText);
+                              setTask(updated);
+                              setSelfie(null);
+                            } catch (err) {
+                              setError(err instanceof Error ? err.message : 'Upload failed.');
+                            } finally {
+                              setBusy(false);
+                            }
+                          }
+                        }}
+                      >
+                        {busy ? 'Uploading...' : 'Upload Completion Selfie'}
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Step 4: End OTP */}
+                <div className={`step-card ${stepNumber === 4 ? 'active-step' : ''}`}>
+                  <div className="step-header">
+                    <h3>Step 4: End Task (Citizen Completion OTP)</h3>
+                    <span className={`step-badge ${stepNumber === 4 ? '' : ''}`}>
+                      Pending
+                    </span>
+                  </div>
+                  {stepNumber === 4 && (
+                    <>
+                      <label>
+                        Citizen Completion OTP
+                        <input
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value)}
+                          placeholder="Enter 6-digit completion OTP from citizen"
+                        />
+                      </label>
+                      <button
+                        className="primary"
+                        disabled={busy || !otp}
+                        onClick={() => handleStepAction('COMPLETED')}
+                      >
+                        {busy ? 'Completing Task...' : 'Complete & Finish Task'}
+                      </button>
+                    </>
+                  )}
+                </div>
               </section>
             )}
           </>
+        )}
+        {showCelebration && task && (
+          <CelebrationModal task={task} onClose={() => setShowCelebration(false)} />
         )}
       </main>
     </Shell>
@@ -860,42 +1403,123 @@ function PartnerTaskPage() {
 function TaskDetail({ task, role, helperLoc }: { task: Task; role: 'BUYER' | 'HELPER'; helperLoc?: { lat: number; lng: number } | null }) {
   const elapsed = task.workStartedAt ? Math.max(0, Date.now() - new Date(task.workStartedAt).getTime()) : 0;
   const minutes = Math.floor(elapsed / 60000);
+
   return (
     <section className="panel detail-panel">
       <div className="detail-header">
         <div>
-          <span className="eyebrow">{role === 'BUYER' ? 'Citizen booking' : 'Partner job'}</span>
-          <h1>{task.title}</h1>
-          <p>{task.description}</p>
+          <span className="eyebrow">{role === 'BUYER' ? 'Citizen Booking' : 'Partner Job'}</span>
+          <h1 style={{ marginTop: '4px' }}>{task.title}</h1>
+          <p style={{ color: 'var(--muted)' }}>{task.description}</p>
         </div>
-        <div className="status-stack">
+        <div className="status-stack" style={{ alignItems: 'flex-end', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
-          <strong>{money(task.budgetPaise)}</strong>
+          <strong style={{ fontSize: '1.8rem', color: 'var(--navy)' }}>{money(task.budgetPaise)}</strong>
         </div>
       </div>
-      <div className="grid three">
+      <div className="grid three" style={{ marginTop: '16px' }}>
         <Info label="When" value={formatWhen(task.scheduledAt)} />
         <Info label="Duration" value={`${task.timeMinutes} minutes`} />
         <Info label="Payment" value="Cash or UPI directly to Partner" />
         <Info label="Address" value={task.addressText || `${task.lat}, ${task.lng}`} />
         <Info label="Landmark" value={task.landmark || 'Not provided'} />
-        <Info label="Partner" value={task.helperName || task.helperPhone || 'Searching'} />
+        <Info label="Partner" value={task.helperName || task.helperPhone || 'Searching...'} />
       </div>
       {role === 'BUYER' && (
-        <div className="otp-grid">
+        <div className="otp-grid" style={{ marginTop: '16px' }}>
           <div><span>Arrival OTP</span><strong>{task.arrivalOtp || 'Assigned after booking'}</strong></div>
           <div><span>Completion OTP</span><strong>{task.completionOtp || 'Assigned after booking'}</strong></div>
         </div>
       )}
-      {task.status === 'STARTED' && <div className="notice success">Timer running: {minutes} minutes elapsed.</div>}
-      {helperLoc && <div className="notice">Partner live location: {helperLoc.lat.toFixed(5)}, {helperLoc.lng.toFixed(5)}</div>}
-      <a className="secondary" href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">Open directions</a>
+      {task.status === 'STARTED' && <div className="notice success" style={{ marginTop: '16px' }}>⏱️ Timer Running: {minutes} minutes elapsed.</div>}
+      {helperLoc && <div className="notice" style={{ marginTop: '16px' }}>📍 Partner Live Location: {helperLoc.lat.toFixed(5)}, {helperLoc.lng.toFixed(5)}</div>}
+      <a className="secondary" style={{ marginTop: '16px', display: 'inline-flex', width: 'fit-content' }} href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
+        🗺️ Open Google Maps Directions
+      </a>
     </section>
   );
 }
 
 function Info({ label, value }: { label: string; value: string }) {
   return <div className="info"><span>{label}</span><strong>{value}</strong></div>;
+}
+
+function ProfileView() {
+  const { user, logout } = useAuth();
+  const { accessToken } = useAuth();
+  const [helperProfile, setHelperProfile] = useState<HelperProfile | null>(null);
+  const [tasksCount, setTasksCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    if (user?.role === 'HELPER') {
+      api.helperProfile(accessToken).then(setHelperProfile).catch(() => {});
+    }
+    api.myTasks(accessToken).then((t) => setTasksCount(t.length)).catch(() => {});
+  }, [accessToken, user?.role]);
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  const getInitials = () => {
+    if (user.displayName) {
+      return user.displayName.split(' ').map((n) => n[0]).join('').toUpperCase();
+    }
+    return user.role[0];
+  };
+
+  return (
+    <Shell>
+      <main className="workspace">
+        <div className="panel profile-card">
+          <div className="profile-header">
+            <div className="profile-avatar">{getInitials()}</div>
+            <div className="profile-details">
+              <h2>{user.displayName || 'Superherooo User'}</h2>
+              <span className="muted">{user.email || user.phone || 'No contact email'}</span>
+              <div style={{ marginTop: '6px' }}>
+                <span className="status-pill approved">{user.role}</span>
+              </div>
+            </div>
+          </div>
+
+          <EmailVerificationCard />
+
+          {user.role === 'HELPER' && (
+            <KycSection
+              profile={helperProfile}
+              onKycUpdated={() => {
+                if (accessToken) api.helperProfile(accessToken).then(setHelperProfile);
+              }}
+            />
+          )}
+
+          <div className="profile-stats-grid">
+            <div className="profile-stat-box">
+              <span>Total Bookings</span>
+              <strong>{tasksCount}</strong>
+            </div>
+            <div className="profile-stat-box">
+              <span>Account Role</span>
+              <strong style={{ fontSize: '1.1rem' }}>{user.role}</strong>
+            </div>
+            <div className="profile-stat-box">
+              <span>Email Verified</span>
+              <strong style={{ fontSize: '1.1rem', color: user.emailVerified ? 'var(--green)' : 'var(--amber)' }}>
+                {user.emailVerified ? '✓ Verified' : 'Pending'}
+              </strong>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '12px' }}>
+            <Link className="secondary" to={user.role === 'BUYER' ? '/citizen' : '/partner'}>
+              Go to Workspace Dashboard
+            </Link>
+            <button className="danger" onClick={logout}>Sign Out</button>
+          </div>
+        </div>
+      </main>
+    </Shell>
+  );
 }
 
 function App() {
@@ -908,8 +1532,10 @@ function App() {
           <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/signup" element={<AuthPage mode="signup" />} />
           <Route path="/citizen" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
+          <Route path="/citizen/profile" element={<RequireRole role="BUYER"><ProfileView /></RequireRole>} />
           <Route path="/citizen/tasks/:taskId" element={<RequireRole role="BUYER"><CitizenTaskPage /></RequireRole>} />
           <Route path="/partner" element={<RequireRole role="HELPER"><PartnerDashboard /></RequireRole>} />
+          <Route path="/partner/profile" element={<RequireRole role="HELPER"><ProfileView /></RequireRole>} />
           <Route path="/partner/tasks/:taskId" element={<RequireRole role="HELPER"><PartnerTaskPage /></RequireRole>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

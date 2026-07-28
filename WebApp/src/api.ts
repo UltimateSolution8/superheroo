@@ -82,6 +82,24 @@ export const api = {
     return apiFetch<Task>(`/api/v1/tasks/${taskId}/selfie`, { method: 'POST', body }, token);
   },
   helperProfile: (token: string) => apiFetch<HelperProfile>('/api/v1/helper/profile', {}, token),
+  submitKyc: (
+    token: string,
+    fullName: string,
+    docType: string,
+    idNumber: string,
+    idFront: File,
+    idBack?: File | null,
+    selfie?: File | null,
+  ) => {
+    const body = new FormData();
+    body.set('fullName', fullName);
+    if (docType) body.set('docType', docType);
+    body.set('idNumber', idNumber);
+    body.set('idFront', idFront);
+    if (idBack) body.set('idBack', idBack);
+    if (selfie) body.set('selfie', selfie);
+    return apiFetch<HelperProfile>('/api/v1/helper/kyc/submit', { method: 'POST', body }, token);
+  },
   helperOnline: (token: string, online: boolean, lat?: number, lng?: number) =>
     apiFetch<void>('/api/v1/helper/online', { method: 'PUT', body: JSON.stringify({ online, lat, lng }) }, token),
 };
