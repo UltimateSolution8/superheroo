@@ -101,3 +101,22 @@ export type CreateTaskPayload = {
   paymentCollectionMode: 'PAY_AFTER_SERVICE';
   verificationMode?: TaskVerificationMode | null;
 };
+
+export type ChatMessage = {
+  id: string;
+  taskId: string;
+  senderUserId: string;
+  senderRole: UserRole;
+  senderName?: string | null;
+  message: string;
+  createdAt: string;
+};
+
+export type SavedAddress = {
+  id: string;
+  label: string; // 'Home' | 'Work' | 'Other'
+  addressText: string;
+  landmark?: string;
+  lat: number;
+  lng: number;
+};

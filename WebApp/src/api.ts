@@ -102,6 +102,10 @@ export const api = {
   },
   helperOnline: (token: string, online: boolean, lat?: number, lng?: number) =>
     apiFetch<void>('/api/v1/helper/online', { method: 'PUT', body: JSON.stringify({ online, lat, lng }) }, token),
+  getTaskChatMessages: (token: string, taskId: string) =>
+    apiFetch<import('./types').ChatMessage[]>(`/api/v1/tasks/${taskId}/chat/messages`, {}, token),
+  sendTaskChatMessage: (token: string, taskId: string, message: string) =>
+    apiFetch<import('./types').ChatMessage>(`/api/v1/tasks/${taskId}/chat/messages`, { method: 'POST', body: JSON.stringify({ message }) }, token),
 };
 
 export interface LocationSuggestion {

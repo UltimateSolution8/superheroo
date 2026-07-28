@@ -3,12 +3,13 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { io, type Socket } from 'socket.io-client';
 import { api, searchLocations, resolveLocationCoords, reverseGeocode, type LocationSuggestion } from './api';
-import type { AuthResponse, AuthUser, CreateTaskPayload, HelperProfile, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
+import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import './styles.css';
 
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://realtime.mysuperhero.xyz').replace(/\/+$/, '');
 const showDevOtp = String(import.meta.env.VITE_DEV_SHOW_OTP || 'false').toLowerCase() === 'true';
 const authKey = 'superherooo_web_auth';
+const savedAddressesKey = 'superherooo_saved_addresses';
 const staticRedirectKey = 'superherooo_app_redirect';
 
 type AuthState = { accessToken: string | null; refreshToken: string | null; user: AuthUser | null; loading: boolean };
@@ -98,6 +99,35 @@ function useSocket() {
   return socket;
 }
 
+/* Audio Chime Synthesizer for Partner Notifications */
+function playChimeSound() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  } catch (e) {
+    console.warn("Audio chime failed:", e);
+  }
+}
+
+/* Web Push Notification Helper */
+function showWebPushNotification(title: string, options?: NotificationOptions) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { icon: '/assets/finallogo.png', ...options });
+  }
+}
+
 function money(paise: number) {
   return `₹${Math.round((paise || 0) / 100).toLocaleString('en-IN')}`;
 }
@@ -138,6 +168,47 @@ function getLocation(): Promise<{ lat: number; lng: number }> {
       { enableHighAccuracy: true, timeout: 10000 },
     );
   });
+}
+
+/* Voice Dictation Mic Button Component */
+function VoiceMicInput({ onTranscript }: { onTranscript: (text: string) => void }) {
+  const [listening, setListening] = useState(false);
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition is not supported by your browser. Please type manually.');
+      return;
+    }
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-IN';
+      recognition.onstart = () => setListening(true);
+      recognition.onend = () => setListening(false);
+      recognition.onerror = () => setListening(false);
+      recognition.onresult = (event: any) => {
+        const text = event.results[0][0].transcript;
+        if (text) onTranscript(text);
+      };
+      recognition.start();
+    } catch (e) {
+      console.error(e);
+      setListening(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className={`mic-btn ${listening ? 'listening' : ''}`}
+      onClick={startListening}
+      title="Dictate with Voice"
+    >
+      🎙️
+    </button>
+  );
 }
 
 /* Particle Confetti Canvas Component */
@@ -311,6 +382,96 @@ function SelfiePicker({
   );
 }
 
+/* In-App Realtime Task Chat Modal */
+function TaskChatModal({ taskId, onClose }: { taskId: string; onClose: () => void }) {
+  const { accessToken, user } = useAuth();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputMsg, setInputMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const loadMessages = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      const msgs = await api.getTaskChatMessages(accessToken, taskId);
+      setMessages(msgs);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [accessToken, taskId]);
+
+  useEffect(() => {
+    loadMessages();
+    const interval = setInterval(loadMessages, 3000);
+    return () => clearInterval(interval);
+  }, [loadMessages]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!accessToken || !inputMsg.trim()) return;
+    setBusy(true);
+    try {
+      const newMsg = await api.sendTaskChatMessage(accessToken, taskId, inputMsg.trim());
+      setMessages((prev) => [...prev, newMsg]);
+      setInputMsg('');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Could not send message.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="chat-modal-overlay">
+      <div className="chat-modal">
+        <div className="chat-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '1.2rem' }}>💬</span>
+            <strong>Task Live Chat</strong>
+          </div>
+          <button style={{ color: 'white', fontSize: '1.2rem', fontWeight: 800 }} onClick={onClose}>✕</button>
+        </div>
+        <div ref={scrollRef} className="chat-messages-scroll">
+          {messages.length === 0 ? (
+            <p className="muted" style={{ textAlign: 'center', margin: 'auto' }}>
+              No messages yet. Send a message to coordinate!
+            </p>
+          ) : (
+            messages.map((m) => {
+              const isMine = m.senderUserId === user?.id;
+              return (
+                <div key={m.id} className={`chat-bubble ${isMine ? 'mine' : 'other'}`}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, opacity: 0.85, marginBottom: '2px' }}>
+                    {isMine ? 'You' : m.senderName || m.senderRole}
+                  </div>
+                  <div>{m.message}</div>
+                  <div className="chat-bubble-meta">
+                    {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+        <form className="chat-input-bar" onSubmit={send}>
+          <input
+            value={inputMsg}
+            onChange={(e) => setInputMsg(e.target.value)}
+            placeholder="Type a message..."
+          />
+          <button className="accent-btn" disabled={busy || !inputMsg.trim()}>Send</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function Shell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -421,7 +582,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         <section className="auth-copy">
           <span className="eyebrow">Superherooo Web App</span>
           <h1>{mode === 'signup' ? 'Create your account' : 'Sign in to Superherooo'}</h1>
-          <p>Book urgent help or accept nearby jobs directly from your browser with instant realtime matching.</p>
+          <p>Book urgent non-skilled help or accept nearby jobs directly from your browser.</p>
           <div className="trust-row">
             <span>OTP Verified</span>
             <span>Realtime Location</span>
@@ -543,12 +704,21 @@ function CitizenDashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Saved Addresses State
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>(() => {
+    try {
+      const stored = localStorage.getItem(savedAddressesKey);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [form, setForm] = useState({
     title: '',
     description: '',
-    urgency: 'NORMAL' as TaskUrgency,
     timeMinutes: 60,
-    budgetRupees: 399,
     addressText: '',
     landmark: '',
     lat: '',
@@ -556,11 +726,25 @@ function CitizenDashboard() {
     scheduledAt: '',
   });
 
+  // Calculate auto budget & 50% discount
+  const standardPrice = Math.round(form.timeMinutes * 6.5);
+  const discountPrice = Math.max(99, Math.round(standardPrice * 0.5));
+
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeoutRef = useRef<any>(null);
 
-  const presetTitles = ['AC Repair & Service', 'Plumbing Assistance', 'Deep House Cleaning', 'Electrician Help', 'Grocery / Parcel Pickup', 'General Helper'];
+  // NON-SKILLED Chips only
+  const nonSkilledChips = [
+    '📦 Package Pickup & Drop',
+    '🛒 Grocery & Errands Shopping',
+    '📦 House Help & Moving Heavy Items',
+    '🧍 Queue Waiting / Spot Holding',
+    '🐕 Pet Walking & Care',
+    '🎟️ Ticket / Counter Booking',
+    '👴 Senior Citizen Assistance',
+    '🧹 Basic House & Yard Cleanup',
+  ];
 
   const load = useCallback(async () => {
     if (!accessToken) return;
@@ -633,6 +817,24 @@ function CitizenDashboard() {
     }
   };
 
+  const saveCurrentAddress = (label: string) => {
+    if (!form.addressText || !form.lat || !form.lng) {
+      alert('Please fill location first before saving.');
+      return;
+    }
+    const newAddr: SavedAddress = {
+      id: String(Date.now()),
+      label,
+      addressText: form.addressText,
+      landmark: form.landmark,
+      lat: Number(form.lat),
+      lng: Number(form.lng),
+    };
+    const next = [...savedAddresses.filter((a) => a.label !== label), newAddr];
+    setSavedAddresses(next);
+    localStorage.setItem(savedAddressesKey, JSON.stringify(next));
+  };
+
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!accessToken) return;
@@ -642,9 +844,9 @@ function CitizenDashboard() {
       const payload: CreateTaskPayload = {
         title: form.title,
         description: form.description,
-        urgency: form.urgency,
+        urgency: 'NORMAL',
         timeMinutes: Number(form.timeMinutes),
-        budgetPaise: Math.max(1, Number(form.budgetRupees)) * 100,
+        budgetPaise: discountPrice * 100,
         lat: Number(form.lat),
         lng: Number(form.lng),
         addressText: form.addressText || null,
@@ -669,8 +871,8 @@ function CitizenDashboard() {
         <section className="hero-band">
           <div>
             <span className="eyebrow">Citizen Portal</span>
-            <h1>Book trusted help near you</h1>
-            <p>Verified partners are dispatched in minutes. Pay conveniently with Cash or UPI after service.</p>
+            <h1>Book trusted non-skilled help</h1>
+            <p>Verified partners for everyday errands, heavy moving, queue waiting, and house assistance.</p>
             <div className="hero-points">
               <span>⚡ Live Realtime Matching</span>
               <span>📸 Photo & OTP Verified</span>
@@ -689,7 +891,7 @@ function CitizenDashboard() {
           <form className="panel task-form" onSubmit={create}>
             <h2>Create Task</h2>
             <div className="preset-chips">
-              {presetTitles.map((t) => (
+              {nonSkilledChips.map((t) => (
                 <button
                   key={t}
                   type="button"
@@ -700,37 +902,89 @@ function CitizenDashboard() {
                 </button>
               ))}
             </div>
+
             <label>
               Task Title
-              <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. AC repair, cleaning, delivery..." />
+              <div className="mic-input-wrapper">
+                <input
+                  required
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="e.g. Package pickup, queue waiting, grocery..."
+                />
+                <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, title: f.title ? `${f.title} ${text}` : text }))} />
+              </div>
             </label>
+
             <label>
               Description & Instructions
-              <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Provide details for the partner..." />
+              <div className="mic-input-wrapper">
+                <textarea
+                  required
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="Provide clear instructions for the partner..."
+                />
+                <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, description: f.description ? `${f.description} ${text}` : text }))} />
+              </div>
             </label>
+
             <div className="grid two compact">
               <label>
-                Urgency
-                <select value={form.urgency} onChange={(e) => setForm({ ...form, urgency: e.target.value as TaskUrgency })}>
-                  <option value="NORMAL">NORMAL</option>
-                  <option value="HIGH">HIGH</option>
-                  <option value="CRITICAL">CRITICAL</option>
-                  <option value="LOW">LOW</option>
-                </select>
+                Duration (minutes)
+                <input
+                  type="number"
+                  min="1"
+                  max="1440"
+                  value={form.timeMinutes}
+                  onChange={(e) => setForm({ ...form, timeMinutes: Number(e.target.value) })}
+                />
               </label>
-              <label>
-                Est. Duration (minutes)
-                <input type="number" min="1" max="1440" value={form.timeMinutes} onChange={(e) => setForm({ ...form, timeMinutes: Number(e.target.value) })} />
-              </label>
-              <label>
-                Budget (₹)
-                <input type="number" min="1" value={form.budgetRupees} onChange={(e) => setForm({ ...form, budgetRupees: Number(e.target.value) })} />
-              </label>
+
               <label>
                 Schedule Later (Optional)
                 <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} />
               </label>
             </div>
+
+            {/* Auto Budget & 50% Off Display */}
+            <div className="price-preview-box">
+              <div className="price-preview-left">
+                <span className="strike-price">₹{standardPrice}</span>
+                <span className="discount-badge">50% OFF</span>
+              </div>
+              <span className="final-price">₹{discountPrice}</span>
+            </div>
+
+            {/* Saved Addresses Section */}
+            {savedAddresses.length > 0 && (
+              <div>
+                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>
+                  Saved Addresses:
+                </span>
+                <div className="saved-addresses-row">
+                  {savedAddresses.map((sa) => (
+                    <button
+                      key={sa.id}
+                      type="button"
+                      className="saved-address-chip"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          addressText: sa.addressText,
+                          landmark: sa.landmark || '',
+                          lat: String(sa.lat),
+                          lng: String(sa.lng),
+                        }))
+                      }
+                    >
+                      {sa.label === 'Home' ? '🏡 Home' : sa.label === 'Work' ? '💼 Work' : '📍 ' + sa.label}: {sa.addressText.substring(0, 24)}...
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div style={{ position: 'relative' }}>
               <label>
                 Address
@@ -738,7 +992,7 @@ function CitizenDashboard() {
                   required
                   value={form.addressText}
                   onChange={(e) => handleAddressChange(e.target.value)}
-                  placeholder="Full address (Start typing for autocomplete)"
+                  placeholder="Full address (Search autocomplete)"
                   autoComplete="off"
                 />
               </label>
@@ -755,21 +1009,25 @@ function CitizenDashboard() {
                 </ul>
               )}
             </div>
+
             <label>
               Landmark
               <input value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} placeholder="Nearby landmark (optional)" />
             </label>
+
             <div className="grid three compact">
               <button type="button" className="secondary" onClick={fillLocation}>📍 Current Location</button>
-              <label>Lat<input required value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value })} /></label>
-              <label>Lng<input required value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} /></label>
+              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Home')}>Save as Home</button>
+              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Work')}>Save as Work</button>
             </div>
+
             <div className="notice">Payment Mode: Cash or UPI directly to Partner after completion.</div>
             {error && <div className="notice error">{error}</div>}
             <button className="accent-btn" disabled={busy} style={{ width: '100%', marginTop: '6px' }}>
               {busy ? 'Creating Task...' : 'Create Task'}
             </button>
           </form>
+
           <TaskList title="Your Bookings" tasks={tasks} basePath="/citizen/tasks" />
         </div>
       </main>
@@ -830,6 +1088,7 @@ function CitizenTaskPage() {
   const [helperLoc, setHelperLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const previousStatusRef = useRef<TaskStatus | null>(null);
 
   const load = useCallback(async () => {
@@ -872,10 +1131,9 @@ function CitizenTaskPage() {
     <Shell>
       <main className="workspace">
         {error && <div className="notice error">{error}</div>}
-        {task && <TaskDetail task={task} helperLoc={helperLoc} role="BUYER" />}
-        {showCelebration && task && (
-          <CelebrationModal task={task} onClose={() => setShowCelebration(false)} />
-        )}
+        {task && <TaskDetail task={task} helperLoc={helperLoc} role="BUYER" onOpenChat={() => setShowChat(true)} />}
+        {showChat && taskId && <TaskChatModal taskId={taskId} onClose={() => setShowChat(false)} />}
+        {showCelebration && task && <CelebrationModal task={task} onClose={() => setShowCelebration(false)} />}
       </main>
     </Shell>
   );
@@ -1017,22 +1275,31 @@ function PartnerDashboard() {
   }, [accessToken]);
 
   useEffect(() => { load(); }, [load]);
+
+  /* Web Push & Audio Chime Listener for Partner Offers */
   useEffect(() => {
     if (!socket) return;
-    const refresh = () => load();
-    socket.on('task.offered', refresh);
-    socket.on('task_created', refresh);
-    socket.on('task_assigned', refresh);
-    socket.on('task.assigned', refresh);
-    socket.on('task_status_changed', refresh);
-    socket.on('task.status.changed', refresh);
+    const handleNewOffer = (payload?: any) => {
+      load();
+      playChimeSound();
+      showWebPushNotification('⚡ New Nearby Task Available!', {
+        body: payload?.title ? `${payload.title} - ${money(payload.budgetPaise)}` : 'A new task was offered near you.',
+      });
+    };
+
+    socket.on('task.offered', handleNewOffer);
+    socket.on('task_created', handleNewOffer);
+    socket.on('task_assigned', () => load());
+    socket.on('task.assigned', () => load());
+    socket.on('task_status_changed', () => load());
+    socket.on('task.status.changed', () => load());
     return () => {
-      socket.off('task.offered', refresh);
-      socket.off('task_created', refresh);
-      socket.off('task_assigned', refresh);
-      socket.off('task.assigned', refresh);
-      socket.off('task_status_changed', refresh);
-      socket.off('task.status.changed', refresh);
+      socket.off('task.offered', handleNewOffer);
+      socket.off('task_created', handleNewOffer);
+      socket.off('task_assigned');
+      socket.off('task.assigned');
+      socket.off('task_status_changed');
+      socket.off('task.status.changed');
     };
   }, [socket, load]);
 
@@ -1052,6 +1319,9 @@ function PartnerDashboard() {
         await api.helperOnline(accessToken, false);
         setOnline(false);
         return;
+      }
+      if ('Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
       }
       const loc = await getLocation();
       await api.helperOnline(accessToken, true, loc.lat, loc.lng);
@@ -1183,6 +1453,7 @@ function PartnerTaskPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const load = useCallback(async () => {
     if (!accessToken || !taskId) return;
@@ -1206,7 +1477,6 @@ function PartnerTaskPage() {
     };
   }, [socket, taskId, load]);
 
-  // Determine current active flow step
   const getStepNumber = () => {
     if (!task) return 1;
     if (task.status === 'ASSIGNED') return 1;
@@ -1252,7 +1522,7 @@ function PartnerTaskPage() {
         {error && <div className="notice error">{error}</div>}
         {task && (
           <>
-            <TaskDetail task={task} role="HELPER" />
+            <TaskDetail task={task} role="HELPER" onOpenChat={() => setShowChat(true)} />
             {task.status !== 'COMPLETED' && task.status !== 'CANCELLED' && (
               <section className="panel step-container" style={{ marginTop: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1364,9 +1634,7 @@ function PartnerTaskPage() {
                 <div className={`step-card ${stepNumber === 4 ? 'active-step' : ''}`}>
                   <div className="step-header">
                     <h3>Step 4: End Task (Citizen Completion OTP)</h3>
-                    <span className={`step-badge ${stepNumber === 4 ? '' : ''}`}>
-                      Pending
-                    </span>
+                    <span className="step-badge">Pending</span>
                   </div>
                   {stepNumber === 4 && (
                     <>
@@ -1392,17 +1660,46 @@ function PartnerTaskPage() {
             )}
           </>
         )}
-        {showCelebration && task && (
-          <CelebrationModal task={task} onClose={() => setShowCelebration(false)} />
-        )}
+        {showChat && taskId && <TaskChatModal taskId={taskId} onClose={() => setShowChat(false)} />}
+        {showCelebration && task && <CelebrationModal task={task} onClose={() => setShowCelebration(false)} />}
       </main>
     </Shell>
   );
 }
 
-function TaskDetail({ task, role, helperLoc }: { task: Task; role: 'BUYER' | 'HELPER'; helperLoc?: { lat: number; lng: number } | null }) {
-  const elapsed = task.workStartedAt ? Math.max(0, Date.now() - new Date(task.workStartedAt).getTime()) : 0;
-  const minutes = Math.floor(elapsed / 60000);
+function TaskDetail({
+  task,
+  role,
+  helperLoc,
+  onOpenChat,
+}: {
+  task: Task;
+  role: 'BUYER' | 'HELPER';
+  helperLoc?: { lat: number; lng: number } | null;
+  onOpenChat?: () => void;
+}) {
+  const [elapsedSec, setElapsedSec] = useState(0);
+
+  useEffect(() => {
+    if (task.status !== 'STARTED' || !task.workStartedAt) return;
+    const startMs = new Date(task.workStartedAt).getTime();
+    const updateTimer = () => {
+      setElapsedSec(Math.max(0, Math.floor((Date.now() - startMs) / 1000)));
+    };
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [task.status, task.workStartedAt]);
+
+  const formatTimer = (sec: number) => {
+    const hrs = Math.floor(sec / 3600);
+    const mins = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return `${hrs > 0 ? String(hrs).padStart(2, '0') + ':' : ''}${String(mins).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
+
+  const contactPhone = role === 'BUYER' ? task.helperPhone : task.buyerPhone;
+  const contactName = role === 'BUYER' ? task.helperName || 'Partner' : task.buyerName || 'Citizen';
 
   return (
     <section className="panel detail-panel">
@@ -1417,22 +1714,49 @@ function TaskDetail({ task, role, helperLoc }: { task: Task; role: 'BUYER' | 'HE
           <strong style={{ fontSize: '1.8rem', color: 'var(--navy)' }}>{money(task.budgetPaise)}</strong>
         </div>
       </div>
+
       <div className="grid three" style={{ marginTop: '16px' }}>
         <Info label="When" value={formatWhen(task.scheduledAt)} />
         <Info label="Duration" value={`${task.timeMinutes} minutes`} />
         <Info label="Payment" value="Cash or UPI directly to Partner" />
         <Info label="Address" value={task.addressText || `${task.lat}, ${task.lng}`} />
         <Info label="Landmark" value={task.landmark || 'Not provided'} />
-        <Info label="Partner" value={task.helperName || task.helperPhone || 'Searching...'} />
+        <Info label="Assigned Partner" value={task.helperName || task.helperPhone || 'Searching...'} />
       </div>
+
+      {/* Call & Realtime In-App Chat Bar */}
+      {['ASSIGNED', 'ARRIVED', 'STARTED'].includes(task.status) && (
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px', padding: '14px', background: 'var(--soft)', borderRadius: '12px' }}>
+          {contactPhone && (
+            <a className="secondary" href={`tel:${contactPhone}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              📞 Call {contactName} ({contactPhone})
+            </a>
+          )}
+          <button className="accent-btn" onClick={onOpenChat}>
+            💬 Live In-App Chat
+          </button>
+          <a className="sos-btn" href="tel:112">
+            🆘 Emergency SOS
+          </a>
+        </div>
+      )}
+
       {role === 'BUYER' && (
         <div className="otp-grid" style={{ marginTop: '16px' }}>
           <div><span>Arrival OTP</span><strong>{task.arrivalOtp || 'Assigned after booking'}</strong></div>
           <div><span>Completion OTP</span><strong>{task.completionOtp || 'Assigned after booking'}</strong></div>
         </div>
       )}
-      {task.status === 'STARTED' && <div className="notice success" style={{ marginTop: '16px' }}>⏱️ Timer Running: {minutes} minutes elapsed.</div>}
+
+      {task.status === 'STARTED' && (
+        <div className="notice success" style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>⏱️ Work In Progress: Timer Running</span>
+          <strong style={{ fontSize: '1.3rem', fontFamily: 'monospace' }}>{formatTimer(elapsedSec)}</strong>
+        </div>
+      )}
+
       {helperLoc && <div className="notice" style={{ marginTop: '16px' }}>📍 Partner Live Location: {helperLoc.lat.toFixed(5)}, {helperLoc.lng.toFixed(5)}</div>}
+
       <a className="secondary" style={{ marginTop: '16px', display: 'inline-flex', width: 'fit-content' }} href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
         🗺️ Open Google Maps Directions
       </a>
