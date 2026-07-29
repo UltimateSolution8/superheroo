@@ -2,56 +2,49 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { io, type Socket } from 'socket.io-client';
-import { api, searchLocations, resolveLocationCoords, reverseGeocode, type LocationSuggestion } from './api';
-import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import {
-  Package,
-  ShoppingCart,
-  Home,
-  Users,
-  HeartHandshake,
-  Ticket,
-  ShieldCheck,
-  Sparkles,
-  Pin,
-  FileText,
-  Clock,
-  Calendar,
-  Mic,
-  Zap,
-  Banknote,
-  MapPin,
-  CheckCircle2,
   AlertTriangle,
-  Mail,
-  PlusCircle,
-  ListOrdered,
-  User,
-  LogOut,
+  ArrowLeft,
+  Bell,
+  BriefcaseBusiness,
+  Camera,
+  CheckCircle2,
   ChevronRight,
-  Briefcase,
-  Search,
-  ArrowRight,
-  Lock,
-  Phone,
+  Clock3,
+  CreditCard,
   Eye,
   EyeOff,
-  RefreshCw,
-  Navigation,
-  Globe,
-  Tag,
-  Camera,
+  Home,
+  Image as ImageIcon,
+  Inbox,
+  LocateFixed,
+  Lock,
+  LogOut,
+  MapPin,
   MessageCircle,
+  Mic,
+  Navigation,
+  Phone,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Timer,
+  User,
+  Wallet,
+  X,
+  Zap,
 } from 'lucide-react';
+import { api, searchLocations, resolveLocationCoords, reverseGeocode, type LocationSuggestion } from './api';
+import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import './styles.css';
 import logo from "../public/superlogo.png";
-import superhero from "../public/hero.jpeg"
 
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://realtime.mysuperhero.xyz').replace(/\/+$/, '');
 const showDevOtp = String(import.meta.env.VITE_DEV_SHOW_OTP || 'false').toLowerCase() === 'true';
 const authKey = 'superherooo_web_auth';
 const savedAddressesKey = 'superherooo_saved_addresses';
 const staticRedirectKey = 'superherooo_app_redirect';
+const activeStatuses: TaskStatus[] = ['AI_PENDING', 'AI_APPROVED', 'ADMIN_REVIEW', 'ADMIN_APPROVED', 'PAYMENT_PENDING', 'SCHEDULED_PENDING', 'SEARCHING', 'ASSIGNED', 'ARRIVED', 'STARTED'];
 
 type AuthState = { accessToken: string | null; refreshToken: string | null; user: AuthUser | null; loading: boolean };
 type AuthContextValue = AuthState & {
@@ -84,7 +77,7 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
       <div className="toast-container" aria-live="polite">
         {toasts.map((t) => (
           <div key={t.id} className={`toast ${t.type}`}>
-            <span>{t.type === 'success' ? '✓' : t.type === 'error' ? '⚠️' : 'ℹ️'}</span>
+            <span className="toast-icon">{t.type === 'success' ? <CheckCircle2 size={18} /> : t.type === 'error' ? <AlertTriangle size={18} /> : <Bell size={18} />}</span>
             <span>{t.message}</span>
           </div>
         ))}
@@ -118,7 +111,7 @@ function OfflineBanner() {
 
   return (
     <div className="offline-banner" role="alert">
-      ⚠️ Internet connection lost. Reconnecting to Superherooo...
+      <AlertTriangle size={16} /> Internet connection lost. Reconnecting to Superherooo...
     </div>
   );
 }
@@ -309,7 +302,7 @@ function VoiceMicInput({ onTranscript }: { onTranscript: (text: string) => void 
       title="Dictate with Voice"
       aria-label="Dictate text with voice"
     >
-      <Mic size={16} />
+      <Mic size={18} />
     </button>
   );
 }
@@ -389,7 +382,7 @@ function CelebrationModal({ task, onClose }: { task: Task; onClose: () => void }
               <strong>{money(task.budgetPaise)}</strong>
             </div>
           </div>
-          <button className="accent-btn" style={{ width: '100%' }} onClick={onClose}>
+        <button className="accent-btn" style={{ width: '100%' }} onClick={onClose}>
             Back to Workspace
           </button>
         </div>
@@ -446,25 +439,25 @@ function SelfiePicker({
             title="Remove photo"
             aria-label="Remove uploaded photo"
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
       ) : (
         <div className="selfie-options-row">
           <button
             type="button"
-            className="selfie-btn"
-            onClick={() => cameraInputRef.current?.click()}
-          >
-            📷 Take Camera Photo
-          </button>
+          className="selfie-btn"
+          onClick={() => cameraInputRef.current?.click()}
+        >
+            <Camera size={18} /> Take Camera Photo
+        </button>
           <button
             type="button"
-            className="selfie-btn"
-            onClick={() => galleryInputRef.current?.click()}
-          >
-            🖼️ Choose from Gallery
-          </button>
+          className="selfie-btn"
+          onClick={() => galleryInputRef.current?.click()}
+        >
+            <ImageIcon size={18} /> Choose from Gallery
+        </button>
         </div>
       )}
       <input
@@ -537,10 +530,15 @@ function TaskChatModal({ taskId, onClose }: { taskId: string; onClose: () => voi
       <div className="chat-modal" role="dialog" aria-labelledby="chat-title">
         <div className="chat-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '1.2rem' }}>💬</span>
+            <MessageCircle size={20} />
             <strong id="chat-title">Task Live Chat</strong>
           </div>
-          <button style={{ color: 'white', fontSize: '1.2rem', fontWeight: 800 }} onClick={onClose} aria-label="Close chat">✕</button>
+          <button className="icon-close" onClick={onClose} aria-label="Close chat"><X size={20} /></button>
+        </div>
+        <div className="quick-replies" aria-label="Quick replies">
+          {['I am on my way', 'I have arrived', 'Please share the start OTP', 'Task is completed'].map((reply) => (
+            <button key={reply} type="button" onClick={() => setInputMsg(reply)}>{reply}</button>
+          ))}
         </div>
         <div ref={scrollRef} className="chat-messages-scroll">
           {messages.length === 0 ? (
@@ -585,24 +583,78 @@ function MobileBottomNav() {
 
   if (!user) return null;
 
-  const dashboardPath = user.role === 'BUYER' ? '/citizen' : '/partner';
-  const profilePath = user.role === 'BUYER' ? '/citizen/profile' : '/partner/profile';
+  const tabs = user.role === 'BUYER'
+    ? [
+      { label: 'Home', path: '/citizen', icon: Home },
+      { label: 'Tasks', path: '/citizen/tasks', icon: BriefcaseBusiness },
+      { label: 'Wallet', path: '/citizen/wallet', icon: Wallet },
+      { label: 'Profile', path: '/citizen/profile', icon: User },
+    ]
+    : [
+      { label: 'Home', path: '/partner', icon: Home },
+      { label: 'Jobs', path: '/partner/jobs', icon: BriefcaseBusiness },
+      { label: 'Earnings', path: '/partner/earnings', icon: Wallet },
+      { label: 'Inbox', path: '/partner/inbox', icon: Inbox },
+      { label: 'Profile', path: '/partner/profile', icon: User },
+    ];
 
   return (
-    <div className="mobile-bottom-nav">
-      <Link className={`mobile-nav-item ${location.pathname === dashboardPath ? 'active' : ''}`} to={dashboardPath}>
-        <span className="icon"><Zap size={20} /></span>
-        <span>Dashboard</span>
-      </Link>
-      <Link className={`mobile-nav-item ${location.pathname.includes('/profile') ? 'active' : ''}`} to={profilePath}>
-        <span className="icon"><User size={20} /></span>
-        <span>Profile</span>
-      </Link>
-      <a className="mobile-nav-item" href="/">
-        <span className="icon"><Globe size={20} /></span>
-        <span>Website</span>
-      </a>
+    <div className={`mobile-bottom-nav ${user.role === 'HELPER' ? 'five-tabs' : ''}`}>
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = location.pathname === tab.path || (tab.path.endsWith('/tasks') && location.pathname.includes('/citizen/tasks')) || (tab.path.endsWith('/jobs') && location.pathname.includes('/partner/tasks'));
+        return (
+          <Link key={tab.path} className={`mobile-nav-item ${isActive ? 'active' : ''}`} to={tab.path}>
+            <span className="icon"><Icon size={21} strokeWidth={2.35} /></span>
+            <span>{tab.label}</span>
+          </Link>
+        );
+      })}
     </div>
+  );
+}
+
+function ActiveTaskBubble() {
+  const { user, accessToken } = useAuth();
+  const [active, setActive] = useState<Task | null>(null);
+  const socket = useSocket();
+
+  const load = useCallback(async () => {
+    if (!accessToken || !user) return;
+    try {
+      const tasks = await api.myTasks(accessToken);
+      const next = tasks.find((task) => activeStatuses.includes(task.status)) || null;
+      setActive(next);
+    } catch {
+      setActive(null);
+    }
+  }, [accessToken, user?.id]);
+
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (!socket) return;
+    const refresh = () => load();
+    socket.on('task_assigned', refresh);
+    socket.on('task.assigned', refresh);
+    socket.on('task_status_changed', refresh);
+    socket.on('task.status.changed', refresh);
+    return () => {
+      socket.off('task_assigned', refresh);
+      socket.off('task.assigned', refresh);
+      socket.off('task_status_changed', refresh);
+      socket.off('task.status.changed', refresh);
+    };
+  }, [socket, load]);
+
+  if (!user || !active) return null;
+  const path = user.role === 'HELPER' ? `/partner/tasks/${active.id}` : `/citizen/tasks/${active.id}`;
+  return (
+    <Link className="active-task-bubble" to={path}>
+      <span><Timer size={18} /></span>
+      <strong>{statusText(active.status)}</strong>
+      <small>{active.title}</small>
+      <ChevronRight size={17} />
+    </Link>
   );
 }
 
@@ -621,28 +673,18 @@ function Shell({ children }: { children: React.ReactNode }) {
       <OfflineBanner />
       <header className="topbar">
         <Link className="brand" to="/">
-          <img
-            src={`${import.meta.env.BASE_URL}superlogo.png`}
-            alt="Superherooo"
-            onError={(e) => {
-              const target = e.currentTarget as HTMLImageElement;
-              if (!target.dataset.tried) {
-                target.dataset.tried = 'true';
-                target.src = 'superlogo.png';
-              }
-            }}
-          />
+          <img src={logo} alt="Superherooo" />
           <span>Superherooo</span>
         </Link>
         <nav aria-label="Main Navigation">
           {user?.role === 'BUYER' && (
             <Link className={`nav-link ${location.pathname === '/citizen' ? 'active' : ''}`} to="/citizen">
-              <Zap size={16} /> Citizen
+              Citizen
             </Link>
           )}
           {user?.role === 'HELPER' && (
             <Link className={`nav-link ${location.pathname === '/partner' ? 'active' : ''}`} to="/partner">
-              <Briefcase size={16} /> Partner
+              Partner
             </Link>
           )}
           {user && (
@@ -650,19 +692,16 @@ function Shell({ children }: { children: React.ReactNode }) {
               <User size={16} /> Profile
             </Link>
           )}
-          <a className="nav-link" href="/"><Globe size={16} /> Website</a>
+          <a className="nav-link" href="/">Website</a>
           {user ? (
-            <button className="link-button" onClick={logout} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <LogOut size={16} /> Sign out
-            </button>
+            <button className="link-button" onClick={logout}><LogOut size={16} /> Sign out</button>
           ) : (
-            <Link className="nav-link active" to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <Lock size={16} /> Sign in
-            </Link>
+            <Link className="nav-link active" to="/login">Sign in</Link>
           )}
         </nav>
       </header>
       {children}
+      <ActiveTaskBubble />
       <MobileBottomNav />
     </div>
   );
@@ -741,9 +780,9 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           <h1>{mode === 'signup' ? 'Create your account' : 'Sign in to Superherooo'}</h1>
           <p>Book urgent non-skilled help or accept nearby jobs directly from your browser in minutes.</p>
           <div className="trust-row">
-            <span><ShieldCheck size={14} style={{ color: 'var(--teal)' }} /> OTP Verified</span>
-            <span><MapPin size={14} style={{ color: 'var(--blue)' }} /> Realtime Location</span>
-            <span><Banknote size={14} style={{ color: 'var(--green)' }} /> Pay After Service</span>
+            <span><ShieldCheck size={16} /> Email verified</span>
+            <span><MapPin size={16} /> Realtime location</span>
+            <span><CreditCard size={16} /> Cash/UPI after service</span>
           </div>
           <div className="app-visual" aria-hidden="true" style={{ marginTop: '24px' }}>
             <img
@@ -760,12 +799,12 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             />
             <div className="visual-card visual-card-main">
               <span>Live dispatch</span>
-              <strong><Zap size={16} style={{ color: 'var(--amber)' }} /> 4 min avg</strong>
+              <strong><Zap size={18} /> 4 min avg</strong>
               <p>Nearby partner assigned</p>
             </div>
             <div className="visual-card visual-card-float">
               <span>Security</span>
-              <strong><Camera size={14} style={{ color: 'var(--blue)' }} /> Photo + OTP Verified</strong>
+              <strong><Camera size={18} /> Photo + OTP Verified</strong>
             </div>
           </div>
         </section>
@@ -776,18 +815,18 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           </div>
 
           <div className="segmented">
-            <button type="button" className={role === 'BUYER' ? 'active' : ''} onClick={() => setRole('BUYER')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-              <User size={15} /> Citizen
+            <button type="button" className={role === 'BUYER' ? 'active' : ''} onClick={() => setRole('BUYER')}>
+              <User size={17} /> Citizen
             </button>
-            <button type="button" className={role === 'HELPER' ? 'active' : ''} onClick={() => setRole('HELPER')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-              <Briefcase size={15} /> Partner
+            <button type="button" className={role === 'HELPER' ? 'active' : ''} onClick={() => setRole('HELPER')}>
+              <Zap size={17} /> Partner
             </button>
           </div>
 
           {mode === 'signup' && (
             <label className="input-group">
-              <span className="label-text">Full Name</span>
-              <div className="input-icon-wrapper">
+            <span className="label-text">Full Name</span>
+            <div className="input-icon-wrapper">
                 <span className="input-icon"><User size={18} /></span>
                 <input
                   value={displayName}
@@ -801,7 +840,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           <label className="input-group">
             <span className="label-text">Email Address</span>
             <div className="input-icon-wrapper">
-              <span className="input-icon"><Mail size={18} /></span>
+              <span className="input-icon"><Inbox size={18} /></span>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -830,7 +869,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 className="password-toggle-btn"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
-                aria-label="Toggle password visibility"
+              aria-label="Toggle password visibility"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -839,13 +878,13 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
 
           {mode === 'signup' && (
             <label className="input-group">
-              <span className="label-text">Mobile Phone</span>
+              <span className="label-text">Mobile Phone (optional contact only)</span>
               <div className="input-icon-wrapper">
                 <span className="input-icon"><Phone size={18} /></span>
                 <input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="10-digit mobile number"
+                  placeholder="No phone OTP on web"
                 />
               </div>
             </label>
@@ -886,7 +925,6 @@ function EmailVerificationCard() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [verifying, setVerifying] = useState(false);
 
   if (!user?.email || user.emailVerified) return null;
 
@@ -908,12 +946,7 @@ function EmailVerificationCard() {
   };
 
   const verify = async () => {
-    if (!otp.trim()) {
-      showToast('Please enter 6-digit OTP first.', 'error');
-      return;
-    }
     setError(null);
-    setVerifying(true);
     try {
       const auth = await api.verifyEmailOtp(user.email!, otp);
       applyAuth(auth);
@@ -923,73 +956,36 @@ function EmailVerificationCard() {
       const msg = err instanceof Error ? err.message : 'Invalid OTP.';
       setError(msg);
       showToast(msg, 'error');
-    } finally {
-      setVerifying(false);
     }
   };
 
   return (
-    <section className="email-verify-card">
-      <div className="email-verify-header">
-        <div className="email-verify-left">
-          <div className="email-verify-icon-badge"><Mail size={22} /></div>
-          <div className="email-verify-titles">
-            <h3>Verify Your Email Address</h3>
-            <p>
-              Verification unlocks secure bookings and instant notifications for <strong>{user.email}</strong>.
-            </p>
-          </div>
+    <div className="panel warning-panel">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ fontSize: '1.4rem' }}>✉️</span>
+        <div>
+          <h3 style={{ margin: 0 }}>Verify your email address</h3>
+          <p className="muted" style={{ margin: '2px 0 0 0', fontSize: '0.88rem' }}>
+            Email verification helps secure your bookings and partner payouts.
+          </p>
         </div>
-        <span className="email-verify-status-badge"><AlertTriangle size={13} /> Action Required</span>
       </div>
-
-      <div className="email-verify-form-row">
-        <button className="secondary" type="button" disabled={sending} onClick={send} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          {sending ? (
-            <>
-              <span className="spinner" style={{ borderColor: 'rgba(0,0,0,0.2)', borderTopColor: 'var(--navy)' }} /> Sending...
-            </>
-          ) : (
-            <><Mail size={16} /> Send OTP</>
-          )}
+      <div className="inline-form" style={{ marginTop: '6px' }}>
+        <button className="secondary" type="button" disabled={sending} onClick={send}>
+          {sending ? 'Sending...' : 'Send OTP'}
         </button>
-
-        <div className="email-otp-input-wrapper">
-          <span className="email-otp-input-icon"><Lock size={16} /></span>
-          <input
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            placeholder="Enter 6-digit OTP"
-            maxLength={6}
-            aria-label="Email verification OTP"
-          />
-        </div>
-
-        <button className="accent-btn" type="button" disabled={verifying || !otp.trim()} onClick={verify} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          {verifying ? (
-            <>
-              <span className="spinner" /> Verifying...
-            </>
-          ) : (
-            <><CheckCircle2 size={16} /> Verify Email</>
-          )}
-        </button>
+        <input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter 6-digit OTP" aria-label="Email verification OTP" />
+        <button className="primary" type="button" onClick={verify}>Verify Email</button>
       </div>
-
-      {devOtp && (
-        <div className="dev-otp-badge">
-          <span>🛠️ Dev Mode Active OTP:</span>
-          <strong>{devOtp}</strong>
-        </div>
-      )}
+      {devOtp && <div className="notice">Dev OTP: <strong>{devOtp}</strong></div>}
       {message && <div className="notice success">{message}</div>}
       {error && <div className="notice error">{error}</div>}
-    </section>
+    </div>
   );
 }
 
 function CitizenDashboard() {
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const { showToast } = useToast();
   const socket = useSocket();
   const navigate = useNavigate();
@@ -1009,6 +1005,7 @@ function CitizenDashboard() {
   const [form, setForm] = useState({
     title: '',
     description: '',
+    urgency: 'NORMAL' as TaskUrgency,
     timeMinutes: 60,
     addressText: '',
     landmark: '',
@@ -1016,23 +1013,29 @@ function CitizenDashboard() {
     lng: '',
     scheduledAt: '',
   });
+  const [bookingStep, setBookingStep] = useState<'service' | 'details' | 'location' | 'review'>('service');
 
   const standardPrice = Math.round(form.timeMinutes * 6.5);
   const discountPrice = Math.max(99, Math.round(standardPrice * 0.5));
+  const activeTask = tasks.find((task) => activeStatuses.includes(task.status));
+  const completedTasks = tasks.filter((task) => task.status === 'COMPLETED');
+  const currentLocationText = form.addressText || savedAddresses[0]?.addressText || 'Select location';
+  const firstName = user?.displayName?.split(' ')[0] || 'Citizen';
+  const greeting = new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening';
 
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeoutRef = useRef<any>(null);
 
-  const PRESET_OPTIONS = [
-    { id: 'package', title: 'Package Pickup & Drop', icon: Package },
-    { id: 'grocery', title: 'Grocery & Errands Shopping', icon: ShoppingCart },
-    { id: 'househelp', title: 'House Help & Moving Heavy Items', icon: Home },
-    { id: 'queue', title: 'Queue Waiting / Spot Holding', icon: Users },
-    { id: 'pet', title: 'Pet Walking & Care', icon: HeartHandshake },
-    { id: 'ticket', title: 'Ticket / Counter Booking', icon: Ticket },
-    { id: 'senior', title: 'Senior Citizen Assistance', icon: ShieldCheck },
-    { id: 'cleanup', title: 'Basic House & Yard Cleanup', icon: Sparkles },
+  const nonSkilledChips = [
+    'Package Pickup & Drop',
+    'Grocery & Errands Shopping',
+    'House Help & Moving Heavy Items',
+    'Queue Waiting / Spot Holding',
+    'Pet Walking & Care',
+    'Ticket / Counter Booking',
+    'Senior Citizen Assistance',
+    'Basic House & Yard Cleanup',
   ];
 
   const load = useCallback(async () => {
@@ -1136,7 +1139,7 @@ function CitizenDashboard() {
       const payload: CreateTaskPayload = {
         title: form.title,
         description: form.description,
-        urgency: 'NORMAL',
+        urgency: form.urgency,
         timeMinutes: Number(form.timeMinutes),
         budgetPaise: discountPrice * 100,
         lat: Number(form.lat),
@@ -1163,72 +1166,109 @@ function CitizenDashboard() {
     <Shell>
       <main className="workspace">
         <EmailVerificationCard />
-        <section className="hero-band">
-          <div>
-            <span className="eyebrow">
-              <span className="live-pulse" /> Citizen Portal
-            </span>
-            <h1>Book trusted non-skilled help</h1>
-            <p>Verified partners for everyday errands, heavy moving, queue waiting, and house assistance.</p>
-            <div className="hero-points">
-              <span><Zap size={15} style={{ color: 'var(--amber)' }} /> Live Realtime Matching</span>
-              <span><ShieldCheck size={15} style={{ color: 'var(--teal)' }} /> Photo & OTP Verified</span>
-              <span><Banknote size={15} style={{ color: 'var(--green)' }} /> Pay After Completion</span>
+        <section className="rn-citizen-home">
+          <div className="rn-home-header inverted">
+            <button className="rn-location-chip" type="button" onClick={fillLocation}>
+              <span>Home</span>
+              <strong><MapPin size={13} /> {currentLocationText}</strong>
+            </button>
+            <div className="rn-header-actions">
+              <button className="rn-round-button" aria-label="Notifications"><Bell size={22} /></button>
+              <img src="/assets/finallogo.png" alt="Superherooo" />
             </div>
           </div>
-          <div className="hero-graphic">
-            <img
-              src={`${import.meta.env.BASE_URL}hero.jpeg`}
-              alt="Superherooo Professional"
-              onError={(e) => {
-                const target = e.currentTarget as HTMLImageElement;
-                if (!target.dataset.tried) {
-                  target.dataset.tried = 'true';
-                  target.src = 'hero.jpeg';
-                }
-              }}
-            />
-            <div className="metric">
-              <strong>{tasks.filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.status)).length}</strong>
-              <span>active bookings</span>
+
+          <div className="rn-greeting inverted">{greeting}, Mr. {firstName}</div>
+
+          <div className="rn-citizen-hero">
+            <div className="rn-hero-copy">
+              <span className="rn-hero-badge"><ShieldCheck size={13} /> Reliable & Verified</span>
+              <h1>Everyday tasks<br />handled by<br /><span>Super Heroes.</span></h1>
+              <div className="rn-highlight-row">
+                <span><Clock3 size={14} /> Instant Help</span>
+                <span><Wallet size={14} /> Direct Pay</span>
+              </div>
+              <button className="rn-book-button" type="button" onClick={() => setBookingStep('service')}>
+                BOOK SUPERHEROOO <ChevronRight size={15} />
+              </button>
             </div>
+            <img src="/assets/hero-namaste-transparent.png" alt="Superherooo partner greeting" />
+          </div>
+        </section>
+
+        <section className="rn-book-later">
+          <div className="section-head">
+            <div>
+              <h2>Book a Superherooo</h2>
+              <p>Choose instant help or schedule for later.</p>
+            </div>
+            {activeTask && <Link className="status-pill searching" to={`/citizen/tasks/${activeTask.id}`}>Active task</Link>}
+          </div>
+          <div className="rn-book-grid">
+            <button type="button" onClick={() => { setForm((f) => ({ ...f, scheduledAt: '' })); setBookingStep('service'); }}>
+              <div>
+                <strong>Instant Booking</strong>
+                <span>START NOW</span>
+              </div>
+              <Zap size={42} />
+            </button>
+            <button type="button" onClick={() => setBookingStep('review')}>
+              <div>
+                <strong>Schedule Later</strong>
+                <span>BOOK FOR LATER</span>
+              </div>
+              <Clock3 size={42} />
+            </button>
+          </div>
+        </section>
+
+        <section className="rn-suggestions">
+          <div className="section-head">
+            <h2><Sparkles size={20} /> Smart Suggestions</h2>
+            <span>{completedTasks.length} completed</span>
+          </div>
+          <div className="rn-suggestion-row">
+            {['Schedule Later', 'Need a custom task?', 'Grocery run', 'Need keys fetched?', 'Elderly help?'].map((item) => (
+              <button key={item} type="button" onClick={() => setForm((f) => ({ ...f, title: item }))}>
+                <span><Sparkles size={18} /></span>
+                <strong>{item}</strong>
+                <small>Setup rates, time and description directly.</small>
+              </button>
+            ))}
           </div>
         </section>
         <div className="grid two">
-          <form className="panel task-form" onSubmit={create}>
-            <div className="task-form-header">
+          <form className="panel task-form task-form-sheet" onSubmit={create}>
+            <div className="section-head">
               <div>
-                <h2>Create New Task</h2>
-                <p>Select a quick preset or customize your task instructions below.</p>
+                <span className="eyebrow mini">Book a Superherooo</span>
+                <h2>Create Task</h2>
               </div>
-              <span className="task-form-badge"><Zap size={14} /> Instant Dispatch</span>
+              <span className="status-pill scheduled_pending">{form.scheduledAt ? 'Scheduled' : 'Instant'}</span>
+            </div>
+            <div className="stepper">
+              {(['service', 'details', 'location', 'review'] as const).map((step, idx) => (
+                <button key={step} type="button" className={bookingStep === step ? 'active' : ''} onClick={() => setBookingStep(step)}>
+                  <span>{idx + 1}</span>{step}
+                </button>
+              ))}
+            </div>
+            <div className="preset-chips">
+              {nonSkilledChips.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`preset-chip ${form.title === t ? 'active' : ''}`}
+                  onClick={() => setForm({ ...form, title: t })}
+                >
+                  {t}
+                </button>
+              ))}
             </div>
 
-            <div className="form-section">
-              <span className="section-label"><Zap size={14} style={{ color: 'var(--amber)' }} /> Quick Presets</span>
-              <div className="preset-chips">
-                {PRESET_OPTIONS.map((item) => {
-                  const IconComp = item.icon;
-                  const isActive = form.title === item.title;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={`preset-chip ${isActive ? 'active' : ''}`}
-                      onClick={() => setForm({ ...form, title: item.title })}
-                    >
-                      <IconComp className="chip-icon" size={15} />
-                      <span>{item.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <label className="input-group">
-              <span className="label-text">Task Title</span>
-              <div className="input-icon-wrapper mic-input-wrapper">
-                <span className="input-icon"><Pin size={18} /></span>
+            <label>
+              Task Title
+              <div className="mic-input-wrapper">
                 <input
                   required
                   value={form.title}
@@ -1240,24 +1280,31 @@ function CitizenDashboard() {
               </div>
             </label>
 
-            <label className="input-group">
-              <span className="label-text">Description & Instructions</span>
-              <div className="input-icon-wrapper textarea-wrapper mic-input-wrapper">
-                <span className="input-icon"><FileText size={18} /></span>
+            <label>
+              Description & Instructions
+              <div className="mic-input-wrapper">
                 <textarea
                   required
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="Provide clear step-by-step instructions for the partner..."
+                  placeholder="Provide clear instructions for the partner..."
                   aria-label="Task Description"
                 />
                 <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, description: f.description ? `${f.description} ${text}` : text }))} />
               </div>
             </label>
 
+            <div className="segmented four">
+              {(['LOW', 'NORMAL', 'HIGH', 'CRITICAL'] as TaskUrgency[]).map((urgency) => (
+                <button key={urgency} type="button" className={form.urgency === urgency ? 'active' : ''} onClick={() => setForm({ ...form, urgency })}>
+                  {urgency === 'LOW' ? 'Flexible' : urgency === 'NORMAL' ? 'Normal' : urgency === 'HIGH' ? 'Urgent' : 'Critical'}
+                </button>
+              ))}
+            </div>
+
             <div className="grid two compact">
-              <label className="input-group">
-                <span className="label-text" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Clock size={15} /> Duration (minutes)</span>
+              <label>
+                Duration (minutes)
                 <input
                   type="number"
                   min="1"
@@ -1268,31 +1315,25 @@ function CitizenDashboard() {
                 />
               </label>
 
-              <label className="input-group">
-                <span className="label-text" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Calendar size={15} /> Schedule Later (Optional)</span>
-                <input
-                  type="datetime-local"
-                  value={form.scheduledAt}
-                  onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
-                  aria-label="Schedule datetime"
-                />
+              <label>
+                Schedule Later (Optional)
+                <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} aria-label="Schedule datetime" />
               </label>
             </div>
 
             <div className="price-preview-box">
               <div className="price-preview-left">
                 <span className="strike-price">₹{standardPrice}</span>
-                <span className="discount-badge"><Tag size={13} /> 50% OFF SPECIAL</span>
+                <span className="discount-badge">50% OFF</span>
               </div>
-              <div className="price-preview-right">
-                <span className="price-sublabel">Total Payable:</span>
-                <span className="final-price"> ₹{discountPrice}</span>
-              </div>
+              <span className="final-price">₹{discountPrice}</span>
             </div>
 
             {savedAddresses.length > 0 && (
-              <div className="form-section">
-                <span className="section-label"><Home size={14} /> Saved Address Shortcuts</span>
+              <div>
+                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>
+                  Saved Addresses:
+                </span>
                 <div className="saved-addresses-row">
                   {savedAddresses.map((sa) => (
                     <button
@@ -1308,36 +1349,32 @@ function CitizenDashboard() {
                           lng: String(sa.lng),
                         }))
                       }
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     >
-                      {sa.label === 'Home' ? <Home size={14} /> : sa.label === 'Work' ? <Briefcase size={14} /> : <MapPin size={14} />} {sa.label}: {sa.addressText.substring(0, 24)}...
+                      {sa.label === 'Home' ? '🏡 Home' : sa.label === 'Work' ? '💼 Work' : '📍 ' + sa.label}: {sa.addressText.substring(0, 24)}...
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="location-search-container" style={{ position: 'relative' }}>
-              <label className="input-group">
-                <span className="label-text">Pickup / Service Address</span>
-                <div className="input-icon-wrapper">
-                  <span className="input-icon"><MapPin size={18} /></span>
-                  <input
-                    required
-                    value={form.addressText}
-                    onChange={(e) => handleAddressChange(e.target.value)}
-                    placeholder="Full address (Search autocomplete...)"
-                    autoComplete="off"
-                    aria-label="Full Address"
-                  />
-                </div>
+            <div style={{ position: 'relative' }}>
+              <label>
+                Address
+                <input
+                  required
+                  value={form.addressText}
+                  onChange={(e) => handleAddressChange(e.target.value)}
+                  placeholder="Full address (Search autocomplete)"
+                  autoComplete="off"
+                  aria-label="Full Address"
+                />
               </label>
               {showSuggestions && suggestions.length > 0 && (
                 <ul className="suggestions-dropdown">
                   {suggestions.map((sug, idx) => (
-                    <li key={idx} onClick={() => selectSuggestion(sug)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <li key={idx} onClick={() => selectSuggestion(sug)}>
                       <span className="suggestion-icon">
-                        <MapPin size={16} />
+                        {sug.provider === 'ola' ? '🚖' : sug.provider === 'google' ? '📍' : '🗺️'}
                       </span>
                       {sug.description}
                     </li>
@@ -1346,48 +1383,21 @@ function CitizenDashboard() {
               )}
             </div>
 
-            <label className="input-group">
-              <span className="label-text">Building / Landmark (Optional)</span>
-              <div className="input-icon-wrapper">
-                <span className="input-icon"><Home size={18} /></span>
-                <input
-                  value={form.landmark}
-                  onChange={(e) => setForm({ ...form, landmark: e.target.value })}
-                  placeholder="e.g. Near Metro Station, Gate 2, 3rd Floor"
-                  aria-label="Landmark"
-                />
-              </div>
+            <label>
+              Landmark
+              <input value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} placeholder="Nearby landmark (optional)" aria-label="Landmark" />
             </label>
 
-            <div className="address-actions-grid">
-              <button type="button" className="secondary-action-btn" onClick={fillLocation} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                <Navigation size={14} /> Detect Location
-              </button>
-              <button type="button" className="secondary-action-btn" onClick={() => saveCurrentAddress('Home')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                <Home size={14} /> Save Home
-              </button>
-              <button type="button" className="secondary-action-btn" onClick={() => saveCurrentAddress('Work')} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                <Briefcase size={14} /> Save Work
-              </button>
+            <div className="grid three compact">
+              <button type="button" className="secondary" onClick={fillLocation}><LocateFixed size={17} /> Current Location</button>
+              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Home')}>Save Home</button>
+              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Work')}>Save Work</button>
             </div>
 
-            <div className="notice payment-notice" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Banknote size={18} style={{ flexShrink: 0, color: 'var(--blue)' }} />
-              <span>Pay After Completion: Cash or UPI directly to Partner after service.</span>
-            </div>
-
+            <div className="notice payment-note"><Wallet size={18} /> Payment Mode: Cash or UPI directly to Partner after completion. No web gateway payment.</div>
             {error && <div className="notice error">{error}</div>}
-
-            <button className="accent-btn task-submit-btn" disabled={busy}>
-              {busy ? (
-                <>
-                  <span className="spinner" /> Creating Task...
-                </>
-              ) : (
-                <>
-                  Publish & Find Partner <span className="btn-arrow">→</span>
-                </>
-              )}
+            <button className="accent-btn" disabled={busy} style={{ width: '100%', marginTop: '6px' }}>
+              {busy ? 'Creating Task...' : <>Create Task <ChevronRight size={18} /></>}
             </button>
           </form>
 
@@ -1451,9 +1461,11 @@ function TaskList({ title, tasks, basePath }: { title: string; tasks: Task[]; ba
       </div>
 
       {filteredTasks.length === 0 ? (
-        <p className="muted" style={{ padding: '16px 0' }}>
-          {searchTerm ? 'No matching tasks found.' : tab === 'ACTIVE' ? 'No active bookings currently.' : 'No past task records found.'}
-        </p>
+        <EmptyState
+          icon={tab === 'ACTIVE' ? BriefcaseBusiness : CheckCircle2}
+          title={searchTerm ? 'No matching tasks found' : tab === 'ACTIVE' ? 'No active bookings currently' : 'No past task records found'}
+          body={tab === 'ACTIVE' ? 'Create a task and nearby partners will see it in realtime.' : 'Completed and cancelled bookings will appear here.'}
+        />
       ) : (
         filteredTasks.map((task) => (
           <Link key={task.id} className="task-card" to={`${basePath}/${task.id}`}>
@@ -1473,6 +1485,58 @@ function TaskList({ title, tasks, basePath }: { title: string; tasks: Task[]; ba
         ))
       )}
     </section>
+  );
+}
+
+function EmptyState({ icon: Icon, title, body }: { icon: React.ComponentType<{ size?: number }>; title: string; body: string }) {
+  return (
+    <div className="empty-state">
+      <span><Icon size={24} /></span>
+      <strong>{title}</strong>
+      <p>{body}</p>
+    </div>
+  );
+}
+
+function BackHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  const navigate = useNavigate();
+  return (
+    <div className="back-header">
+      <button className="icon-button" onClick={() => navigate(-1)} aria-label="Go back"><ArrowLeft size={20} /></button>
+      <div>
+        <strong>{title}</strong>
+        {subtitle && <span>{subtitle}</span>}
+      </div>
+    </div>
+  );
+}
+
+function StatusTimeline({ status }: { status: TaskStatus }) {
+  const steps: { key: TaskStatus; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
+    { key: 'SEARCHING', label: 'Searching', icon: Search },
+    { key: 'ASSIGNED', label: 'Assigned', icon: ShieldCheck },
+    { key: 'ARRIVED', label: 'Arrived', icon: MapPin },
+    { key: 'STARTED', label: 'Started', icon: Timer },
+    { key: 'COMPLETED', label: 'Done', icon: CheckCircle2 },
+  ];
+  const order = steps.map((s) => s.key);
+  const currentIndex = status === 'CANCELLED' || status === 'ADMIN_REJECTED'
+    ? -1
+    : Math.max(0, order.findIndex((key) => key === status));
+
+  return (
+    <div className="status-timeline">
+      {steps.map((step, idx) => {
+        const Icon = step.icon;
+        const done = currentIndex >= idx || status === 'COMPLETED';
+        return (
+          <div key={step.key} className={done ? 'done' : ''}>
+            <span><Icon size={16} /></span>
+            <small>{step.label}</small>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -1649,7 +1713,7 @@ function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; 
 }
 
 function PartnerDashboard() {
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const { showToast } = useToast();
   const socket = useSocket();
   const navigate = useNavigate();
@@ -1660,6 +1724,27 @@ function PartnerDashboard() {
   const [lastLoc, setLastLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'NEARBY' | 'MY_TASKS'>('NEARBY');
+  const completedPartnerTasks = activeTasks.filter((task) => task.status === 'COMPLETED');
+  const activeJob = activeTasks.find((task) => ['ASSIGNED', 'ARRIVED', 'STARTED'].includes(task.status));
+  const todayStart = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+  const todayEarnings = completedPartnerTasks
+    .filter((task) => task.createdAt && new Date(task.createdAt) >= todayStart)
+    .reduce((sum, task) => sum + (task.budgetPaise || 0), 0);
+  const weeklyEarnings = completedPartnerTasks
+    .filter((task) => {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return task.createdAt && new Date(task.createdAt) >= weekAgo;
+    })
+    .reduce((sum, task) => sum + (task.budgetPaise || 0), 0);
+  const firstName = user?.displayName?.split(' ')[0] || 'Hero';
+  const greeting = new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening';
+  const rankName = completedPartnerTasks.length >= 15 ? 'Gold Hero' : completedPartnerTasks.length >= 5 ? 'Silver Hero' : 'Bronze Hero';
+  const rankProgress = Math.min(100, completedPartnerTasks.length >= 15 ? 100 : completedPartnerTasks.length >= 5 ? ((completedPartnerTasks.length - 5) / 10) * 100 : (completedPartnerTasks.length / 5) * 100);
 
   const load = useCallback(async () => {
     if (!accessToken) return;
@@ -1684,8 +1769,8 @@ function PartnerDashboard() {
     const handleNewOffer = (payload?: any) => {
       load();
       playChimeSound();
-      showToast('⚡ New nearby job offered!', 'info');
-      showWebPushNotification('⚡ New Nearby Task Available!', {
+      showToast('New nearby job offered!', 'info');
+      showWebPushNotification('New Nearby Task Available!', {
         body: payload?.title ? `${payload.title} - ${money(payload.budgetPaise)}` : 'A new task was offered near you.',
       });
     };
@@ -1759,39 +1844,70 @@ function PartnerDashboard() {
     <Shell>
       <main className="workspace">
         <EmailVerificationCard />
-        <section className="hero-band partner">
-          <div>
-            <span className="eyebrow">
-              <span className="live-pulse" /> Partner Portal
-            </span>
-            <h1>Accept nearby jobs & earn instantly</h1>
-            <p>Go online to receive live offers in your area. Perform verified service and get paid cash or UPI directly.</p>
-            <div className="hero-points">
-              <span>📍 Nearby Job Dispatch</span>
-              <span>📷 Camera Verification</span>
-              <span>💵 Direct Earnings</span>
+        <section className="rn-partner-home">
+          <div className="rn-home-header">
+            <img src="/assets/finallogo.png" alt="Superherooo" />
+            <div className="rn-header-center">
+              <strong>{greeting}, Mr. {firstName}</strong>
+              <span><MapPin size={13} /> {lastLoc ? `${lastLoc.lat.toFixed(4)}, ${lastLoc.lng.toFixed(4)}` : 'Location ready when online'}</span>
             </div>
+            <button className="rn-round-button light" aria-label="Notifications"><Bell size={22} /></button>
           </div>
-          <div className="hero-graphic partner-graphic">
-            <img
-              src={`${import.meta.env.BASE_URL}hero.jpeg`}
-              alt="Superherooo Partner"
-              onError={(e) => {
-                const target = e.currentTarget as HTMLImageElement;
-                if (!target.dataset.tried) {
-                  target.dataset.tried = 'true';
-                  target.src = 'hero.jpeg';
-                }
-              }}
-            />
-            <button className={online ? 'danger' : 'primary'} onClick={toggleOnline}>
-              {online ? '🔴 Go Offline' : '🟢 Go Online'}
-            </button>
-          </div>
+
+          <button
+            type="button"
+            onClick={toggleOnline}
+            disabled={false}
+            className={`rn-online-card ${online ? 'online' : 'offline'}`}
+          >
+            <div>
+              <strong>{online ? 'You are online' : 'You are offline'}</strong>
+              <span>{online ? 'Nearby jobs can reach you now.' : 'Go online when you are ready to accept jobs.'}</span>
+            </div>
+            <span className="rn-toggle"><i /></span>
+          </button>
         </section>
         {error && <div className="notice error">{error}</div>}
 
-        <div className="grid three">
+        {(!online || activeJob) && (
+          <section className="rn-earnings-card">
+            <div className="rn-earning-ring">
+              <strong>{money(todayEarnings)}</strong>
+              <span>Today</span>
+            </div>
+            <div className="rn-earning-stats">
+              <div><span>Weekly Earnings</span><strong>{money(weeklyEarnings)}</strong></div>
+              <div><span>Eligible Task Value</span><strong>{money(completedPartnerTasks.reduce((sum, task) => sum + (task.budgetPaise || 0), 0))}</strong></div>
+            </div>
+            <Link className="rn-withdraw-btn" to="/partner/earnings">View Payment Status</Link>
+          </section>
+        )}
+
+        {activeJob && (
+          <section className="rn-active-job">
+            <div className="section-head">
+              <h2>Active Job</h2>
+              <span className="live-pulse" />
+            </div>
+            <div className="job-top-row">
+              <div>
+                <span className="urgent-pill">{activeJob.urgency === 'HIGH' ? 'URGENT' : 'STANDARD'}</span>
+                <h3>{activeJob.title}</h3>
+                <p>{activeJob.addressText || 'Customer location'}</p>
+              </div>
+              <div className="time-wrap">
+                <strong>{activeJob.timeMinutes}m</strong>
+                <span>Estimate</span>
+              </div>
+            </div>
+            <div className="offer-actions">
+              <a className="secondary" href={`https://www.google.com/maps/dir/?api=1&destination=${activeJob.lat},${activeJob.lng}`} target="_blank" rel="noreferrer"><Navigation size={17} /> Navigate</a>
+              <Link className="primary" to={`/partner/tasks/${activeJob.id}`}>Active task</Link>
+            </div>
+          </section>
+        )}
+
+        <div className="grid three rn-partner-summary">
           <KycSection profile={profile} onKycUpdated={load} />
           <section className="panel">
             <h2>Online Dispatch</h2>
@@ -1806,6 +1922,22 @@ function PartnerDashboard() {
             <p className="muted" style={{ marginTop: '10px' }}>In-progress assigned tasks</p>
           </section>
         </div>
+
+        <section className="rn-rank-card">
+          <div className="rank-top-row">
+            <span><ShieldCheck size={24} /></span>
+            <div>
+              <h2>{rankName}</h2>
+              <p>{completedPartnerTasks.length >= 15 ? 'You have reached the highest rank.' : `${completedPartnerTasks.length} completed jobs. Keep going to unlock the next rank.`}</p>
+            </div>
+          </div>
+          <div className="progress-bar-bg"><span style={{ width: `${rankProgress}%` }} /></div>
+          <div className="rank-stats-row">
+            <div><strong>--</strong><span>Rating</span></div>
+            <div><strong>{completedPartnerTasks.length}</strong><span>Tasks</span></div>
+            <div><strong>98%</strong><span>Acceptance</span></div>
+          </div>
+        </section>
 
         <section className="panel list-panel" style={{ marginTop: '20px' }}>
           <div className="tab-switcher">
@@ -1834,7 +1966,7 @@ function PartnerDashboard() {
                   </div>
                   <div className="offer-actions">
                     <a className="secondary" href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
-                      🗺️ Directions
+                      <Navigation size={17} /> Directions
                     </a>
                     <button className="primary" onClick={() => accept(task.id)}>Accept Job</button>
                   </div>
@@ -2131,6 +2263,7 @@ function TaskDetail({
 
   return (
     <section className="panel detail-panel">
+      <BackHeader title={role === 'BUYER' ? 'Booking Details' : 'Job Details'} subtitle={`Task ${task.id.slice(0, 8)}`} />
       <div className="detail-header">
         <div>
           <span className="eyebrow">{role === 'BUYER' ? 'Citizen Booking' : 'Partner Job'}</span>
@@ -2145,76 +2278,309 @@ function TaskDetail({
           <strong style={{ fontSize: '1.8rem', color: 'var(--navy)' }}>{money(task.budgetPaise)}</strong>
         </div>
       </div>
+      <StatusTimeline status={task.status} />
 
       <div className="grid three" style={{ marginTop: '16px' }}>
-        <Info label="When" value={formatWhen(task.scheduledAt)} icon={Calendar} />
-        <Info label="Duration" value={`${task.timeMinutes} minutes`} icon={Clock} />
-        <Info label="Payment" value="Cash or UPI directly to Partner" icon={Banknote} />
-        <Info label="Address" value={task.addressText || `${task.lat}, ${task.lng}`} icon={MapPin} />
-        <Info label="Landmark" value={task.landmark || 'Not provided'} icon={Home} />
-        <Info label="Assigned Partner" value={task.helperName || task.helperPhone || 'Searching for nearby partners...'} icon={User} />
+        <Info label="When" value={formatWhen(task.scheduledAt)} />
+        <Info label="Duration" value={`${task.timeMinutes} minutes`} />
+        <Info label="Payment" value="Cash or UPI directly to Partner" />
+        <Info label="Address" value={task.addressText || `${task.lat}, ${task.lng}`} />
+        <Info label="Landmark" value={task.landmark || 'Not provided'} />
+        <Info label="Assigned Partner" value={task.helperName || task.helperPhone || 'Searching...'} />
       </div>
 
       {['ASSIGNED', 'ARRIVED', 'STARTED'].includes(task.status) && (
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px', padding: '14px', background: 'var(--soft)', borderRadius: '12px', border: '1px solid var(--line)' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px', padding: '14px', background: 'var(--soft)', borderRadius: '12px' }}>
           {contactPhone && (
             <a className="secondary" href={`tel:${contactPhone}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <Phone size={16} /> Call {contactName} ({contactPhone})
+              <Phone size={17} /> Call {contactName}
             </a>
           )}
-          <button className="accent-btn" onClick={onOpenChat} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <MessageCircle size={16} /> Live In-App Chat
+          <button className="accent-btn" onClick={onOpenChat}>
+            <MessageCircle size={17} /> Live In-App Chat
           </button>
           <a className="sos-btn" href="tel:112">
-            <AlertTriangle size={16} /> Emergency SOS
+            <AlertTriangle size={17} /> Emergency SOS
           </a>
         </div>
       )}
 
       {role === 'BUYER' && (
         <div className="otp-grid" style={{ marginTop: '16px' }}>
-          <div>
-            <span><Lock size={15} style={{ color: 'var(--blue)' }} /> Arrival OTP</span>
-            <strong>{task.arrivalOtp || 'Assigned after booking'}</strong>
-          </div>
-          <div>
-            <span><CheckCircle2 size={15} style={{ color: 'var(--green)' }} /> Completion OTP</span>
-            <strong>{task.completionOtp || 'Assigned after booking'}</strong>
-          </div>
+          <div><span>Arrival OTP</span><strong>{task.arrivalOtp || 'Assigned after booking'}</strong></div>
+          <div><span>Completion OTP</span><strong>{task.completionOtp || 'Assigned after booking'}</strong></div>
         </div>
       )}
 
       {task.status === 'STARTED' && (
         <div className="notice success" style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <Clock size={18} style={{ color: 'var(--green)' }} /> Work In Progress: Timer Running
-          </span>
+          <span><Timer size={18} /> Work In Progress: Timer Running</span>
           <strong style={{ fontSize: '1.3rem', fontFamily: 'monospace' }}>{formatTimer(elapsedSec)}</strong>
         </div>
       )}
 
-      {helperLoc && (
-        <div className="notice" style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-          <Navigation size={16} style={{ color: 'var(--blue)' }} /> Partner Live Location: {helperLoc.lat.toFixed(5)}, {helperLoc.lng.toFixed(5)}
-        </div>
-      )}
+      {helperLoc && <div className="notice" style={{ marginTop: '16px' }}><MapPin size={18} /> Partner Live Location: {helperLoc.lat.toFixed(5)}, {helperLoc.lng.toFixed(5)}</div>}
 
-      <a className="secondary" style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', width: 'fit-content' }} href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
-        <MapPin size={16} /> Open Google Maps Directions
+      <a className="secondary" style={{ marginTop: '16px', display: 'inline-flex', width: 'fit-content' }} href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
+        <Navigation size={17} /> Open Directions
       </a>
     </section>
   );
 }
 
-function Info({ label, value, icon: IconComp }: { label: string; value: string; icon?: React.ElementType }) {
+function Info({ label, value }: { label: string; value: string }) {
+  return <div className="info"><span>{label}</span><strong>{value}</strong></div>;
+}
+
+function CitizenTasksPage() {
+  const { accessToken } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const socket = useSocket();
+
+  const load = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      setTasks(await api.myTasks(accessToken));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load bookings.');
+    }
+  }, [accessToken]);
+
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (!socket) return;
+    const refresh = () => load();
+    socket.on('task_assigned', refresh);
+    socket.on('task.assigned', refresh);
+    socket.on('task_status_changed', refresh);
+    socket.on('task.status.changed', refresh);
+    return () => {
+      socket.off('task_assigned', refresh);
+      socket.off('task.assigned', refresh);
+      socket.off('task_status_changed', refresh);
+      socket.off('task.status.changed', refresh);
+    };
+  }, [socket, load]);
+
   return (
-    <div className="info-card">
-      <div className="info-card-header">
-        {IconComp && <IconComp size={15} className="info-icon" />}
-        <span>{label}</span>
-      </div>
-      <strong>{value}</strong>
-    </div>
+    <Shell>
+      <main className="workspace mobile-stack">
+        <BackHeader title="My Bookings" subtitle="Active, scheduled and completed tasks" />
+        {error && <div className="notice error">{error}</div>}
+        <TaskList title="Bookings" tasks={tasks} basePath="/citizen/tasks" />
+      </main>
+    </Shell>
+  );
+}
+
+function CitizenWalletPage() {
+  const { accessToken } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    api.myTasks(accessToken).then(setTasks).catch(() => setTasks([]));
+  }, [accessToken]);
+
+  const completed = tasks.filter((task) => task.status === 'COMPLETED');
+  const total = completed.reduce((sum, task) => sum + (task.budgetPaise || 0), 0);
+
+  return (
+    <Shell>
+      <main className="workspace mobile-stack">
+        <BackHeader title="Wallet" subtitle="Cash and UPI settlement only" />
+        <section className="panel wallet-hero">
+          <span><Wallet size={26} /></span>
+          <h1>{money(total)}</h1>
+          <p>Total completed cash/UPI bookings tracked on web. No payment gateway is enabled.</p>
+        </section>
+        <section className="panel">
+          <div className="section-head">
+            <h2>Payment Records</h2>
+            <span className="status-pill approved">{completed.length} completed</span>
+          </div>
+          {completed.length === 0 ? (
+            <EmptyState icon={CreditCard} title="No completed payments yet" body="Completed bookings settled by cash or UPI will appear here." />
+          ) : (
+            completed.map((task) => (
+              <Link key={task.id} className="task-card" to={`/citizen/tasks/${task.id}`}>
+                <div>
+                  <strong>{task.title}</strong>
+                  <span>{formatWhen(task.createdAt)}</span>
+                </div>
+                <b>{money(task.budgetPaise)}</b>
+              </Link>
+            ))
+          )}
+        </section>
+      </main>
+    </Shell>
+  );
+}
+
+function PartnerJobsPage() {
+  const { accessToken } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const socket = useSocket();
+  const [available, setAvailable] = useState<Task[]>([]);
+  const [mine, setMine] = useState<Task[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      const [availableTasks, myTasks] = await Promise.all([
+        api.availableTasks(accessToken).catch(() => []),
+        api.myTasks(accessToken).catch(() => []),
+      ]);
+      setAvailable(availableTasks);
+      setMine(myTasks);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load jobs.');
+    }
+  }, [accessToken]);
+
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (!socket) return;
+    const refresh = () => load();
+    socket.on('task.offered', refresh);
+    socket.on('task_created', refresh);
+    socket.on('task_assigned', refresh);
+    socket.on('task.assigned', refresh);
+    socket.on('task_status_changed', refresh);
+    socket.on('task.status.changed', refresh);
+    return () => {
+      socket.off('task.offered', refresh);
+      socket.off('task_created', refresh);
+      socket.off('task_assigned', refresh);
+      socket.off('task.assigned', refresh);
+      socket.off('task_status_changed', refresh);
+      socket.off('task.status.changed', refresh);
+    };
+  }, [socket, load]);
+
+  const accept = async (taskId: string) => {
+    if (!accessToken) return;
+    try {
+      await api.acceptTask(accessToken, taskId);
+      showToast('Task accepted. Follow the selfie and OTP steps.', 'success');
+      navigate(`/partner/tasks/${taskId}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not accept task.';
+      setError(msg);
+      showToast(msg, 'error');
+    }
+  };
+
+  return (
+    <Shell>
+      <main className="workspace mobile-stack">
+        <BackHeader title="Jobs" subtitle="Nearby offers and accepted jobs" />
+        {error && <div className="notice error">{error}</div>}
+        <section className="panel">
+          <div className="section-head">
+            <h2>Nearby Offers</h2>
+            <span className="status-pill searching">{available.length} live</span>
+          </div>
+          {available.length === 0 ? (
+            <EmptyState icon={BriefcaseBusiness} title="No nearby offers right now" body="Go online from Home and keep this page open for realtime offers." />
+          ) : (
+            available.map((task) => (
+              <article key={task.id} className="offer-card">
+                <div>
+                  <h3>{task.title}</h3>
+                  <p>{task.description}</p>
+                  <div className="meta-row">
+                    <span>{money(task.budgetPaise)}</span>
+                    <span>{task.timeMinutes} mins</span>
+                    <span>{formatWhen(task.scheduledAt)}</span>
+                  </div>
+                </div>
+                <div className="offer-actions">
+                  <a className="secondary" href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer"><Navigation size={17} /> Directions</a>
+                  <button className="primary" onClick={() => accept(task.id)}>Accept Job</button>
+                </div>
+              </article>
+            ))
+          )}
+        </section>
+        <TaskList title="My Accepted Jobs" tasks={mine} basePath="/partner/tasks" />
+      </main>
+    </Shell>
+  );
+}
+
+function PartnerEarningsPage() {
+  const { accessToken } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  useEffect(() => {
+    if (!accessToken) return;
+    api.myTasks(accessToken).then(setTasks).catch(() => setTasks([]));
+  }, [accessToken]);
+  const completed = tasks.filter((task) => task.status === 'COMPLETED');
+  const total = completed.reduce((sum, task) => sum + (task.budgetPaise || 0), 0);
+  return (
+    <Shell>
+      <main className="workspace mobile-stack">
+        <BackHeader title="Earnings" subtitle="Cash/UPI earnings from completed jobs" />
+        <section className="panel wallet-hero partner-wallet">
+          <span><Wallet size={26} /></span>
+          <h1>{money(total)}</h1>
+          <p>Collected directly from citizens by cash or UPI after OTP-verified completion.</p>
+        </section>
+        <section className="panel">
+          <h2>Completed Jobs</h2>
+          {completed.length === 0 ? (
+            <EmptyState icon={Wallet} title="No earnings yet" body="Accept and complete jobs to see web earnings here." />
+          ) : (
+            completed.map((task) => (
+              <Link key={task.id} className="task-card" to={`/partner/tasks/${task.id}`}>
+                <div>
+                  <strong>{task.title}</strong>
+                  <span>{formatWhen(task.createdAt)}</span>
+                </div>
+                <b>{money(task.budgetPaise)}</b>
+              </Link>
+            ))
+          )}
+        </section>
+      </main>
+    </Shell>
+  );
+}
+
+function PartnerInboxPage() {
+  const { accessToken } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  useEffect(() => {
+    if (!accessToken) return;
+    api.myTasks(accessToken).then(setTasks).catch(() => setTasks([]));
+  }, [accessToken]);
+  const chatTasks = tasks.filter((task) => ['ASSIGNED', 'ARRIVED', 'STARTED', 'COMPLETED'].includes(task.status));
+  return (
+    <Shell>
+      <main className="workspace mobile-stack">
+        <BackHeader title="Inbox" subtitle="Task chats with citizens" />
+        <section className="panel">
+          {chatTasks.length === 0 ? (
+            <EmptyState icon={Inbox} title="No task chats yet" body="Accepted jobs will open secure in-app chat from their job detail screen." />
+          ) : (
+            chatTasks.map((task) => (
+              <Link key={task.id} className="task-card" to={`/partner/tasks/${task.id}`}>
+                <div>
+                  <strong>{task.buyerName || 'Citizen'}</strong>
+                  <span>{task.title}</span>
+                </div>
+                <span className={`status-pill ${task.status.toLowerCase()}`}>{statusText(task.status)}</span>
+              </Link>
+            ))
+          )}
+        </section>
+      </main>
+    </Shell>
   );
 }
 
@@ -2307,9 +2673,14 @@ function App() {
             <Route path="/login" element={<AuthPage mode="login" />} />
             <Route path="/signup" element={<AuthPage mode="signup" />} />
             <Route path="/citizen" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
+            <Route path="/citizen/tasks" element={<RequireRole role="BUYER"><CitizenTasksPage /></RequireRole>} />
+            <Route path="/citizen/wallet" element={<RequireRole role="BUYER"><CitizenWalletPage /></RequireRole>} />
             <Route path="/citizen/profile" element={<RequireRole role="BUYER"><ProfileView /></RequireRole>} />
             <Route path="/citizen/tasks/:taskId" element={<RequireRole role="BUYER"><CitizenTaskPage /></RequireRole>} />
             <Route path="/partner" element={<RequireRole role="HELPER"><PartnerDashboard /></RequireRole>} />
+            <Route path="/partner/jobs" element={<RequireRole role="HELPER"><PartnerJobsPage /></RequireRole>} />
+            <Route path="/partner/earnings" element={<RequireRole role="HELPER"><PartnerEarningsPage /></RequireRole>} />
+            <Route path="/partner/inbox" element={<RequireRole role="HELPER"><PartnerInboxPage /></RequireRole>} />
             <Route path="/partner/profile" element={<RequireRole role="HELPER"><ProfileView /></RequireRole>} />
             <Route path="/partner/tasks/:taskId" element={<RequireRole role="HELPER"><PartnerTaskPage /></RequireRole>} />
             <Route path="*" element={<Navigate to="/" replace />} />
