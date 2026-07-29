@@ -113,7 +113,7 @@ export interface LocationSuggestion {
   lat?: number;
   lng?: number;
   placeId?: string;
-  provider: 'osm' | 'ola' | 'google';
+  provider: 'osm' | 'photon' | 'ola' | 'google';
 }
 
 const OLA_MAPS_API_KEY = import.meta.env.VITE_OLA_MAPS_API_KEY || '';
@@ -122,9 +122,9 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 export async function searchLocations(query: string): Promise<LocationSuggestion[]> {
   if (!query || query.trim().length < 2) return [];
 
-  // 1. Try OSM Nominatim first
+  // 1. Try browser-safe OSM Nominatim first
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&q=${encodeURIComponent(query)}`;
     const res = await fetch(url, {
       headers: {
         'Accept-Language': 'en'
@@ -142,10 +142,35 @@ export async function searchLocations(query: string): Promise<LocationSuggestion
       }
     }
   } catch (err) {
-    console.warn("OSM Nominatim search failed, trying Ola Maps:", err);
+    console.warn("OSM Nominatim search failed, trying Photon:", err);
   }
 
-  // 2. Fallback to Ola Maps
+  // 2. Photon is CORS-friendly and returns coordinates directly.
+  try {
+    const url = `https://photon.komoot.io/api/?limit=6&q=${encodeURIComponent(query)}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json() as any;
+      const features = Array.isArray(data?.features) ? data.features : [];
+      if (features.length > 0) {
+        return features.map((feature: any) => {
+          const props = feature.properties || {};
+          const coords = feature.geometry?.coordinates || [];
+          const label = [props.name, props.street, props.city, props.state, props.country].filter(Boolean).join(', ');
+          return {
+            description: label || props.name || query,
+            lat: Number(coords[1]),
+            lng: Number(coords[0]),
+            provider: 'photon' as const,
+          };
+        }).filter((item: LocationSuggestion) => Number.isFinite(item.lat) && Number.isFinite(item.lng));
+      }
+    }
+  } catch (err) {
+    console.warn("Photon search failed, trying Ola Maps:", err);
+  }
+
+  // 3. Fallback to Ola Maps
   if (OLA_MAPS_API_KEY) {
     try {
       const url = `https://api.olamaps.io/places/v1/autocomplete?input=${encodeURIComponent(query)}&api_key=${OLA_MAPS_API_KEY}`;
@@ -169,7 +194,7 @@ export async function searchLocations(query: string): Promise<LocationSuggestion
     }
   }
 
-  // 3. Fallback to Google Maps
+  // 4. Fallback to Google Maps
   if (GOOGLE_MAPS_API_KEY) {
     try {
       const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}`;
@@ -193,7 +218,7 @@ export async function searchLocations(query: string): Promise<LocationSuggestion
 }
 
 export async function resolveLocationCoords(suggestion: LocationSuggestion): Promise<{ lat: number; lng: number } | null> {
-  if (suggestion.provider === 'osm' && suggestion.lat !== undefined && suggestion.lng !== undefined) {
+  if ((suggestion.provider === 'osm' || suggestion.provider === 'photon') && suggestion.lat !== undefined && suggestion.lng !== undefined) {
     return { lat: suggestion.lat, lng: suggestion.lng };
   }
 

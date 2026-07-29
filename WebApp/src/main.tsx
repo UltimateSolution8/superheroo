@@ -14,9 +14,11 @@ import {
   CreditCard,
   Eye,
   EyeOff,
+  FileText,
   Home,
   Image as ImageIcon,
   Inbox,
+  Languages,
   LocateFixed,
   Lock,
   LogOut,
@@ -25,6 +27,7 @@ import {
   Mic,
   Navigation,
   Phone,
+  Pin,
   Search,
   ShieldCheck,
   Sparkles,
@@ -45,6 +48,14 @@ const authKey = 'superherooo_web_auth';
 const savedAddressesKey = 'superherooo_saved_addresses';
 const staticRedirectKey = 'superherooo_app_redirect';
 const activeStatuses: TaskStatus[] = ['AI_PENDING', 'AI_APPROVED', 'ADMIN_REVIEW', 'ADMIN_APPROVED', 'PAYMENT_PENDING', 'SCHEDULED_PENDING', 'SEARCHING', 'ASSIGNED', 'ARRIVED', 'STARTED'];
+const partnerOnlineKey = 'superherooo_partner_online';
+const partnerLastLocationKey = 'superherooo_partner_last_location';
+const languageKey = 'superherooo_language';
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+};
 
 type AuthState = { accessToken: string | null; refreshToken: string | null; user: AuthUser | null; loading: boolean };
 type AuthContextValue = AuthState & {
@@ -159,8 +170,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     refreshRef.current = api.refresh(stored.refreshToken);
     refreshRef.current.then(applyAuth).catch(() => {
-      localStorage.removeItem(authKey);
-      setState({ accessToken: null, refreshToken: null, user: null, loading: false });
+      setState({ ...stored, loading: false });
     });
   }, [applyAuth]);
 
@@ -192,6 +202,119 @@ function useSocket() {
   }, [accessToken, user?.id]);
 
   return socket;
+}
+
+function requestNotificationPermission() {
+  if (!('Notification' in window)) return Promise.resolve('unsupported');
+  if (Notification.permission === 'granted') return Promise.resolve('granted');
+  if (Notification.permission === 'denied') return Promise.resolve('denied');
+  return Notification.requestPermission();
+}
+
+function usePwaInstall() {
+  const location = useLocation();
+  const { user } = useAuth();
+  const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installed, setInstalled] = useState(false);
+
+  useEffect(() => {
+    const manifest = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!manifest) return;
+    const wantsPartner = location.pathname.includes('/partner') || user?.role === 'HELPER';
+    manifest.href = wantsPartner ? '/app/manifest.partner.webmanifest' : '/app/manifest.citizen.webmanifest';
+  }, [location.pathname, user?.role]);
+
+  useEffect(() => {
+    const onBeforeInstall = (event: Event) => {
+      event.preventDefault();
+      setInstallEvent(event as BeforeInstallPromptEvent);
+    };
+    const onInstalled = () => setInstalled(true);
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
+  }, []);
+
+  const install = useCallback(async () => {
+    if (!installEvent) return false;
+    await installEvent.prompt();
+    const choice = await installEvent.userChoice.catch(() => null);
+    if (choice?.outcome === 'accepted') {
+      setInstalled(true);
+      setInstallEvent(null);
+      return true;
+    }
+    return false;
+  }, [installEvent]);
+
+  return { canInstall: Boolean(installEvent), installed, install };
+}
+
+function PwaInstallPrompt() {
+  const location = useLocation();
+  const { canInstall, installed, install } = usePwaInstall();
+  const { showToast } = useToast();
+  const shouldShow = new URLSearchParams(location.search).get('install') === '1';
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const appName = location.pathname.includes('/partner') ? 'Partner' : 'Citizen';
+
+  if (!shouldShow || installed) return null;
+
+  return (
+    <div className="install-banner">
+      <div>
+        <strong>Install Superherooo {appName}</strong>
+        <span>
+          {canInstall
+            ? 'Tap Install to add the app to your home screen.'
+            : isIos
+              ? 'On iPhone, tap Share in Safari, then Add to Home Screen.'
+              : 'Open browser menu and choose Install app or Add to Home screen.'}
+        </span>
+      </div>
+      {canInstall ? (
+        <button
+          className="primary"
+          onClick={async () => {
+            const ok = await install();
+            showToast(ok ? 'App install started.' : 'Install was dismissed.', ok ? 'success' : 'info');
+          }}
+        >
+          Install App
+        </button>
+      ) : (
+        <Link className="secondary" to={location.pathname}>Open App</Link>
+      )}
+    </div>
+  );
+}
+
+function NotificationPermissionCard() {
+  const { showToast } = useToast();
+  const [permission, setPermission] = useState(() => ('Notification' in window ? Notification.permission : 'unsupported'));
+
+  if (permission === 'granted' || permission === 'unsupported') return null;
+
+  return (
+    <div className="notice notification-card">
+      <Bell size={18} />
+      <span>Enable notifications for job offers, assignment updates, chat, and task status changes.</span>
+      <button
+        className="secondary"
+        type="button"
+        onClick={async () => {
+          const result = await requestNotificationPermission();
+          setPermission(result);
+          showToast(result === 'granted' ? 'Notifications enabled.' : 'Notifications were not enabled.', result === 'granted' ? 'success' : 'info');
+        }}
+      >
+        Enable
+      </button>
+    </div>
+  );
 }
 
 /* Audio Chime Synthesizer */
@@ -700,6 +823,8 @@ function Shell({ children }: { children: React.ReactNode }) {
           )}
         </nav>
       </header>
+      <PwaInstallPrompt />
+      {user && <NotificationPermissionCard />}
       {children}
       <ActiveTaskBubble />
       <MobileBottomNav />
@@ -759,6 +884,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         : await api.login(email, password);
       if (!['BUYER', 'HELPER'].includes(auth.user.role)) throw new Error('This web app supports citizen and partner accounts only.');
       applyAuth(auth);
+      requestNotificationPermission().catch(() => undefined);
       showToast(mode === 'signup' ? 'Account created successfully!' : 'Signed in successfully!', 'success');
       navigate(auth.user.role === 'BUYER' ? '/citizen' : '/partner', { replace: true });
     } catch (err) {
@@ -989,6 +1115,7 @@ function CitizenDashboard() {
   const { showToast } = useToast();
   const socket = useSocket();
   const navigate = useNavigate();
+  const location = useLocation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -1014,6 +1141,7 @@ function CitizenDashboard() {
     scheduledAt: '',
   });
   const [bookingStep, setBookingStep] = useState<'service' | 'details' | 'location' | 'review'>('service');
+  const isCreatePage = location.pathname.includes('/citizen/create');
 
   const standardPrice = Math.round(form.timeMinutes * 6.5);
   const discountPrice = Math.max(99, Math.round(standardPrice * 0.5));
@@ -1027,17 +1155,6 @@ function CitizenDashboard() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeoutRef = useRef<any>(null);
 
-  const nonSkilledChips = [
-    'Package Pickup & Drop',
-    'Grocery & Errands Shopping',
-    'House Help & Moving Heavy Items',
-    'Queue Waiting / Spot Holding',
-    'Pet Walking & Care',
-    'Ticket / Counter Booking',
-    'Senior Citizen Assistance',
-    'Basic House & Yard Cleanup',
-  ];
-
   const load = useCallback(async () => {
     if (!accessToken) return;
     try {
@@ -1050,7 +1167,13 @@ function CitizenDashboard() {
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
     if (!socket) return;
-    const refresh = () => load();
+    const refresh = (payload?: any) => {
+      load();
+      if (payload?.status || payload?.taskId) {
+        showToast('Your booking status was updated.', 'info');
+        showWebPushNotification('Superherooo booking updated', { body: payload?.status ? statusText(payload.status) : 'Open the app for details.' });
+      }
+    };
     socket.on('task_assigned', refresh);
     socket.on('task.assigned', refresh);
     socket.on('task_status_changed', refresh);
@@ -1061,7 +1184,7 @@ function CitizenDashboard() {
       socket.off('task_status_changed', refresh);
       socket.off('task.status.changed', refresh);
     };
-  }, [socket, load]);
+  }, [socket, load, showToast]);
 
   const fillLocation = async () => {
     try {
@@ -1136,14 +1259,24 @@ function CitizenDashboard() {
     setError(null);
     setBusy(true);
     try {
+      let lat = Number(form.lat);
+      let lng = Number(form.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || !form.lat || !form.lng) {
+        const matches = await searchLocations(form.addressText);
+        const coords = matches[0] ? await resolveLocationCoords(matches[0]) : null;
+        if (!coords) throw new Error('Please select an address suggestion or use Current Location before creating the task.');
+        lat = coords.lat;
+        lng = coords.lng;
+        setForm((f) => ({ ...f, lat: String(lat.toFixed(6)), lng: String(lng.toFixed(6)) }));
+      }
       const payload: CreateTaskPayload = {
         title: form.title,
         description: form.description,
-        urgency: form.urgency,
+        urgency: 'NORMAL',
         timeMinutes: Number(form.timeMinutes),
         budgetPaise: discountPrice * 100,
-        lat: Number(form.lat),
-        lng: Number(form.lng),
+        lat,
+        lng,
         addressText: form.addressText || null,
         scheduledAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : null,
         landmark: form.landmark || null,
@@ -1166,14 +1299,20 @@ function CitizenDashboard() {
     <Shell>
       <main className="workspace">
         <EmailVerificationCard />
-        <section className="rn-citizen-home">
+        {!isCreatePage && <section className="rn-citizen-home">
           <div className="rn-home-header inverted">
             <button className="rn-location-chip" type="button" onClick={fillLocation}>
               <span>Home</span>
               <strong><MapPin size={13} /> {currentLocationText}</strong>
             </button>
             <div className="rn-header-actions">
-              <button className="rn-round-button" aria-label="Notifications"><Bell size={22} /></button>
+              <button
+                className="rn-round-button"
+                aria-label="Notifications"
+                onClick={() => requestNotificationPermission().then((permission) => showToast(permission === 'granted' ? 'Notifications enabled.' : 'Notifications not enabled.', permission === 'granted' ? 'success' : 'info'))}
+              >
+                <Bell size={22} />
+              </button>
               <img src="/assets/finallogo.png" alt="Superherooo" />
             </div>
           </div>
@@ -1188,15 +1327,15 @@ function CitizenDashboard() {
                 <span><Clock3 size={14} /> Instant Help</span>
                 <span><Wallet size={14} /> Direct Pay</span>
               </div>
-              <button className="rn-book-button" type="button" onClick={() => setBookingStep('service')}>
+              <button className="rn-book-button" type="button" onClick={() => navigate('/citizen/create')}>
                 BOOK SUPERHEROOO <ChevronRight size={15} />
               </button>
             </div>
             <img src="/assets/hero-namaste-transparent.png" alt="Superherooo partner greeting" />
           </div>
-        </section>
+        </section>}
 
-        <section className="rn-book-later">
+        {!isCreatePage && <section className="rn-book-later">
           <div className="section-head">
             <div>
               <h2>Book a Superherooo</h2>
@@ -1205,14 +1344,14 @@ function CitizenDashboard() {
             {activeTask && <Link className="status-pill searching" to={`/citizen/tasks/${activeTask.id}`}>Active task</Link>}
           </div>
           <div className="rn-book-grid">
-            <button type="button" onClick={() => { setForm((f) => ({ ...f, scheduledAt: '' })); setBookingStep('service'); }}>
+            <button type="button" onClick={() => { setForm((f) => ({ ...f, scheduledAt: '' })); navigate('/citizen/create'); }}>
               <div>
                 <strong>Instant Booking</strong>
                 <span>START NOW</span>
               </div>
               <Zap size={42} />
             </button>
-            <button type="button" onClick={() => setBookingStep('review')}>
+            <button type="button" onClick={() => { setBookingStep('review'); navigate('/citizen/create'); }}>
               <div>
                 <strong>Schedule Later</strong>
                 <span>BOOK FOR LATER</span>
@@ -1220,25 +1359,26 @@ function CitizenDashboard() {
               <Clock3 size={42} />
             </button>
           </div>
-        </section>
+        </section>}
 
-        <section className="rn-suggestions">
+        {!isCreatePage && <section className="rn-suggestions">
           <div className="section-head">
             <h2><Sparkles size={20} /> Smart Suggestions</h2>
             <span>{completedTasks.length} completed</span>
           </div>
           <div className="rn-suggestion-row">
             {['Schedule Later', 'Need a custom task?', 'Grocery run', 'Need keys fetched?', 'Elderly help?'].map((item) => (
-              <button key={item} type="button" onClick={() => setForm((f) => ({ ...f, title: item }))}>
+              <button key={item} type="button" onClick={() => { setForm((f) => ({ ...f, title: item })); navigate('/citizen/create'); }}>
                 <span><Sparkles size={18} /></span>
                 <strong>{item}</strong>
                 <small>Setup rates, time and description directly.</small>
               </button>
             ))}
           </div>
-        </section>
-        <div className="grid two">
+        </section>}
+        {isCreatePage && <div className="grid two create-only-grid">
           <form className="panel task-form task-form-sheet" onSubmit={create}>
+            <BackHeader title="Create Task" subtitle="Photo and OTP verified booking" />
             <div className="section-head">
               <div>
                 <span className="eyebrow mini">Book a Superherooo</span>
@@ -1250,18 +1390,6 @@ function CitizenDashboard() {
               {(['service', 'details', 'location', 'review'] as const).map((step, idx) => (
                 <button key={step} type="button" className={bookingStep === step ? 'active' : ''} onClick={() => setBookingStep(step)}>
                   <span>{idx + 1}</span>{step}
-                </button>
-              ))}
-            </div>
-            <div className="preset-chips">
-              {nonSkilledChips.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`preset-chip ${form.title === t ? 'active' : ''}`}
-                  onClick={() => setForm({ ...form, title: t })}
-                >
-                  {t}
                 </button>
               ))}
             </div>
@@ -1293,14 +1421,6 @@ function CitizenDashboard() {
                 <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, description: f.description ? `${f.description} ${text}` : text }))} />
               </div>
             </label>
-
-            <div className="segmented four">
-              {(['LOW', 'NORMAL', 'HIGH', 'CRITICAL'] as TaskUrgency[]).map((urgency) => (
-                <button key={urgency} type="button" className={form.urgency === urgency ? 'active' : ''} onClick={() => setForm({ ...form, urgency })}>
-                  {urgency === 'LOW' ? 'Flexible' : urgency === 'NORMAL' ? 'Normal' : urgency === 'HIGH' ? 'Urgent' : 'Critical'}
-                </button>
-              ))}
-            </div>
 
             <div className="grid two compact">
               <label>
@@ -1401,8 +1521,7 @@ function CitizenDashboard() {
             </button>
           </form>
 
-          <TaskList title="Your Bookings" tasks={tasks} basePath="/citizen/tasks" />
-        </div>
+        </div>}
       </main>
     </Shell>
   );
@@ -1543,6 +1662,7 @@ function StatusTimeline({ status }: { status: TaskStatus }) {
 function CitizenTaskPage() {
   const { taskId = '' } = useParams();
   const { accessToken } = useAuth();
+  const { showToast } = useToast();
   const socket = useSocket();
   const [task, setTask] = useState<Task | null>(null);
   const [helperLoc, setHelperLoc] = useState<{ lat: number; lng: number } | null>(null);
@@ -1569,7 +1689,11 @@ function CitizenTaskPage() {
   useEffect(() => {
     if (!socket || !taskId) return;
     socket.emit('task.subscribe', { taskId, helperId: task?.assignedHelperId });
-    const refresh = () => load();
+    const refresh = (payload?: any) => {
+      load();
+      showToast('Task status updated.', 'info');
+      showWebPushNotification('Task status updated', { body: payload?.status ? statusText(payload.status) : 'Open Superherooo for details.' });
+    };
     const loc = (payload: { taskId?: string; lat?: number; lng?: number }) => {
       if (payload.taskId === taskId && Number.isFinite(payload.lat) && Number.isFinite(payload.lng)) {
         setHelperLoc({ lat: Number(payload.lat), lng: Number(payload.lng) });
@@ -1585,7 +1709,7 @@ function CitizenTaskPage() {
       socket.off('task_status_changed', refresh);
       socket.off('helper.location', loc);
     };
-  }, [socket, taskId, task?.assignedHelperId, load]);
+  }, [socket, taskId, task?.assignedHelperId, load, showToast]);
 
   return (
     <Shell>
@@ -1720,8 +1844,15 @@ function PartnerDashboard() {
   const [profile, setProfile] = useState<HelperProfile | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTasks, setActiveTasks] = useState<Task[]>([]);
-  const [online, setOnline] = useState(false);
-  const [lastLoc, setLastLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const [online, setOnline] = useState(() => localStorage.getItem(partnerOnlineKey) === 'true');
+  const [lastLoc, setLastLoc] = useState<{ lat: number; lng: number } | null>(() => {
+    try {
+      const raw = localStorage.getItem(partnerLastLocationKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'NEARBY' | 'MY_TASKS'>('NEARBY');
   const completedPartnerTasks = activeTasks.filter((task) => task.status === 'COMPLETED');
@@ -1793,11 +1924,34 @@ function PartnerDashboard() {
 
   useEffect(() => {
     if (!online || !socket || !lastLoc) return;
-    const send = () => socket.emit('location.update', lastLoc);
+    const send = () => socket.emit('location.update', { ...lastLoc, role: 'HELPER' });
     send();
     const id = window.setInterval(send, 15000);
     return () => window.clearInterval(id);
   }, [online, socket, lastLoc]);
+
+  useEffect(() => {
+    if (!accessToken || !online) return;
+    let cancelled = false;
+    const restoreOnline = async () => {
+      try {
+        const loc = await getLocation().catch(() => lastLoc);
+        if (!loc || cancelled) return;
+        await api.helperOnline(accessToken, true, loc.lat, loc.lng);
+        localStorage.setItem(partnerOnlineKey, 'true');
+        localStorage.setItem(partnerLastLocationKey, JSON.stringify(loc));
+        setLastLoc(loc);
+        socket?.emit('location.update', { ...loc, role: 'HELPER' });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Could not restore online status.';
+        setError(msg);
+      }
+    };
+    restoreOnline();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, online, socket]);
 
   const toggleOnline = async () => {
     if (!accessToken) return;
@@ -1806,17 +1960,18 @@ function PartnerDashboard() {
       if (online) {
         await api.helperOnline(accessToken, false);
         setOnline(false);
+        localStorage.removeItem(partnerOnlineKey);
         showToast('You are now Offline', 'info');
         return;
       }
-      if ('Notification' in window && Notification.permission !== 'granted') {
-        Notification.requestPermission();
-      }
+      await requestNotificationPermission();
       const loc = await getLocation();
       await api.helperOnline(accessToken, true, loc.lat, loc.lng);
       setLastLoc(loc);
       setOnline(true);
-      socket?.emit('location.update', loc);
+      localStorage.setItem(partnerOnlineKey, 'true');
+      localStorage.setItem(partnerLastLocationKey, JSON.stringify(loc));
+      socket?.emit('location.update', { ...loc, role: 'HELPER' });
       showToast('You are now Online and receiving job offers!', 'success');
       await load();
     } catch (err) {
@@ -1851,7 +2006,13 @@ function PartnerDashboard() {
               <strong>{greeting}, Mr. {firstName}</strong>
               <span><MapPin size={13} /> {lastLoc ? `${lastLoc.lat.toFixed(4)}, ${lastLoc.lng.toFixed(4)}` : 'Location ready when online'}</span>
             </div>
-            <button className="rn-round-button light" aria-label="Notifications"><Bell size={22} /></button>
+            <button
+              className="rn-round-button light"
+              aria-label="Notifications"
+              onClick={() => requestNotificationPermission().then((permission) => showToast(permission === 'granted' ? 'Notifications enabled.' : 'Notifications not enabled.', permission === 'granted' ? 'success' : 'info'))}
+            >
+              <Bell size={22} />
+            </button>
           </div>
 
           <button
@@ -2589,6 +2750,15 @@ function ProfileView() {
   const { accessToken } = useAuth();
   const [helperProfile, setHelperProfile] = useState<HelperProfile | null>(null);
   const [tasksCount, setTasksCount] = useState<number>(0);
+  const [language, setLanguage] = useState(() => localStorage.getItem(languageKey) || 'English');
+  const [savedAddresses] = useState<SavedAddress[]>(() => {
+    try {
+      const stored = localStorage.getItem(savedAddressesKey);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     if (!accessToken) return;
@@ -2657,6 +2827,61 @@ function ProfileView() {
             <button className="danger" onClick={logout}>Sign Out</button>
           </div>
         </div>
+
+        <section className="profile-menu-grid">
+          <div className="panel profile-section-card">
+            <div className="profile-section-title"><User size={20} /><h2>Personal Info</h2></div>
+            <Info label="Name" value={user.displayName || 'Not provided'} />
+            <Info label="Email" value={user.email || 'Not provided'} />
+            <Info label="Phone" value={user.phone || 'Optional on web'} />
+            <Info label="Role" value={user.role === 'BUYER' ? 'Citizen' : 'Partner'} />
+          </div>
+
+          <div className="panel profile-section-card">
+            <div className="profile-section-title"><Languages size={20} /><h2>Language</h2></div>
+            <label>
+              Preferred language
+              <select
+                value={language}
+                onChange={(event) => {
+                  setLanguage(event.target.value);
+                  localStorage.setItem(languageKey, event.target.value);
+                }}
+              >
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Telugu</option>
+                <option>Tamil</option>
+                <option>Kannada</option>
+                <option>Marathi</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="panel profile-section-card">
+            <div className="profile-section-title"><Pin size={20} /><h2>Saved Addresses</h2></div>
+            {savedAddresses.length === 0 ? (
+              <p className="muted">Saved Home and Work addresses from task creation will appear here.</p>
+            ) : (
+              <div className="saved-address-list">
+                {savedAddresses.map((address) => (
+                  <div key={address.id} className="saved-address-item">
+                    <strong>{address.label}</strong>
+                    <span>{address.addressText}</span>
+                    {address.landmark && <small>{address.landmark}</small>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="panel profile-section-card">
+            <div className="profile-section-title"><FileText size={20} /><h2>Policies & Support</h2></div>
+            <a className="profile-menu-link" href="/privacy.html">Privacy Policy <ChevronRight size={17} /></a>
+            <a className="profile-menu-link" href="/terms.html">Terms & Conditions <ChevronRight size={17} /></a>
+            <a className="profile-menu-link" href="/contact.html">Help & Support <ChevronRight size={17} /></a>
+          </div>
+        </section>
       </main>
     </Shell>
   );
@@ -2673,6 +2898,7 @@ function App() {
             <Route path="/login" element={<AuthPage mode="login" />} />
             <Route path="/signup" element={<AuthPage mode="signup" />} />
             <Route path="/citizen" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
+            <Route path="/citizen/create" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
             <Route path="/citizen/tasks" element={<RequireRole role="BUYER"><CitizenTasksPage /></RequireRole>} />
             <Route path="/citizen/wallet" element={<RequireRole role="BUYER"><CitizenWalletPage /></RequireRole>} />
             <Route path="/citizen/profile" element={<RequireRole role="BUYER"><ProfileView /></RequireRole>} />

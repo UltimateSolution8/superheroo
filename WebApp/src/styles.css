@@ -2617,6 +2617,114 @@ svg {
   font-weight: 800;
 }
 
+.install-banner,
+.notification-card {
+  width: min(1040px, calc(100% - 28px));
+  margin: 12px auto 0;
+}
+
+.install-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 20px;
+  color: var(--navy);
+  background: #fffbeb;
+  border: 1px solid rgba(252, 182, 26, 0.45);
+  box-shadow: var(--shadow-md);
+}
+
+.install-banner div {
+  display: grid;
+  gap: 3px;
+}
+
+.install-banner strong {
+  font-weight: 950;
+}
+
+.install-banner span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.notification-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification-card span {
+  flex: 1;
+}
+
+.create-only-grid {
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+}
+
+.profile-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.profile-section-card {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-section-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.profile-section-title h2 {
+  margin: 0;
+}
+
+.saved-address-list {
+  display: grid;
+  gap: 10px;
+}
+
+.saved-address-item {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+}
+
+.saved-address-item strong {
+  color: var(--navy);
+}
+
+.saved-address-item span,
+.saved-address-item small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.profile-menu-link {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 16px;
+  color: var(--navy);
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  font-weight: 850;
+}
+
 .rn-citizen-home {
   margin: -14px -14px 18px;
   padding: 18px 18px 24px;
@@ -3248,5 +3356,29 @@ svg {
     right: 12px;
     left: 12px;
     bottom: calc(92px + var(--sab));
+  }
+
+  .install-banner,
+  .notification-card {
+    width: calc(100% - 24px);
+    align-items: stretch;
+  }
+
+  .install-banner {
+    flex-direction: column;
+  }
+
+  .notification-card {
+    flex-wrap: wrap;
+  }
+
+  .notification-card button,
+  .install-banner button,
+  .install-banner a {
+    width: 100%;
+  }
+
+  .profile-menu-grid {
+    grid-template-columns: 1fr;
   }
 }
