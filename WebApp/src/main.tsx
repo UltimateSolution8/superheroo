@@ -41,6 +41,7 @@ import { api, searchLocations, resolveLocationCoords, reverseGeocode, type Locat
 import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import './styles.css';
 import logo from "../public/superlogo.png";
+import superhero from "../public/hero.jpeg"
 
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://realtime.mysuperhero.xyz').replace(/\/+$/, '');
 const showDevOtp = String(import.meta.env.VITE_DEV_SHOW_OTP || 'false').toLowerCase() === 'true';
@@ -1299,229 +1300,393 @@ function CitizenDashboard() {
     <Shell>
       <main className="workspace">
         <EmailVerificationCard />
-        {!isCreatePage && <section className="rn-citizen-home">
-          <div className="rn-home-header inverted">
-            <button className="rn-location-chip" type="button" onClick={fillLocation}>
-              <span>Home</span>
-              <strong><MapPin size={13} /> {currentLocationText}</strong>
-            </button>
-            <div className="rn-header-actions">
-              <button
-                className="rn-round-button"
-                aria-label="Notifications"
-                onClick={() => requestNotificationPermission().then((permission) => showToast(permission === 'granted' ? 'Notifications enabled.' : 'Notifications not enabled.', permission === 'granted' ? 'success' : 'info'))}
-              >
-                <Bell size={22} />
+        {!isCreatePage && (
+          <section className="rn-citizen-home">
+            {/* Top Bar with Location and Notifications */}
+            <div className="rn-home-header inverted">
+              <button className="rn-location-chip" type="button" onClick={fillLocation}>
+                <span className="rn-location-icon-badge">
+                  <MapPin size={15} className="rn-pin-icon" />
+                </span>
+                <div className="rn-location-text">
+                  <span className="rn-location-label">Deliver To</span>
+                  <strong>{currentLocationText}</strong>
+                </div>
               </button>
-              <img src="/assets/finallogo.png" alt="Superherooo" />
-            </div>
-          </div>
-
-          <div className="rn-greeting inverted">{greeting}, Mr. {firstName}</div>
-
-          <div className="rn-citizen-hero">
-            <div className="rn-hero-copy">
-              <span className="rn-hero-badge"><ShieldCheck size={13} /> Reliable & Verified</span>
-              <h1>Everyday tasks<br />handled by<br /><span>Super Heroes.</span></h1>
-              <div className="rn-highlight-row">
-                <span><Clock3 size={14} /> Instant Help</span>
-                <span><Wallet size={14} /> Direct Pay</span>
+              <div className="rn-header-actions">
+                <button
+                  className="rn-round-button"
+                  aria-label="Notifications"
+                  onClick={() =>
+                    requestNotificationPermission().then((permission) =>
+                      showToast(
+                        permission === 'granted' ? 'Notifications enabled.' : 'Notifications not enabled.',
+                        permission === 'granted' ? 'success' : 'info'
+                      )
+                    )
+                  }
+                >
+                  <Bell size={20} />
+                  <span className="rn-bell-badge" />
+                </button>
+                <div className="rn-logo-wrapper">
+                  <img src={logo} alt="Superherooo" />
+                </div>
               </div>
-              <button className="rn-book-button" type="button" onClick={() => navigate('/citizen/create')}>
-                BOOK SUPERHEROOO <ChevronRight size={15} />
-              </button>
             </div>
-            <img src="/assets/hero-namaste-transparent.png" alt="Superherooo partner greeting" />
-          </div>
-        </section>}
 
-        {!isCreatePage && <section className="rn-book-later">
-          <div className="section-head">
-            <div>
-              <h2>Book a Superherooo</h2>
-              <p>Choose instant help or schedule for later.</p>
+            {/* Personalized Greeting */}
+            <div className="rn-greeting inverted">
+              <span className="rn-greeting-sparkle">✨</span>
+              <span>{greeting}, {firstName}</span>
             </div>
-            {activeTask && <Link className="status-pill searching" to={`/citizen/tasks/${activeTask.id}`}>Active task</Link>}
-          </div>
-          <div className="rn-book-grid">
-            <button type="button" onClick={() => { setForm((f) => ({ ...f, scheduledAt: '' })); navigate('/citizen/create'); }}>
-              <div>
-                <strong>Instant Booking</strong>
-                <span>START NOW</span>
-              </div>
-              <Zap size={42} />
-            </button>
-            <button type="button" onClick={() => { setBookingStep('review'); navigate('/citizen/create'); }}>
-              <div>
-                <strong>Schedule Later</strong>
-                <span>BOOK FOR LATER</span>
-              </div>
-              <Clock3 size={42} />
-            </button>
-          </div>
-        </section>}
 
-        {!isCreatePage && <section className="rn-suggestions">
-          <div className="section-head">
-            <h2><Sparkles size={20} /> Smart Suggestions</h2>
-            <span>{completedTasks.length} completed</span>
-          </div>
-          <div className="rn-suggestion-row">
-            {['Schedule Later', 'Need a custom task?', 'Grocery run', 'Need keys fetched?', 'Elderly help?'].map((item) => (
-              <button key={item} type="button" onClick={() => { setForm((f) => ({ ...f, title: item })); navigate('/citizen/create'); }}>
-                <span><Sparkles size={18} /></span>
-                <strong>{item}</strong>
-                <small>Setup rates, time and description directly.</small>
-              </button>
-            ))}
-          </div>
-        </section>}
-        {isCreatePage && <div className="grid two create-only-grid">
-          <form className="panel task-form task-form-sheet" onSubmit={create}>
-            <BackHeader title="Create Task" subtitle="Photo and OTP verified booking" />
+            {/* Premium Hero Card */}
+            <div className="rn-citizen-hero">
+              <div className="rn-hero-glow" />
+              <div className="rn-hero-copy">
+                <span className="rn-hero-badge">
+                  <ShieldCheck size={14} /> 100% Verified & Insured
+                </span>
+                <h1>
+                  Everyday tasks<br />
+                  handled by<br />
+                  <span className="rn-hero-gold-text">Super Heroes.</span>
+                </h1>
+                <div className="rn-highlight-row">
+                  <span>
+                    <Zap size={14} /> Instant Dispatch
+                  </span>
+                  <span>
+                    <Wallet size={14} /> Pay After Completion
+                  </span>
+                  <span>
+                    <Clock3 size={14} /> 24/7 Available
+                  </span>
+                </div>
+                <button className="rn-book-button" type="button" onClick={() => navigate('/citizen/create')}>
+                  <span>BOOK SUPERHEROOO</span>
+                  <ChevronRight size={16} className="rn-btn-arrow" />
+                </button>
+              </div>
+              <div className="rn-hero-img-wrap">
+                <img src={superhero} alt="Superherooo partner greeting" />
+              </div>
+            </div>
+          </section>
+        )}
+
+        {!isCreatePage && (
+          <section className="rn-book-later">
             <div className="section-head">
               <div>
-                <span className="eyebrow mini">Book a Superherooo</span>
-                <h2>Create Task</h2>
+                <h2>Book a Superherooo</h2>
+                <p>Choose instant help or schedule for later.</p>
               </div>
-              <span className="status-pill scheduled_pending">{form.scheduledAt ? 'Scheduled' : 'Instant'}</span>
+              {activeTask && (
+                <Link className="status-pill searching active-pulse" to={`/citizen/tasks/${activeTask.id}`}>
+                  <span className="pulse-dot" /> Active task
+                </Link>
+              )}
             </div>
-            <div className="stepper">
-              {(['service', 'details', 'location', 'review'] as const).map((step, idx) => (
-                <button key={step} type="button" className={bookingStep === step ? 'active' : ''} onClick={() => setBookingStep(step)}>
-                  <span>{idx + 1}</span>{step}
+            <div className="rn-book-grid">
+              <button
+                type="button"
+                className="rn-book-card instant"
+                onClick={() => {
+                  setForm((f) => ({ ...f, scheduledAt: '' }));
+                  navigate('/citizen/create');
+                }}
+              >
+                <div className="rn-card-content">
+                  <span className="rn-card-tag instant">⚡ FASTEST (5-15 MIN)</span>
+                  <strong>Instant Booking</strong>
+                  <p>Get a verified partner dispatched immediately to your location.</p>
+                  <span className="rn-action-pill instant">START NOW <ChevronRight size={13} /></span>
+                </div>
+                <div className="rn-icon-wrapper instant">
+                  <Zap size={36} />
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className="rn-book-card scheduled"
+                onClick={() => {
+                  setBookingStep('review');
+                  navigate('/citizen/create');
+                }}
+              >
+                <div className="rn-card-content">
+                  <span className="rn-card-tag scheduled">📅 FLEXIBLE TIME</span>
+                  <strong>Schedule Later</strong>
+                  <p>Pick any custom date and time for convenient task delivery.</p>
+                  <span className="rn-action-pill scheduled">BOOK FOR LATER <ChevronRight size={13} /></span>
+                </div>
+                <div className="rn-icon-wrapper scheduled">
+                  <Clock3 size={36} />
+                </div>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {!isCreatePage && (
+          <section className="rn-suggestions">
+            <div className="section-head">
+              <h2>
+                <Sparkles size={20} className="rn-sparkle-icon" /> Smart Suggestions
+              </h2>
+              <span className="rn-completed-count">🎉 {completedTasks.length} completed</span>
+            </div>
+            <div className="rn-suggestion-row">
+              {[
+                { title: 'Grocery run', sub: 'Store shopping & door delivery', icon: '🛒', badge: 'Popular' },
+                { title: 'Need keys fetched?', sub: 'Pick up keys from home or office', icon: '🔑', badge: 'Fast' },
+                { title: 'Schedule Later', sub: 'Set date & time for upcoming errands', icon: '⏰', badge: 'Planned' },
+                { title: 'Elderly help?', sub: 'Companion & errand assistance', icon: '❤️', badge: 'Care' },
+                { title: 'Need a custom task?', sub: 'Setup rates, time & instructions directly', icon: '✨', badge: 'Custom' },
+              ].map((item) => (
+                <button
+                  key={item.title}
+                  type="button"
+                  className="rn-suggestion-card"
+                  onClick={() => {
+                    setForm((f) => ({ ...f, title: item.title }));
+                    navigate('/citizen/create');
+                  }}
+                >
+                  <div className="rn-sug-header">
+                    <span className="rn-sug-icon">{item.icon}</span>
+                    <span className="rn-sug-badge">{item.badge}</span>
+                  </div>
+                  <strong>{item.title}</strong>
+                  <small>{item.sub}</small>
+                  <div className="rn-sug-footer">
+                    <span>From ₹{discountPrice}</span>
+                    <ChevronRight size={14} />
+                  </div>
                 </button>
               ))}
             </div>
+          </section>
+        )}
 
-            <label>
-              Task Title
-              <div className="mic-input-wrapper">
-                <input
-                  required
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="e.g. Package pickup, queue waiting, grocery..."
-                  aria-label="Task Title"
-                />
-                <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, title: f.title ? `${f.title} ${text}` : text }))} />
-              </div>
-            </label>
+        {isCreatePage && (
+          <div className="grid two create-only-grid">
+            <form className="panel task-form task-form-sheet premium-form-sheet" onSubmit={create}>
+              <BackHeader title="Create Task" subtitle="Photo and OTP verified booking" />
 
-            <label>
-              Description & Instructions
-              <div className="mic-input-wrapper">
-                <textarea
-                  required
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="Provide clear instructions for the partner..."
-                  aria-label="Task Description"
-                />
-                <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, description: f.description ? `${f.description} ${text}` : text }))} />
-              </div>
-            </label>
-
-            <div className="grid two compact">
-              <label>
-                Duration (minutes)
-                <input
-                  type="number"
-                  min="1"
-                  max="1440"
-                  value={form.timeMinutes}
-                  onChange={(e) => setForm({ ...form, timeMinutes: Number(e.target.value) })}
-                  aria-label="Duration in minutes"
-                />
-              </label>
-
-              <label>
-                Schedule Later (Optional)
-                <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} aria-label="Schedule datetime" />
-              </label>
-            </div>
-
-            <div className="price-preview-box">
-              <div className="price-preview-left">
-                <span className="strike-price">₹{standardPrice}</span>
-                <span className="discount-badge">50% OFF</span>
-              </div>
-              <span className="final-price">₹{discountPrice}</span>
-            </div>
-
-            {savedAddresses.length > 0 && (
-              <div>
-                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>
-                  Saved Addresses:
+              <div className="section-head">
+                <div>
+                  <span className="eyebrow mini">Book a Superherooo</span>
+                  <h2>Create Task</h2>
+                </div>
+                <span className={`status-pill ${form.scheduledAt ? 'scheduled_pending' : 'instant_badge'}`}>
+                  {form.scheduledAt ? '📅 Scheduled' : '⚡ Instant'}
                 </span>
-                <div className="saved-addresses-row">
-                  {savedAddresses.map((sa) => (
+              </div>
+
+              {/* Enhanced Stepper */}
+              <div className="stepper-wrap">
+                <div className="stepper-progress-bg">
+                  <div
+                    className="stepper-progress-fill"
+                    style={{
+                      width: bookingStep === 'service' ? '25%' : bookingStep === 'details' ? '50%' : bookingStep === 'location' ? '75%' : '100%',
+                    }}
+                  />
+                </div>
+                <div className="stepper">
+                  {(['service', 'details', 'location', 'review'] as const).map((step, idx) => (
                     <button
-                      key={sa.id}
+                      key={step}
                       type="button"
-                      className="saved-address-chip"
-                      onClick={() =>
-                        setForm((f) => ({
-                          ...f,
-                          addressText: sa.addressText,
-                          landmark: sa.landmark || '',
-                          lat: String(sa.lat),
-                          lng: String(sa.lng),
-                        }))
-                      }
+                      className={bookingStep === step ? 'active' : ''}
+                      onClick={() => setBookingStep(step)}
                     >
-                      {sa.label === 'Home' ? '🏡 Home' : sa.label === 'Work' ? '💼 Work' : '📍 ' + sa.label}: {sa.addressText.substring(0, 24)}...
+                      <span className="step-num">{idx + 1}</span>
+                      <span className="step-text">{step}</span>
                     </button>
                   ))}
                 </div>
               </div>
-            )}
 
-            <div style={{ position: 'relative' }}>
-              <label>
-                Address
+              <label className="form-label-group">
+                <span className="label-title">Task Title <span className="req-star">*</span></span>
+                <div className="mic-input-wrapper">
+                  <input
+                    required
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    placeholder="e.g. Package pickup, queue waiting, grocery run..."
+                    aria-label="Task Title"
+                  />
+                  <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, title: f.title ? `${f.title} ${text}` : text }))} />
+                </div>
+              </label>
+
+              <label className="form-label-group">
+                <span className="label-title">Description & Instructions <span className="req-star">*</span></span>
+                <div className="mic-input-wrapper">
+                  <textarea
+                    required
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    placeholder="Provide clear step-by-step instructions for your Superhero partner..."
+                    aria-label="Task Description"
+                    rows={3}
+                  />
+                  <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, description: f.description ? `${f.description} ${text}` : text }))} />
+                </div>
+              </label>
+
+              <div className="grid two compact">
+                <label className="form-label-group">
+                  <span className="label-title">Duration (minutes)</span>
+                  <div className="input-with-icon">
+                    <Clock3 size={16} className="field-icon" />
+                    <input
+                      type="number"
+                      min="1"
+                      max="1440"
+                      value={form.timeMinutes}
+                      onChange={(e) => setForm({ ...form, timeMinutes: Number(e.target.value) })}
+                      aria-label="Duration in minutes"
+                    />
+                  </div>
+                </label>
+
+                <label className="form-label-group">
+                  <span className="label-title">Schedule Later (Optional)</span>
+                  <input
+                    type="datetime-local"
+                    value={form.scheduledAt}
+                    onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
+                    aria-label="Schedule datetime"
+                  />
+                </label>
+              </div>
+
+              {/* Price Preview Card */}
+              <div className="price-preview-box">
+                <div className="price-preview-left">
+                  <span className="price-label">Estimated Price</span>
+                  <div className="price-strike-row">
+                    <span className="strike-price">₹{standardPrice}</span>
+                    <span className="discount-badge">50% OFF EXCLUSIVE</span>
+                  </div>
+                </div>
+                <div className="price-preview-right">
+                  <span className="final-price">₹{discountPrice}</span>
+                  <span className="price-subtext">Pay after completion</span>
+                </div>
+              </div>
+
+              {savedAddresses.length > 0 && (
+                <div className="saved-address-section">
+                  <span className="saved-addr-title">
+                    📍 Saved Addresses
+                  </span>
+                  <div className="saved-addresses-row">
+                    {savedAddresses.map((sa) => (
+                      <button
+                        key={sa.id}
+                        type="button"
+                        className="saved-address-chip"
+                        onClick={() =>
+                          setForm((f) => ({
+                            ...f,
+                            addressText: sa.addressText,
+                            landmark: sa.landmark || '',
+                            lat: String(sa.lat),
+                            lng: String(sa.lng),
+                          }))
+                        }
+                      >
+                        {sa.label === 'Home' ? '🏡 Home' : sa.label === 'Work' ? '💼 Work' : '📍 ' + sa.label}:{' '}
+                        {sa.addressText.substring(0, 24)}...
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ position: 'relative' }}>
+                <label className="form-label-group">
+                  <span className="label-title">Address <span className="req-star">*</span></span>
+                  <div className="input-with-icon">
+                    <MapPin size={16} className="field-icon" />
+                    <input
+                      required
+                      value={form.addressText}
+                      onChange={(e) => handleAddressChange(e.target.value)}
+                      placeholder="Search address or location..."
+                      autoComplete="off"
+                      aria-label="Full Address"
+                    />
+                  </div>
+                </label>
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="suggestions-dropdown">
+                    {suggestions.map((sug, idx) => (
+                      <li key={idx} onClick={() => selectSuggestion(sug)}>
+                        <span className="suggestion-icon">
+                          {sug.provider === 'ola' ? '🚖' : sug.provider === 'google' ? '📍' : '🗺️'}
+                        </span>
+                        <span>{sug.description}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <label className="form-label-group">
+                <span className="label-title">Landmark</span>
                 <input
-                  required
-                  value={form.addressText}
-                  onChange={(e) => handleAddressChange(e.target.value)}
-                  placeholder="Full address (Search autocomplete)"
-                  autoComplete="off"
-                  aria-label="Full Address"
+                  value={form.landmark}
+                  onChange={(e) => setForm({ ...form, landmark: e.target.value })}
+                  placeholder="Nearby landmark or building name (optional)"
+                  aria-label="Landmark"
                 />
               </label>
-              {showSuggestions && suggestions.length > 0 && (
-                <ul className="suggestions-dropdown">
-                  {suggestions.map((sug, idx) => (
-                    <li key={idx} onClick={() => selectSuggestion(sug)}>
-                      <span className="suggestion-icon">
-                        {sug.provider === 'ola' ? '🚖' : sug.provider === 'google' ? '📍' : '🗺️'}
-                      </span>
-                      {sug.description}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
 
-            <label>
-              Landmark
-              <input value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} placeholder="Nearby landmark (optional)" aria-label="Landmark" />
-            </label>
+              <div className="grid three compact quick-loc-actions">
+                <button type="button" className="secondary loc-btn" onClick={fillLocation}>
+                  <LocateFixed size={16} /> Current Location
+                </button>
+                <button type="button" className="secondary loc-btn" onClick={() => saveCurrentAddress('Home')}>
+                  🏡 Save Home
+                </button>
+                <button type="button" className="secondary loc-btn" onClick={() => saveCurrentAddress('Work')}>
+                  💼 Save Work
+                </button>
+              </div>
 
-            <div className="grid three compact">
-              <button type="button" className="secondary" onClick={fillLocation}><LocateFixed size={17} /> Current Location</button>
-              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Home')}>Save Home</button>
-              <button type="button" className="secondary" onClick={() => saveCurrentAddress('Work')}>Save Work</button>
-            </div>
+              <div className="notice payment-note">
+                <ShieldCheck size={18} className="payment-shield-icon" />
+                <div>
+                  <strong>Pay Directly After Completion</strong>
+                  <p>Pay cash or UPI directly to your Superhero partner upon task verification. No upfront fee required.</p>
+                </div>
+              </div>
 
-            <div className="notice payment-note"><Wallet size={18} /> Payment Mode: Cash or UPI directly to Partner after completion. No web gateway payment.</div>
-            {error && <div className="notice error">{error}</div>}
-            <button className="accent-btn" disabled={busy} style={{ width: '100%', marginTop: '6px' }}>
-              {busy ? 'Creating Task...' : <>Create Task <ChevronRight size={18} /></>}
-            </button>
-          </form>
+              {error && <div className="notice error">{error}</div>}
 
-        </div>}
+              <button className="accent-btn cta-submit-btn" disabled={busy}>
+                {busy ? (
+                  <span className="loading-spinner-row">
+                    <span className="spinner" /> Creating Task...
+                  </span>
+                ) : (
+                  <>
+                    Create Task Now <ChevronRight size={18} />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        )}
       </main>
     </Shell>
   );
