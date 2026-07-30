@@ -1,0 +1,17 @@
+node_modules/
+WebApp/
+backend/
+downloads/
+*.zip
+*.py
+Dockerfile
+nginx.conf
+AGENTS.md
+agent.md
+WEB_MVP_AGENT_HANDOFF.md
+package-lock.json
+package.json
+home.png
+appimage.jpeg
+assets/hero-namaste-blue.png
+assets/tshirtfinal-transparent.png

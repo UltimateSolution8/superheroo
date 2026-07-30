@@ -2,3 +2,5 @@ WebApp/node_modules/
 WebApp/dist/
 downloads/*.apk
 .DS_Store
+.vercel
+.env*
