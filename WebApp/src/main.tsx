@@ -1037,15 +1037,6 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 }
               }}
             />
-            <div className="visual-card visual-card-main">
-              <span>Live dispatch</span>
-              <strong><Zap size={18} /> 4 min avg</strong>
-              <p>Nearby partner assigned</p>
-            </div>
-            <div className="visual-card visual-card-float">
-              <span>Security</span>
-              <strong><Camera size={18} /> Photo + OTP Verified</strong>
-            </div>
           </div>
         </section>
         <form className="panel auth-panel" onSubmit={submit}>
