@@ -594,7 +594,7 @@ function CelebrationModal({ task, onClose }: { task: Task; onClose: () => void }
               <strong>{money(task.budgetPaise)}</strong>
             </div>
           </div>
-        <button className="accent-btn" style={{ width: '100%' }} onClick={onClose}>
+          <button className="accent-btn" style={{ width: '100%' }} onClick={onClose}>
             Back to Workspace
           </button>
         </div>
@@ -658,18 +658,18 @@ function SelfiePicker({
         <div className="selfie-options-row">
           <button
             type="button"
-          className="selfie-btn"
-          onClick={() => cameraInputRef.current?.click()}
-        >
+            className="selfie-btn"
+            onClick={() => cameraInputRef.current?.click()}
+          >
             <Camera size={18} /> Take Camera Photo
-        </button>
+          </button>
           <button
             type="button"
-          className="selfie-btn"
-          onClick={() => galleryInputRef.current?.click()}
-        >
+            className="selfie-btn"
+            onClick={() => galleryInputRef.current?.click()}
+          >
             <ImageIcon size={18} /> Choose from Gallery
-        </button>
+          </button>
         </div>
       )}
       <input
@@ -1111,7 +1111,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 className="password-toggle-btn"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
-              aria-label="Toggle password visibility"
+                aria-label="Toggle password visibility"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -1718,8 +1718,6 @@ function CitizenDashboard() {
         {isCreatePage && (
           <div className="grid two create-only-grid">
             <form className="panel task-form task-form-sheet premium-form-sheet" onSubmit={create}>
-              <BackHeader title="Create Task" subtitle="Photo and OTP verified booking" />
-
               <div className="section-head">
                 <div>
                   <span className="eyebrow mini">Book a Superherooo</span>

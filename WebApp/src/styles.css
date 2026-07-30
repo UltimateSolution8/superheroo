@@ -423,6 +423,7 @@ button {
     flex-direction: column;
     align-items: flex-start;
   }
+
   .email-verify-form-row {
     grid-template-columns: 1fr;
   }
@@ -963,9 +964,17 @@ button {
 }
 
 @keyframes pulse-mic {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
 /* Preset Chips Styling */
@@ -1187,7 +1196,9 @@ button {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .segmented {
@@ -2125,7 +2136,7 @@ button:disabled {
   gap: 16px;
 }
 
-.otp-grid > div {
+.otp-grid>div {
   padding: 16px 20px;
   border-radius: 16px;
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.04), rgba(255, 255, 255, 0.9));
@@ -2415,53 +2426,6 @@ svg {
   overflow: hidden;
 }
 
-.task-form-sheet::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 5px;
-  background: var(--amber);
-}
-
-.stepper {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
-  margin: 10px 0 12px;
-}
-
-.stepper button {
-  min-height: 46px;
-  border-radius: 14px;
-  background: #f1f5f9;
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: capitalize;
-}
-
-.stepper span {
-  width: 20px;
-  height: 20px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  margin: 0 auto 3px;
-  background: white;
-  color: var(--muted);
-}
-
-.stepper button.active {
-  background: var(--navy);
-  color: white;
-  box-shadow: 0 10px 20px rgba(15, 25, 50, 0.16);
-}
-
-.stepper button.active span {
-  background: var(--amber);
-  color: var(--navy);
-}
-
 .segmented.four {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
@@ -2593,7 +2557,7 @@ svg {
   box-shadow: 0 18px 34px rgba(15, 25, 50, 0.24);
 }
 
-.active-task-bubble > span {
+.active-task-bubble>span {
   grid-row: 1 / 3;
   width: 38px;
   height: 38px;
@@ -2617,7 +2581,7 @@ svg {
   font-weight: 650;
 }
 
-.active-task-bubble > svg {
+.active-task-bubble>svg {
   grid-column: 3;
   grid-row: 1 / 3;
 }
@@ -2833,7 +2797,7 @@ svg {
   gap: 12px;
 }
 
-.rn-home-header > img,
+.rn-home-header>img,
 .rn-header-actions img {
   width: 46px;
   height: 46px;
@@ -2914,6 +2878,7 @@ svg {
   font-size: 0.78rem;
   font-weight: 800;
 }
+
 /* Premium Citizen Home Design System */
 .rn-citizen-home {
   display: flex;
@@ -3335,9 +3300,20 @@ svg {
 }
 
 @keyframes pulse-amber {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(252, 182, 26, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(252, 182, 26, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(252, 182, 26, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(252, 182, 26, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(252, 182, 26, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(252, 182, 26, 0);
+  }
 }
 
 .rn-book-grid {
@@ -3643,7 +3619,7 @@ svg {
   font-size: 0.82rem;
   font-weight: 850;
   transition: all 0.25s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .step-text {
@@ -3706,12 +3682,19 @@ svg {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 16px 20px;
   border-radius: 18px;
   background: linear-gradient(135deg, #0f1932 0%, #1e293b 100%);
   color: white;
   box-shadow: 0 10px 25px -5px rgba(15, 25, 50, 0.25);
   margin: 18px 0;
+  overflow: hidden;
+}
+
+.price-preview-left {
+  flex: 1;
+  min-width: 0;
 }
 
 .price-label {
@@ -3728,6 +3711,7 @@ svg {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .strike-price {
@@ -3745,12 +3729,14 @@ svg {
   background: #fcb61a;
   color: #0f1932;
   letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .price-preview-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  flex-shrink: 0;
 }
 
 .final-price {
@@ -3765,6 +3751,23 @@ svg {
   color: rgba(255, 255, 255, 0.6);
   font-weight: 750;
   margin-top: 3px;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .price-preview-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .price-preview-right {
+    align-items: flex-start;
+    width: 100%;
+    border-top: 1px dashed rgba(255, 255, 255, 0.18);
+    padding-top: 10px;
+    margin-top: 2px;
+  }
 }
 
 /* Saved Addresses Pill Row */
@@ -3953,6 +3956,7 @@ svg {
 }
 
 @media (max-width: 460px) {
+
   .payment-choice-grid,
   .urgency-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3998,7 +4002,9 @@ svg {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .rn-partner-home {
@@ -4193,7 +4199,7 @@ svg {
   justify-content: flex-start;
 }
 
-.rank-top-row > span {
+.rank-top-row>span {
   width: 52px;
   height: 52px;
   border-radius: 18px;
