@@ -19,6 +19,7 @@ import {
   Image as ImageIcon,
   Inbox,
   Languages,
+  LifeBuoy,
   LocateFixed,
   Lock,
   LogOut,
@@ -32,13 +33,14 @@ import {
   ShieldCheck,
   Sparkles,
   Timer,
+  Trash2,
   User,
   Wallet,
   X,
   Zap,
 } from 'lucide-react';
-import { api, searchLocations, resolveLocationCoords, reverseGeocode, type LocationSuggestion } from './api';
-import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
+import { ApiError, api, searchLocations, resolveLocationCoords, reverseGeocode, toUserMessage, type LocationSuggestion } from './api';
+import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, SupportTicket, SupportTicketCategory, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import './styles.css';
 import logo from "../public/superlogo.png";
 import superhero from "../public/hero.jpeg"
@@ -46,12 +48,39 @@ import superhero from "../public/hero.jpeg"
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://realtime.mysuperhero.xyz').replace(/\/+$/, '');
 const showDevOtp = String(import.meta.env.VITE_DEV_SHOW_OTP || 'false').toLowerCase() === 'true';
 const authKey = 'superherooo_web_auth';
+const authNoticeKey = 'superherooo_auth_notice';
 const savedAddressesKey = 'superherooo_saved_addresses';
 const staticRedirectKey = 'superherooo_app_redirect';
 const activeStatuses: TaskStatus[] = ['AI_PENDING', 'AI_APPROVED', 'ADMIN_REVIEW', 'ADMIN_APPROVED', 'PAYMENT_PENDING', 'SCHEDULED_PENDING', 'SEARCHING', 'ASSIGNED', 'ARRIVED', 'STARTED'];
 const partnerOnlineKey = 'superherooo_partner_online';
 const partnerLastLocationKey = 'superherooo_partner_last_location';
 const languageKey = 'superherooo_language';
+
+const bannedPasswords = new Set([
+  'password', 'password1', 'password123', '12345678', '123456789', 'qwerty123',
+  'superheroo', 'superherooo', 'admin@123', 'admin@12345', 'welcome1', 'iloveyou',
+  'letmein1', 'abcd1234', 'test1234', 'changeme',
+]);
+
+function normalizeIndianMobile(raw: string) {
+  const digits = (raw || '').replace(/\D+/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1);
+  return digits.slice(-10);
+}
+
+function isValidIndianMobile(raw: string) {
+  return /^[6-9]\d{9}$/.test(normalizeIndianMobile(raw));
+}
+
+function passwordProblem(raw: string) {
+  const password = raw || '';
+  if (password.length < 8) return 'Use a password with at least 8 characters.';
+  if (password.length > 128) return 'Use a password with at most 128 characters.';
+  if (!/[a-zA-Z]/.test(password) || !/\d/.test(password)) return 'Use a password with at least one letter and one number.';
+  if (bannedPasswords.has(password.toLowerCase())) return 'Choose a stronger password.';
+  return null;
+}
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -158,10 +187,17 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const logout = useCallback(() => {
+  const clearAuth = useCallback((notice?: string) => {
+    if (notice) sessionStorage.setItem(authNoticeKey, notice);
     localStorage.removeItem(authKey);
     setState({ accessToken: null, refreshToken: null, user: null, loading: false });
   }, []);
+
+  const logout = useCallback(() => {
+    const refreshToken = state.refreshToken;
+    if (refreshToken) api.logout(refreshToken).catch(() => undefined);
+    clearAuth();
+  }, [clearAuth, state.refreshToken]);
 
   useEffect(() => {
     const stored = loadStoredAuth();
@@ -170,10 +206,14 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     refreshRef.current = api.refresh(stored.refreshToken);
-    refreshRef.current.then(applyAuth).catch(() => {
+    refreshRef.current.then(applyAuth).catch((err) => {
+      if (err instanceof ApiError && [400, 401, 403].includes(err.status)) {
+        clearAuth('Please sign in again.');
+        return;
+      }
       setState({ ...stored, loading: false });
     });
-  }, [applyAuth]);
+  }, [applyAuth, clearAuth]);
 
   const value = useMemo(() => ({ ...state, applyAuth, logout, setUser }), [state, applyAuth, logout, setUser]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -260,7 +300,7 @@ function PwaInstallPrompt() {
   const { showToast } = useToast();
   const shouldShow = new URLSearchParams(location.search).get('install') === '1';
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const appName = location.pathname.includes('/partner') ? 'Partner' : 'Citizen';
+  const appName = location.pathname.includes('/partner') ? 'Partner' : 'App';
 
   if (!shouldShow || installed) return null;
 
@@ -349,6 +389,13 @@ function showWebPushNotification(title: string, options?: NotificationOptions) {
 
 function money(paise: number) {
   return `₹${Math.round((paise || 0) / 100).toLocaleString('en-IN')}`;
+}
+
+function suggestedBudget(minutes: number) {
+  const safeMinutes = Number.isFinite(minutes) && minutes > 0 ? minutes : 60;
+  const standard = Math.round(safeMinutes * 6.5);
+  const suggested = Math.max(99, Math.round(standard * 0.5));
+  return { standard, suggested };
 }
 
 function formatWhen(value?: string | null) {
@@ -643,7 +690,7 @@ function TaskChatModal({ taskId, onClose }: { taskId: string; onClose: () => voi
       setMessages((prev) => [...prev, newMsg]);
       setInputMsg('');
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Could not send message.', 'error');
+      showToast(toUserMessage(err), 'error');
     } finally {
       setBusy(false);
     }
@@ -771,7 +818,7 @@ function ActiveTaskBubble() {
   }, [socket, load]);
 
   if (!user || !active) return null;
-  const path = user.role === 'HELPER' ? `/partner/tasks/${active.id}` : `/citizen/tasks/${active.id}`;
+  const path = user.role === 'HELPER' ? `/partner/tasks/${active.id}` : '/citizen/tasks';
   return (
     <Link className="active-task-bubble" to={path}>
       <span><Timer size={18} /></span>
@@ -785,12 +832,15 @@ function ActiveTaskBubble() {
 function Shell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const getProfileLink = () => {
     if (user?.role === 'BUYER') return '/citizen/profile';
     if (user?.role === 'HELPER') return '/partner/profile';
     return '/profile';
   };
+  const homePath = user?.role === 'HELPER' ? '/partner' : '/citizen';
+  const showDesktopBack = Boolean(user && location.pathname !== homePath);
 
   return (
     <div className="app-shell">
@@ -801,9 +851,14 @@ function Shell({ children }: { children: React.ReactNode }) {
           <span>Superherooo</span>
         </Link>
         <nav aria-label="Main Navigation">
+          {showDesktopBack && (
+            <button className="nav-back-button" type="button" onClick={() => navigate(-1)}>
+              <ArrowLeft size={16} /> Back
+            </button>
+          )}
           {user?.role === 'BUYER' && (
             <Link className={`nav-link ${location.pathname === '/citizen' ? 'active' : ''}`} to="/citizen">
-              Citizen
+              Superherooo
             </Link>
           )}
           {user?.role === 'HELPER' && (
@@ -872,7 +927,11 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    const notice = sessionStorage.getItem(authNoticeKey);
+    if (notice) sessionStorage.removeItem(authNoticeKey);
+    return notice;
+  });
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -880,16 +939,25 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     setError(null);
     setBusy(true);
     try {
+      const cleanedEmail = email.trim().toLowerCase();
+      const cleanedName = displayName.trim();
+      const cleanedPhone = normalizeIndianMobile(phone);
+      const passwordIssue = passwordProblem(password);
+      if (mode === 'signup') {
+        if (cleanedName.length < 2) throw new Error('Enter your full name.');
+        if (!isValidIndianMobile(phone)) throw new Error('Enter a valid 10-digit Indian mobile number.');
+        if (passwordIssue) throw new Error(passwordIssue);
+      }
       const auth = mode === 'signup'
-        ? await api.signup({ email, password, phone: phone || undefined, displayName: displayName || undefined, role })
-        : await api.login(email, password);
+        ? await api.signup({ email: cleanedEmail, password, phone: cleanedPhone, displayName: cleanedName, role })
+        : await api.login(cleanedEmail, password);
       if (!['BUYER', 'HELPER'].includes(auth.user.role)) throw new Error('This web app supports citizen and partner accounts only.');
       applyAuth(auth);
       requestNotificationPermission().catch(() => undefined);
       showToast(mode === 'signup' ? 'Account created successfully!' : 'Signed in successfully!', 'success');
       navigate(auth.user.role === 'BUYER' ? '/citizen' : '/partner', { replace: true });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unable to continue.';
+      const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
     } finally {
@@ -943,7 +1011,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
 
           <div className="segmented">
             <button type="button" className={role === 'BUYER' ? 'active' : ''} onClick={() => setRole('BUYER')}>
-              <User size={17} /> Citizen
+              <User size={17} /> Superherooo
             </button>
             <button type="button" className={role === 'HELPER' ? 'active' : ''} onClick={() => setRole('HELPER')}>
               <Zap size={17} /> Partner
@@ -952,12 +1020,14 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
 
           {mode === 'signup' && (
             <label className="input-group">
-            <span className="label-text">Full Name</span>
-            <div className="input-icon-wrapper">
+              <span className="label-text">Full Name</span>
+              <div className="input-icon-wrapper">
                 <span className="input-icon"><User size={18} /></span>
                 <input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
+                  required
+                  autoComplete="name"
                   placeholder="e.g. Rahul Sharma"
                 />
               </div>
@@ -1005,15 +1075,20 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
 
           {mode === 'signup' && (
             <label className="input-group">
-              <span className="label-text">Mobile Phone (optional contact only)</span>
+              <span className="label-text">Mobile Phone</span>
               <div className="input-icon-wrapper">
                 <span className="input-icon"><Phone size={18} /></span>
                 <input
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="No phone OTP on web"
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                  required
+                  autoComplete="tel"
+                  inputMode="tel"
+                  pattern="(?:91|0)?[6-9][0-9]{9}"
+                  placeholder="10-digit contact number"
                 />
               </div>
+              <small className="field-hint">Used only for service coordination. Web sign-in stays email and password.</small>
             </label>
           )}
 
@@ -1031,6 +1106,10 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             )}
           </button>
 
+          {mode === 'login' && (
+            <Link className="auth-link-centered" to="/forgot-password">Forgot password?</Link>
+          )}
+
           <p className="muted" style={{ textAlign: 'center', marginTop: '4px', fontSize: '0.9rem' }}>
             {mode === 'signup' ? (
               <>Already have an account? <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 700 }}>Sign in</Link></>
@@ -1038,6 +1117,126 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
               <>New to Superherooo? <Link to="/signup" style={{ color: 'var(--blue)', fontWeight: 700 }}>Create account</Link></>
             )}
           </p>
+        </form>
+      </main>
+    </Shell>
+  );
+}
+
+function ForgotPasswordPage() {
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [devOtp, setDevOtp] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      const res = await api.forgotPassword(email);
+      setDevOtp(showDevOtp ? res.devOtp || null : null);
+      setMessage('If this email is registered, a reset code has been sent.');
+      showToast('Reset code requested.', 'success');
+      navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+    } catch (err) {
+      const msg = toUserMessage(err);
+      setError(msg);
+      showToast(msg, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Shell>
+      <main className="auth-layout auth-layout-single">
+        <form className="panel auth-panel" onSubmit={submit}>
+          <BackHeader title="Forgot password" subtitle="Use your email to receive a reset code" />
+          <label className="input-group">
+            <span className="label-text">Email Address</span>
+            <div className="input-icon-wrapper">
+              <span className="input-icon"><Inbox size={18} /></span>
+              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" required placeholder="you@domain.com" />
+            </div>
+          </label>
+          {message && <div className="notice success">{message}</div>}
+          {devOtp && <div className="dev-otp">Dev OTP: <strong>{devOtp}</strong></div>}
+          {error && <div className="notice error">{error}</div>}
+          <button className="accent-btn auth-submit-btn" disabled={busy}>{busy ? 'Sending...' : 'Send reset code'}</button>
+          <Link className="auth-link-centered" to="/login">Back to sign in</Link>
+        </form>
+      </main>
+    </Shell>
+  );
+}
+
+function ResetPasswordPage() {
+  const { applyAuth } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [email, setEmail] = useState(() => new URLSearchParams(location.search).get('email') || '');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      const auth = await api.resetPassword(email, otp, newPassword);
+      if (!['BUYER', 'HELPER'].includes(auth.user.role)) throw new Error('This web app supports citizen and partner accounts only.');
+      applyAuth(auth);
+      showToast('Password reset successfully.', 'success');
+      navigate(auth.user.role === 'BUYER' ? '/citizen' : '/partner', { replace: true });
+    } catch (err) {
+      const msg = toUserMessage(err);
+      setError(msg);
+      showToast(msg, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Shell>
+      <main className="auth-layout auth-layout-single">
+        <form className="panel auth-panel" onSubmit={submit}>
+          <BackHeader title="Reset password" subtitle="Enter the code from your email" />
+          <label className="input-group">
+            <span className="label-text">Email Address</span>
+            <div className="input-icon-wrapper">
+              <span className="input-icon"><Inbox size={18} /></span>
+              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" required placeholder="you@domain.com" />
+            </div>
+          </label>
+          <label className="input-group">
+            <span className="label-text">Reset code</span>
+            <div className="input-icon-wrapper">
+              <span className="input-icon"><Lock size={18} /></span>
+              <input value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 8))} inputMode="numeric" required placeholder="Code from email" />
+            </div>
+          </label>
+          <label className="input-group">
+            <span className="label-text">New password</span>
+            <div className="input-icon-wrapper">
+              <span className="input-icon"><Lock size={18} /></span>
+              <input value={newPassword} onChange={(event) => setNewPassword(event.target.value)} type={showPassword ? 'text' : 'password'} autoComplete="new-password" required placeholder="At least 8 characters" />
+              <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1} aria-label="Toggle password visibility">
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </label>
+          {error && <div className="notice error">{error}</div>}
+          <button className="accent-btn auth-submit-btn" disabled={busy}>{busy ? 'Resetting...' : 'Reset password'}</button>
+          <Link className="auth-link-centered" to="/forgot-password">Request a new code</Link>
         </form>
       </main>
     </Shell>
@@ -1064,7 +1263,7 @@ function EmailVerificationCard() {
       setMessage('Verification OTP sent to ' + user.email);
       showToast('Verification OTP sent to ' + user.email, 'info');
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Could not send OTP.';
+      const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
     } finally {
@@ -1080,7 +1279,7 @@ function EmailVerificationCard() {
       setMessage('Email successfully verified!');
       showToast('Email verified successfully!', 'success');
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Invalid OTP.';
+      const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
     }
@@ -1144,8 +1343,7 @@ function CitizenDashboard() {
   const [bookingStep, setBookingStep] = useState<'service' | 'details' | 'location' | 'review'>('service');
   const isCreatePage = location.pathname.includes('/citizen/create');
 
-  const standardPrice = Math.round(form.timeMinutes * 6.5);
-  const discountPrice = Math.max(99, Math.round(standardPrice * 0.5));
+  const { standard: standardPrice, suggested: discountPrice } = suggestedBudget(form.timeMinutes);
   const activeTask = tasks.find((task) => activeStatuses.includes(task.status));
   const completedTasks = tasks.filter((task) => task.status === 'COMPLETED');
   const currentLocationText = form.addressText || savedAddresses[0]?.addressText || 'Select location';
@@ -1161,7 +1359,7 @@ function CitizenDashboard() {
     try {
       setTasks(await api.myTasks(accessToken));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load tasks.');
+      setError(toUserMessage(err));
     }
   }, [accessToken]);
 
@@ -1197,7 +1395,7 @@ function CitizenDashboard() {
       }
       showToast('Current location detected!', 'success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Location failed.');
+      setError(toUserMessage(err));
       showToast('Location permission denied.', 'error');
     }
   };
@@ -1231,7 +1429,7 @@ function CitizenDashboard() {
         setForm((f) => ({ ...f, lat: String(coords.lat.toFixed(6)), lng: String(coords.lng.toFixed(6)) }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not resolve coordinates.');
+      setError(toUserMessage(err));
     }
   };
 
@@ -1273,7 +1471,7 @@ function CitizenDashboard() {
       const payload: CreateTaskPayload = {
         title: form.title,
         description: form.description,
-        urgency: 'NORMAL',
+        urgency: form.urgency,
         timeMinutes: Number(form.timeMinutes),
         budgetPaise: discountPrice * 100,
         lat,
@@ -1288,7 +1486,7 @@ function CitizenDashboard() {
       showToast('Task created successfully!', 'success');
       navigate(`/citizen/tasks/${res.taskId}`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Could not create task.';
+      const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
     } finally {
@@ -1384,7 +1582,7 @@ function CitizenDashboard() {
                 <p>Choose instant help or schedule for later.</p>
               </div>
               {activeTask && (
-                <Link className="status-pill searching active-pulse" to={`/citizen/tasks/${activeTask.id}`}>
+                <Link className="status-pill searching active-pulse" to="/citizen/tasks">
                   <span className="pulse-dot" /> Active task
                 </Link>
               )}
@@ -1519,7 +1717,7 @@ function CitizenDashboard() {
                     required
                     value={form.title}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    placeholder="e.g. Package pickup, queue waiting, grocery run..."
+                    placeholder="e.g. Grocery pickup, bill payment, queue waiting..."
                     aria-label="Task Title"
                   />
                   <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, title: f.title ? `${f.title} ${text}` : text }))} />
@@ -1533,7 +1731,7 @@ function CitizenDashboard() {
                     required
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="Provide clear step-by-step instructions for your Superhero partner..."
+                    placeholder="Write pickup/drop details, timing, contact rules, and any safety instructions..."
                     aria-label="Task Description"
                     rows={3}
                   />
@@ -1548,8 +1746,9 @@ function CitizenDashboard() {
                     <Clock3 size={16} className="field-icon" />
                     <input
                       type="number"
-                      min="1"
+                      min="15"
                       max="1440"
+                      step="15"
                       value={form.timeMinutes}
                       onChange={(e) => setForm({ ...form, timeMinutes: Number(e.target.value) })}
                       aria-label="Duration in minutes"
@@ -1571,17 +1770,53 @@ function CitizenDashboard() {
               {/* Price Preview Card */}
               <div className="price-preview-box">
                 <div className="price-preview-left">
-                  <span className="price-label">Estimated Price</span>
+                  <span className="price-label">Auto Budget Suggestion</span>
                   <div className="price-strike-row">
                     <span className="strike-price">₹{standardPrice}</span>
                     <span className="discount-badge">50% OFF EXCLUSIVE</span>
                   </div>
+                  <small className="field-hint">Suggested for {form.timeMinutes || 60} minutes. Confirm this amount for the booking.</small>
                 </div>
                 <div className="price-preview-right">
                   <span className="final-price">₹{discountPrice}</span>
                   <span className="price-subtext">Pay after completion</span>
                 </div>
               </div>
+
+              <div className="payment-choice-box" aria-label="Payment timing options">
+                <span className="label-title">Payment Timing</span>
+                <div className="payment-choice-grid">
+                  <button type="button" className="payment-choice disabled" disabled>
+                    <strong>Before Work</strong>
+                    <span>Online prepaid coming soon</span>
+                  </button>
+                  <button type="button" className="payment-choice active">
+                    <strong>After Work</strong>
+                    <span>Cash or UPI after OTP completion</span>
+                  </button>
+                </div>
+              </div>
+
+              <label className="form-label-group">
+                <span className="label-title">Urgency Level</span>
+                <div className="urgency-choice-grid">
+                  {[
+                    { value: 'LOW', label: 'Low' },
+                    { value: 'NORMAL', label: 'Normal' },
+                    { value: 'HIGH', label: 'High' },
+                    { value: 'CRITICAL', label: 'Critical' },
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      className={`urgency-choice ${form.urgency === item.value ? 'active' : ''}`}
+                      onClick={() => setForm({ ...form, urgency: item.value as TaskUrgency })}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </label>
 
               {savedAddresses.length > 0 && (
                 <div className="saved-address-section">
@@ -1666,8 +1901,8 @@ function CitizenDashboard() {
               <div className="notice payment-note">
                 <ShieldCheck size={18} className="payment-shield-icon" />
                 <div>
-                  <strong>Pay Directly After Completion</strong>
-                  <p>Pay cash or UPI directly to your Superhero partner upon task verification. No upfront fee required.</p>
+                  <strong>After Work Payment Selected</strong>
+                  <p>Pay cash or UPI directly to your Superherooo partner only after completion OTP verification. No upfront fee required.</p>
                 </div>
               </div>
 
@@ -1846,7 +2081,7 @@ function CitizenTaskPage() {
       }
       previousStatusRef.current = data.status;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load task.');
+      setError(toUserMessage(err));
     }
   }, [accessToken, taskId]);
 
@@ -1922,7 +2157,7 @@ function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; 
       showToast('KYC submitted for review!', 'success');
       onKycUpdated();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'KYC submission failed.';
+      const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
     } finally {
@@ -2054,7 +2289,7 @@ function PartnerDashboard() {
       setTasks(available);
       setActiveTasks(mine);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load partner workspace.');
+      setError(toUserMessage(err));
     }
   }, [accessToken]);
 
@@ -2108,7 +2343,7 @@ function PartnerDashboard() {
         setLastLoc(loc);
         socket?.emit('location.update', { ...loc, role: 'HELPER' });
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Could not restore online status.';
+        const msg = toUserMessage(err);
         setError(msg);
       }
     };
@@ -2140,7 +2375,7 @@ function PartnerDashboard() {
       showToast('You are now Online and receiving job offers!', 'success');
       await load();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Could not update online status.';
+      const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
     }
@@ -2154,7 +2389,7 @@ function PartnerDashboard() {
       showToast('Task accepted!', 'success');
       navigate(`/partner/tasks/${taskId}`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Could not accept task.';
+      const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
     }
@@ -2344,7 +2579,7 @@ function PartnerTaskPage() {
     try {
       setTask(await api.task(accessToken, taskId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load task.');
+      setError(toUserMessage(err));
     }
   }, [accessToken, taskId]);
 
@@ -2395,7 +2630,7 @@ function PartnerTaskPage() {
         setShowCelebration(true);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Could not complete step.';
+      const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
     } finally {
@@ -2503,7 +2738,7 @@ function PartnerTaskPage() {
                               setSelfie(null);
                               showToast('Completion selfie uploaded!', 'success');
                             } catch (err) {
-                              setError(err instanceof Error ? err.message : 'Upload failed.');
+                              setError(toUserMessage(err));
                             } finally {
                               setBusy(false);
                             }
@@ -2565,10 +2800,19 @@ function TaskDetail({
   onOpenChat?: () => void;
 }) {
   const [elapsedSec, setElapsedSec] = useState(0);
+  const fallbackStartedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (task.status !== 'STARTED' || !task.workStartedAt) return;
-    const startMs = new Date(task.workStartedAt).getTime();
+    if (task.status !== 'STARTED') {
+      fallbackStartedAtRef.current = null;
+      setElapsedSec(0);
+      return;
+    }
+    const recordedStartMs = task.workStartedAt ? new Date(task.workStartedAt).getTime() : NaN;
+    if (!Number.isFinite(recordedStartMs) && !fallbackStartedAtRef.current) {
+      fallbackStartedAtRef.current = Date.now();
+    }
+    const startMs = Number.isFinite(recordedStartMs) ? recordedStartMs : fallbackStartedAtRef.current || Date.now();
     const updateTimer = () => {
       setElapsedSec(Math.max(0, Math.floor((Date.now() - startMs) / 1000)));
     };
@@ -2669,7 +2913,7 @@ function CitizenTasksPage() {
     try {
       setTasks(await api.myTasks(accessToken));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load bookings.');
+      setError(toUserMessage(err));
     }
   }, [accessToken]);
 
@@ -2764,7 +3008,7 @@ function PartnerJobsPage() {
       setAvailable(availableTasks);
       setMine(myTasks);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load jobs.');
+      setError(toUserMessage(err));
     }
   }, [accessToken]);
 
@@ -2795,7 +3039,7 @@ function PartnerJobsPage() {
       showToast('Task accepted. Follow the selfie and OTP steps.', 'success');
       navigate(`/partner/tasks/${taskId}`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Could not accept task.';
+      const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
     }
@@ -2910,11 +3154,133 @@ function PartnerInboxPage() {
   );
 }
 
+function SupportCenterPage() {
+  const { accessToken, user } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [category, setCategory] = useState<SupportTicketCategory>('GENERAL');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      setTickets(await api.supportTickets(accessToken));
+    } catch (err) {
+      setError(toUserMessage(err));
+    }
+  }, [accessToken]);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  const profilePath = user.role === 'BUYER' ? '/citizen/profile' : '/partner/profile';
+
+  const createTicket = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!accessToken) return;
+    setError(null);
+    setBusy(true);
+    try {
+      await api.createSupportTicket(accessToken, {
+        category,
+        subject: subject || null,
+        message,
+      });
+      setSubject('');
+      setMessage('');
+      setCategory('GENERAL');
+      showToast('Support request submitted.', 'success');
+      await load();
+    } catch (err) {
+      const msg = toUserMessage(err);
+      setError(msg);
+      showToast(msg, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Shell>
+      <main className="workspace mobile-stack">
+        <BackHeader title="Help Center" subtitle="Message Superherooo support" />
+        <section className="panel support-compose-card">
+          <form onSubmit={createTicket}>
+            <label>
+              Category
+              <select value={category} onChange={(event) => setCategory(event.target.value as SupportTicketCategory)}>
+                <option value="GENERAL">General support</option>
+                <option value="TASK">Booking or task</option>
+                <option value="PAYMENT">Cash/UPI settlement</option>
+                <option value="SAFETY">Safety concern</option>
+              </select>
+            </label>
+            <label>
+              Subject
+              <input value={subject} onChange={(event) => setSubject(event.target.value)} maxLength={140} placeholder="Short summary" />
+            </label>
+            <label>
+              Message
+              <textarea value={message} onChange={(event) => setMessage(event.target.value)} required maxLength={4000} placeholder="Tell us what happened." rows={5} />
+            </label>
+            {error && <div className="notice error">{error}</div>}
+            <button className="primary" disabled={busy}>{busy ? 'Submitting...' : 'Submit request'}</button>
+          </form>
+        </section>
+
+        <section className="panel">
+          <div className="section-head">
+            <div>
+              <h2>Your Tickets</h2>
+              <p>Account deletion requests and support conversations appear here.</p>
+            </div>
+            <button className="secondary icon-only" type="button" onClick={load} aria-label="Refresh support tickets"><Search size={17} /></button>
+          </div>
+          {tickets.length === 0 ? (
+            <EmptyState icon={LifeBuoy} title="No support tickets yet" body="Create a support request and our team will reply from Admin support." />
+          ) : (
+            <div className="support-ticket-list">
+              {tickets.map((ticket) => (
+                <div className="support-ticket-card" key={ticket.id}>
+                  <div>
+                    <strong>{ticket.subject || categoryLabel(ticket.category)}</strong>
+                    <span>{categoryLabel(ticket.category)} • {formatWhen(ticket.lastMessageAt || ticket.createdAt)}</span>
+                  </div>
+                  <span className={`status-pill ${String(ticket.status).toLowerCase()}`}>{ticket.status}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+        <button className="secondary" type="button" onClick={() => navigate(profilePath)}>Back to profile</button>
+      </main>
+    </Shell>
+  );
+}
+
+function categoryLabel(category: string) {
+  const labels: Record<string, string> = {
+    GENERAL: 'General support',
+    TASK: 'Booking or task',
+    PAYMENT: 'Payment',
+    SAFETY: 'Safety',
+    ACCOUNT_DELETION: 'Account deletion',
+  };
+  return labels[category] || category.replace(/_/g, ' ').toLowerCase();
+}
+
 function ProfileView() {
   const { user, logout } = useAuth();
   const { accessToken } = useAuth();
+  const { showToast } = useToast();
   const [helperProfile, setHelperProfile] = useState<HelperProfile | null>(null);
   const [tasksCount, setTasksCount] = useState<number>(0);
+  const [deletionBusy, setDeletionBusy] = useState(false);
   const [language, setLanguage] = useState(() => localStorage.getItem(languageKey) || 'English');
   const [savedAddresses] = useState<SavedAddress[]>(() => {
     try {
@@ -2940,6 +3306,29 @@ function ProfileView() {
       return user.displayName.split(' ').map((n) => n[0]).join('').toUpperCase();
     }
     return user.role[0];
+  };
+
+  const supportPath = user.role === 'BUYER' ? '/citizen/support' : '/partner/support';
+
+  const requestAccountDeletion = async () => {
+    if (!accessToken) return;
+    const ok = window.confirm(
+      'Request account deletion?\n\nAdmin support will verify and process deletion of your account and associated personal data. Active jobs or unresolved payments may need to be completed first.',
+    );
+    if (!ok) return;
+    setDeletionBusy(true);
+    try {
+      await api.createSupportTicket(accessToken, {
+        category: 'ACCOUNT_DELETION',
+        subject: 'Account deletion request',
+        message: 'I am requesting deletion of my Superherooo account and associated personal data.',
+      });
+      showToast('Account deletion request sent to Admin support.', 'success');
+    } catch (err) {
+      showToast(toUserMessage(err), 'error');
+    } finally {
+      setDeletionBusy(false);
+    }
   };
 
   return (
@@ -2999,7 +3388,7 @@ function ProfileView() {
             <Info label="Name" value={user.displayName || 'Not provided'} />
             <Info label="Email" value={user.email || 'Not provided'} />
             <Info label="Phone" value={user.phone || 'Optional on web'} />
-            <Info label="Role" value={user.role === 'BUYER' ? 'Citizen' : 'Partner'} />
+            <Info label="Role" value={user.role === 'BUYER' ? 'Superherooo' : 'Partner'} />
           </div>
 
           <div className="panel profile-section-card">
@@ -3044,7 +3433,12 @@ function ProfileView() {
             <div className="profile-section-title"><FileText size={20} /><h2>Policies & Support</h2></div>
             <a className="profile-menu-link" href="/privacy.html">Privacy Policy <ChevronRight size={17} /></a>
             <a className="profile-menu-link" href="/terms.html">Terms & Conditions <ChevronRight size={17} /></a>
-            <a className="profile-menu-link" href="/contact.html">Help & Support <ChevronRight size={17} /></a>
+            <Link className="profile-menu-link" to={supportPath}>Help & Support <ChevronRight size={17} /></Link>
+            <a className="profile-menu-link" href="/account-deletion.html">Account deletion policy <ChevronRight size={17} /></a>
+            <button className="profile-menu-link danger-link" type="button" disabled={deletionBusy} onClick={requestAccountDeletion}>
+              <span><Trash2 size={17} /> {deletionBusy ? 'Submitting request...' : 'Request account deletion'}</span>
+              <ChevronRight size={17} />
+            </button>
           </div>
         </section>
       </main>
@@ -3062,17 +3456,21 @@ function App() {
             <Route path="/" element={<LandingRedirect />} />
             <Route path="/login" element={<AuthPage mode="login" />} />
             <Route path="/signup" element={<AuthPage mode="signup" />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/citizen" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
             <Route path="/citizen/create" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
             <Route path="/citizen/tasks" element={<RequireRole role="BUYER"><CitizenTasksPage /></RequireRole>} />
             <Route path="/citizen/wallet" element={<RequireRole role="BUYER"><CitizenWalletPage /></RequireRole>} />
             <Route path="/citizen/profile" element={<RequireRole role="BUYER"><ProfileView /></RequireRole>} />
+            <Route path="/citizen/support" element={<RequireRole role="BUYER"><SupportCenterPage /></RequireRole>} />
             <Route path="/citizen/tasks/:taskId" element={<RequireRole role="BUYER"><CitizenTaskPage /></RequireRole>} />
             <Route path="/partner" element={<RequireRole role="HELPER"><PartnerDashboard /></RequireRole>} />
             <Route path="/partner/jobs" element={<RequireRole role="HELPER"><PartnerJobsPage /></RequireRole>} />
             <Route path="/partner/earnings" element={<RequireRole role="HELPER"><PartnerEarningsPage /></RequireRole>} />
             <Route path="/partner/inbox" element={<RequireRole role="HELPER"><PartnerInboxPage /></RequireRole>} />
             <Route path="/partner/profile" element={<RequireRole role="HELPER"><ProfileView /></RequireRole>} />
+            <Route path="/partner/support" element={<RequireRole role="HELPER"><SupportCenterPage /></RequireRole>} />
             <Route path="/partner/tasks/:taskId" element={<RequireRole role="HELPER"><PartnerTaskPage /></RequireRole>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

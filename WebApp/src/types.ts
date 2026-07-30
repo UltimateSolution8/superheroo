@@ -120,3 +120,35 @@ export type SavedAddress = {
   lat: number;
   lng: number;
 };
+
+export type SupportTicketCategory =
+  | 'GENERAL'
+  | 'TASK'
+  | 'PAYMENT'
+  | 'SAFETY'
+  | 'ACCOUNT_DELETION';
+
+export type SupportTicket = {
+  id: string;
+  category: SupportTicketCategory | string;
+  subject?: string | null;
+  status: string;
+  priority: string;
+  relatedTaskId?: string | null;
+  lastMessageAt?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+};
+
+export type SupportMessage = {
+  id: string;
+  ticketId: string;
+  authorType: string;
+  authorUserId?: string | null;
+  message: string;
+  createdAt: string;
+};
+
+export type SupportTicketDetail = SupportTicket & {
+  messages?: SupportMessage[];
+};

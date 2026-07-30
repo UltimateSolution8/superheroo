@@ -1,4 +1,4 @@
-import type { AuthResponse, CreateTaskPayload, HelperProfile, Task, TaskSelfieStage, TaskStatus, UserRole } from './types';
+import type { AuthResponse, CreateTaskPayload, HelperProfile, SupportTicket, SupportTicketCategory, SupportTicketDetail, Task, TaskSelfieStage, TaskStatus, UserRole } from './types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://api.mysuperhero.xyz').replace(/\/+$/, '');
 
@@ -6,24 +6,26 @@ type ApiErrorBody = { message?: string; code?: string; details?: { fields?: Reco
 
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
-async function parseError(res: Response): Promise<string> {
+async function parseError(res: Response): Promise<{ message: string; code?: string }> {
   const text = await res.text().catch(() => '');
-  if (!text) return `Request failed (${res.status})`;
+  if (!text) return { message: `Request failed (${res.status})` };
   try {
     const body = JSON.parse(text) as ApiErrorBody;
-    if (body.details?.fields) return `Please check ${Object.keys(body.details.fields).join(', ')}.`;
-    if (body.message) return body.message;
-    if (body.code) return body.code;
+    if (body.details?.fields) return { message: `Please check ${Object.keys(body.details.fields).join(', ')}.`, code: body.code };
+    if (body.message) return { message: body.message, code: body.code };
+    if (body.code) return { message: body.code, code: body.code };
   } catch {
-    return text;
+    return { message: text };
   }
-  return `Request failed (${res.status})`;
+  return { message: `Request failed (${res.status})` };
 }
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}, token?: string | null): Promise<T> {
@@ -31,18 +33,84 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, token?: 
   if (!headers.has('Content-Type') && !(init.body instanceof FormData)) headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
   const res = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
-  if (!res.ok) throw new ApiError(await parseError(res), res.status);
+  if (!res.ok) {
+    const parsed = await parseError(res);
+    throw new ApiError(parsed.message, res.status, parsed.code);
+  }
   const text = await res.text();
   return text ? (JSON.parse(text) as T) : (undefined as T);
 }
 
+type UserCopy = { title?: string; message: string };
+
+const safeErrorByCode: Record<string, UserCopy> = {
+  RATE_LIMIT: { title: 'Too many attempts', message: 'Please wait a minute before trying again.' },
+};
+
+const safeErrorByMessage: Array<{ pattern: RegExp; copy: UserCopy }> = [
+  { pattern: /invalid credentials/i, copy: { message: 'That email or password is incorrect.' } },
+  { pattern: /password login not enabled/i, copy: { message: 'This account needs a password. Use Forgot password to set one.' } },
+  { pattern: /email already in use/i, copy: { message: 'An account with this email already exists. Try signing in instead.' } },
+  { pattern: /phone already in use/i, copy: { message: 'This mobile number is already registered.' } },
+  { pattern: /phone number is required/i, copy: { message: 'Enter your 10-digit mobile number for service coordination.' } },
+  { pattern: /valid 10-digit Indian mobile number|valid Indian mobile number/i, copy: { message: 'Enter a valid 10-digit Indian mobile number.' } },
+  { pattern: /name is required/i, copy: { message: 'Enter your full name.' } },
+  { pattern: /password must be at least/i, copy: { message: 'Use a password with at least 8 characters.' } },
+  { pattern: /password must contain at least one letter and one number/i, copy: { message: 'Use a password with at least one letter and one number.' } },
+  { pattern: /invalid or expired reset code/i, copy: { message: 'That code is incorrect or has expired. Request a new one.' } },
+  { pattern: /incorrect otp|invalid verification code|invalid otp/i, copy: { message: 'That code is incorrect. Please check and try again.' } },
+  { pattern: /user is not active/i, copy: { title: 'Account unavailable', message: 'This account is unavailable. Contact support for help.' } },
+  { pattern: /must be created by an admin/i, copy: { message: 'This account type is created by our team. Contact support to get access.' } },
+  { pattern: /hyderabad only|outside service area/i, copy: { title: 'Outside our service area', message: 'Superherooo is not available at this location yet. Please choose a supported area.' } },
+  { pattern: /verify your email/i, copy: { message: 'Please verify your email address before booking.' } },
+  { pattern: /already assigned|offer already responded/i, copy: { message: 'Another partner just took this job.' } },
+  { pattern: /helper location is not available/i, copy: { message: 'Please go online with location access enabled.' } },
+  { pattern: /too far/i, copy: { message: 'This job is outside your current nearby range.' } },
+];
+
+export function toUserCopy(error: unknown): UserCopy {
+  if (error instanceof ApiError) {
+    if (error.code && safeErrorByCode[error.code]) return safeErrorByCode[error.code];
+    if (error.status === 429) return safeErrorByCode.RATE_LIMIT;
+    if (error.status >= 500) return { message: 'We are having trouble on our end. Please try again in a moment.' };
+    const raw = error.message || '';
+    for (const { pattern, copy } of safeErrorByMessage) {
+      if (pattern.test(raw)) return copy;
+    }
+    if (error.status >= 400 && error.status < 500 && raw && raw.length < 140 && !/^Request failed/i.test(raw)) {
+      return { message: raw };
+    }
+    return { message: 'Something went wrong. Please try again.' };
+  }
+  const text = error instanceof Error ? error.message : String(error ?? '');
+  if (/abort|timeout/i.test(text)) return { title: 'Taking too long', message: 'The request timed out. Please try again.' };
+  if (/network|fetch|connection|failed to fetch/i.test(text)) return { title: 'No connection', message: 'Check your internet connection and try again.' };
+  return { message: 'Something went wrong. Please try again.' };
+}
+
+export function toUserMessage(error: unknown): string {
+  return toUserCopy(error).message;
+}
+
 export const api = {
-  signup: (body: { email: string; password: string; phone?: string; displayName?: string; role: UserRole }) =>
+  signup: (body: { email: string; password: string; phone: string; displayName: string; role: UserRole }) =>
     apiFetch<AuthResponse>('/api/v1/auth/password/signup', { method: 'POST', body: JSON.stringify(body) }),
   login: (email: string, password: string) =>
     apiFetch<AuthResponse>('/api/v1/auth/password/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
   refresh: (refreshToken: string) =>
     apiFetch<AuthResponse>('/api/v1/auth/refresh', { method: 'POST', body: JSON.stringify({ refreshToken }) }),
+  forgotPassword: (email: string) =>
+    apiFetch<{ email: string; sent: boolean; devOtp?: string | null }>('/api/v1/auth/password/forgot', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+  resetPassword: (email: string, otp: string, newPassword: string) =>
+    apiFetch<AuthResponse>('/api/v1/auth/password/reset', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp, newPassword }),
+    }),
+  logout: (refreshToken: string) =>
+    apiFetch<void>('/api/v1/auth/logout', { method: 'POST', body: JSON.stringify({ refreshToken }) }),
   startEmailOtp: (email: string) =>
     apiFetch<{ email: string; sent: boolean; devOtp?: string | null }>('/api/v1/auth/email/otp/start', {
       method: 'POST',
@@ -106,6 +174,14 @@ export const api = {
     apiFetch<import('./types').ChatMessage[]>(`/api/v1/tasks/${taskId}/chat/messages`, {}, token),
   sendTaskChatMessage: (token: string, taskId: string, message: string) =>
     apiFetch<import('./types').ChatMessage>(`/api/v1/tasks/${taskId}/chat/messages`, { method: 'POST', body: JSON.stringify({ message }) }, token),
+  createSupportTicket: (
+    token: string,
+    body: { category: SupportTicketCategory; subject?: string | null; message: string; relatedTaskId?: string | null },
+  ) => apiFetch<SupportTicketDetail>('/api/v1/support/tickets', { method: 'POST', body: JSON.stringify(body) }, token),
+  supportTickets: (token: string) => apiFetch<SupportTicket[]>('/api/v1/support/tickets', {}, token),
+  supportTicket: (token: string, ticketId: string) => apiFetch<SupportTicketDetail>(`/api/v1/support/tickets/${ticketId}`, {}, token),
+  addSupportMessage: (token: string, ticketId: string, message: string) =>
+    apiFetch<import('./types').SupportMessage>(`/api/v1/support/tickets/${ticketId}/messages`, { method: 'POST', body: JSON.stringify({ message }) }, token),
 };
 
 export interface LocationSuggestion {
