@@ -51,6 +51,7 @@ const authKey = 'superherooo_web_auth';
 const authNoticeKey = 'superherooo_auth_notice';
 const savedAddressesKey = 'superherooo_saved_addresses';
 const staticRedirectKey = 'superherooo_app_redirect';
+const installIntentKey = 'superherooo_pwa_install_intent';
 const activeStatuses: TaskStatus[] = ['AI_PENDING', 'AI_APPROVED', 'ADMIN_REVIEW', 'ADMIN_APPROVED', 'PAYMENT_PENDING', 'SCHEDULED_PENDING', 'SEARCHING', 'ASSIGNED', 'ARRIVED', 'STARTED'];
 const partnerOnlineKey = 'superherooo_partner_online';
 const partnerLastLocationKey = 'superherooo_partner_last_location';
@@ -265,6 +266,12 @@ function registerPwaServiceWorker() {
   else window.addEventListener('load', register, { once: true });
 }
 
+function installIntentFromPath(pathname: string): 'citizen' | 'partner' | null {
+  if (pathname.includes('/partner')) return 'partner';
+  if (pathname.includes('/citizen')) return 'citizen';
+  return null;
+}
+
 function usePwaInstall() {
   const location = useLocation();
   const { user } = useAuth();
@@ -274,7 +281,11 @@ function usePwaInstall() {
   useEffect(() => {
     const manifest = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
     if (!manifest) return;
-    const wantsPartner = location.pathname.includes('/partner') || user?.role === 'HELPER';
+    const installRequested = new URLSearchParams(location.search).get('install') === '1';
+    const routeIntent = installIntentFromPath(location.pathname);
+    if (installRequested && routeIntent) sessionStorage.setItem(installIntentKey, routeIntent);
+    const storedIntent = sessionStorage.getItem(installIntentKey);
+    const wantsPartner = routeIntent === 'partner' || (!routeIntent && storedIntent === 'partner') || user?.role === 'HELPER';
     manifest.href = wantsPartner ? '/app/manifest.partner.webmanifest' : '/app/manifest.citizen.webmanifest';
   }, [location.pathname, user?.role]);
 
@@ -311,12 +322,28 @@ function PwaInstallPrompt() {
   const location = useLocation();
   const { canInstall, installed, install } = usePwaInstall();
   const { showToast } = useToast();
-  const shouldShow = new URLSearchParams(location.search).get('install') === '1';
+  const [storedIntent, setStoredIntent] = useState<'citizen' | 'partner' | null>(() => {
+    const value = sessionStorage.getItem(installIntentKey);
+    return value === 'citizen' || value === 'partner' ? value : null;
+  });
+  const installRequested = new URLSearchParams(location.search).get('install') === '1';
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isPartner = location.pathname.includes('/partner');
+  const routeIntent = installIntentFromPath(location.pathname);
+  const isPartner = routeIntent === 'partner' || (!routeIntent && storedIntent === 'partner');
   const appName = isPartner ? 'Partner App' : 'Superherooo App';
 
-  if (!shouldShow || installed) return null;
+  useEffect(() => {
+    const intent = installIntentFromPath(location.pathname);
+    if (installRequested && intent) {
+      sessionStorage.setItem(installIntentKey, intent);
+      setStoredIntent(intent);
+      return;
+    }
+    const value = sessionStorage.getItem(installIntentKey);
+    setStoredIntent(value === 'citizen' || value === 'partner' ? value : null);
+  }, [installRequested, location.pathname]);
+
+  if ((!installRequested && !storedIntent) || installed) return null;
 
   return (
     <div className="install-banner">
@@ -904,8 +931,12 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 function RequireRole({ role, children }: { role: UserRole; children: React.ReactNode }) {
   const { loading, user } = useAuth();
+  const location = useLocation();
+  const installRequested = new URLSearchParams(location.search).get('install') === '1';
+  const routeIntent = installIntentFromPath(location.pathname);
+  if (installRequested && routeIntent) sessionStorage.setItem(installIntentKey, routeIntent);
   if (loading) return <div className="center-screen">Loading Superherooo...</div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to={installRequested ? '/login?install=1' : '/login'} replace />;
   if (user.role !== role) return <Navigate to={user.role === 'BUYER' ? '/citizen' : '/partner'} replace />;
   return <>{children}</>;
 }
