@@ -300,7 +300,7 @@ function PwaInstallPrompt() {
   const { showToast } = useToast();
   const shouldShow = new URLSearchParams(location.search).get('install') === '1';
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const appName = location.pathname.includes('/partner') ? 'Partner' : 'Citizen';
+  const appName = location.pathname.includes('/partner') ? 'Partner' : 'App';
 
   if (!shouldShow || installed) return null;
 
@@ -389,6 +389,13 @@ function showWebPushNotification(title: string, options?: NotificationOptions) {
 
 function money(paise: number) {
   return `₹${Math.round((paise || 0) / 100).toLocaleString('en-IN')}`;
+}
+
+function suggestedBudget(minutes: number) {
+  const safeMinutes = Number.isFinite(minutes) && minutes > 0 ? minutes : 60;
+  const standard = Math.round(safeMinutes * 6.5);
+  const suggested = Math.max(99, Math.round(standard * 0.5));
+  return { standard, suggested };
 }
 
 function formatWhen(value?: string | null) {
@@ -811,7 +818,7 @@ function ActiveTaskBubble() {
   }, [socket, load]);
 
   if (!user || !active) return null;
-  const path = user.role === 'HELPER' ? `/partner/tasks/${active.id}` : `/citizen/tasks/${active.id}`;
+  const path = user.role === 'HELPER' ? `/partner/tasks/${active.id}` : '/citizen/tasks';
   return (
     <Link className="active-task-bubble" to={path}>
       <span><Timer size={18} /></span>
@@ -825,12 +832,15 @@ function ActiveTaskBubble() {
 function Shell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const getProfileLink = () => {
     if (user?.role === 'BUYER') return '/citizen/profile';
     if (user?.role === 'HELPER') return '/partner/profile';
     return '/profile';
   };
+  const homePath = user?.role === 'HELPER' ? '/partner' : '/citizen';
+  const showDesktopBack = Boolean(user && location.pathname !== homePath);
 
   return (
     <div className="app-shell">
@@ -841,9 +851,14 @@ function Shell({ children }: { children: React.ReactNode }) {
           <span>Superherooo</span>
         </Link>
         <nav aria-label="Main Navigation">
+          {showDesktopBack && (
+            <button className="nav-back-button" type="button" onClick={() => navigate(-1)}>
+              <ArrowLeft size={16} /> Back
+            </button>
+          )}
           {user?.role === 'BUYER' && (
             <Link className={`nav-link ${location.pathname === '/citizen' ? 'active' : ''}`} to="/citizen">
-              Citizen
+              Superherooo
             </Link>
           )}
           {user?.role === 'HELPER' && (
@@ -996,7 +1011,7 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
 
           <div className="segmented">
             <button type="button" className={role === 'BUYER' ? 'active' : ''} onClick={() => setRole('BUYER')}>
-              <User size={17} /> Citizen
+              <User size={17} /> Superherooo
             </button>
             <button type="button" className={role === 'HELPER' ? 'active' : ''} onClick={() => setRole('HELPER')}>
               <Zap size={17} /> Partner
@@ -1328,8 +1343,7 @@ function CitizenDashboard() {
   const [bookingStep, setBookingStep] = useState<'service' | 'details' | 'location' | 'review'>('service');
   const isCreatePage = location.pathname.includes('/citizen/create');
 
-  const standardPrice = Math.round(form.timeMinutes * 6.5);
-  const discountPrice = Math.max(99, Math.round(standardPrice * 0.5));
+  const { standard: standardPrice, suggested: discountPrice } = suggestedBudget(form.timeMinutes);
   const activeTask = tasks.find((task) => activeStatuses.includes(task.status));
   const completedTasks = tasks.filter((task) => task.status === 'COMPLETED');
   const currentLocationText = form.addressText || savedAddresses[0]?.addressText || 'Select location';
@@ -1457,7 +1471,7 @@ function CitizenDashboard() {
       const payload: CreateTaskPayload = {
         title: form.title,
         description: form.description,
-        urgency: 'NORMAL',
+        urgency: form.urgency,
         timeMinutes: Number(form.timeMinutes),
         budgetPaise: discountPrice * 100,
         lat,
@@ -1568,7 +1582,7 @@ function CitizenDashboard() {
                 <p>Choose instant help or schedule for later.</p>
               </div>
               {activeTask && (
-                <Link className="status-pill searching active-pulse" to={`/citizen/tasks/${activeTask.id}`}>
+                <Link className="status-pill searching active-pulse" to="/citizen/tasks">
                   <span className="pulse-dot" /> Active task
                 </Link>
               )}
@@ -1703,7 +1717,7 @@ function CitizenDashboard() {
                     required
                     value={form.title}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    placeholder="e.g. Package pickup, queue waiting, grocery run..."
+                    placeholder="e.g. Grocery pickup, bill payment, queue waiting..."
                     aria-label="Task Title"
                   />
                   <VoiceMicInput onTranscript={(text) => setForm((f) => ({ ...f, title: f.title ? `${f.title} ${text}` : text }))} />
@@ -1717,7 +1731,7 @@ function CitizenDashboard() {
                     required
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="Provide clear step-by-step instructions for your Superhero partner..."
+                    placeholder="Write pickup/drop details, timing, contact rules, and any safety instructions..."
                     aria-label="Task Description"
                     rows={3}
                   />
@@ -1732,8 +1746,9 @@ function CitizenDashboard() {
                     <Clock3 size={16} className="field-icon" />
                     <input
                       type="number"
-                      min="1"
+                      min="15"
                       max="1440"
+                      step="15"
                       value={form.timeMinutes}
                       onChange={(e) => setForm({ ...form, timeMinutes: Number(e.target.value) })}
                       aria-label="Duration in minutes"
@@ -1755,17 +1770,53 @@ function CitizenDashboard() {
               {/* Price Preview Card */}
               <div className="price-preview-box">
                 <div className="price-preview-left">
-                  <span className="price-label">Estimated Price</span>
+                  <span className="price-label">Auto Budget Suggestion</span>
                   <div className="price-strike-row">
                     <span className="strike-price">₹{standardPrice}</span>
                     <span className="discount-badge">50% OFF EXCLUSIVE</span>
                   </div>
+                  <small className="field-hint">Suggested for {form.timeMinutes || 60} minutes. Confirm this amount for the booking.</small>
                 </div>
                 <div className="price-preview-right">
                   <span className="final-price">₹{discountPrice}</span>
                   <span className="price-subtext">Pay after completion</span>
                 </div>
               </div>
+
+              <div className="payment-choice-box" aria-label="Payment timing options">
+                <span className="label-title">Payment Timing</span>
+                <div className="payment-choice-grid">
+                  <button type="button" className="payment-choice disabled" disabled>
+                    <strong>Before Work</strong>
+                    <span>Online prepaid coming soon</span>
+                  </button>
+                  <button type="button" className="payment-choice active">
+                    <strong>After Work</strong>
+                    <span>Cash or UPI after OTP completion</span>
+                  </button>
+                </div>
+              </div>
+
+              <label className="form-label-group">
+                <span className="label-title">Urgency Level</span>
+                <div className="urgency-choice-grid">
+                  {[
+                    { value: 'LOW', label: 'Low' },
+                    { value: 'NORMAL', label: 'Normal' },
+                    { value: 'HIGH', label: 'High' },
+                    { value: 'CRITICAL', label: 'Critical' },
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      className={`urgency-choice ${form.urgency === item.value ? 'active' : ''}`}
+                      onClick={() => setForm({ ...form, urgency: item.value as TaskUrgency })}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </label>
 
               {savedAddresses.length > 0 && (
                 <div className="saved-address-section">
@@ -1850,8 +1901,8 @@ function CitizenDashboard() {
               <div className="notice payment-note">
                 <ShieldCheck size={18} className="payment-shield-icon" />
                 <div>
-                  <strong>Pay Directly After Completion</strong>
-                  <p>Pay cash or UPI directly to your Superhero partner upon task verification. No upfront fee required.</p>
+                  <strong>After Work Payment Selected</strong>
+                  <p>Pay cash or UPI directly to your Superherooo partner only after completion OTP verification. No upfront fee required.</p>
                 </div>
               </div>
 
@@ -2749,10 +2800,19 @@ function TaskDetail({
   onOpenChat?: () => void;
 }) {
   const [elapsedSec, setElapsedSec] = useState(0);
+  const fallbackStartedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (task.status !== 'STARTED' || !task.workStartedAt) return;
-    const startMs = new Date(task.workStartedAt).getTime();
+    if (task.status !== 'STARTED') {
+      fallbackStartedAtRef.current = null;
+      setElapsedSec(0);
+      return;
+    }
+    const recordedStartMs = task.workStartedAt ? new Date(task.workStartedAt).getTime() : NaN;
+    if (!Number.isFinite(recordedStartMs) && !fallbackStartedAtRef.current) {
+      fallbackStartedAtRef.current = Date.now();
+    }
+    const startMs = Number.isFinite(recordedStartMs) ? recordedStartMs : fallbackStartedAtRef.current || Date.now();
     const updateTimer = () => {
       setElapsedSec(Math.max(0, Math.floor((Date.now() - startMs) / 1000)));
     };
@@ -3328,7 +3388,7 @@ function ProfileView() {
             <Info label="Name" value={user.displayName || 'Not provided'} />
             <Info label="Email" value={user.email || 'Not provided'} />
             <Info label="Phone" value={user.phone || 'Optional on web'} />
-            <Info label="Role" value={user.role === 'BUYER' ? 'Citizen' : 'Partner'} />
+            <Info label="Role" value={user.role === 'BUYER' ? 'Superherooo' : 'Partner'} />
           </div>
 
           <div className="panel profile-section-card">

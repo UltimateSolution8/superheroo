@@ -185,6 +185,21 @@ button {
   background: rgba(11, 38, 66, 0.05);
 }
 
+.nav-back-button {
+  min-height: 40px;
+  padding: 8px 13px;
+  border: 1px solid rgba(15, 25, 50, 0.1);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--navy);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 25, 50, 0.06);
+}
+
 .nav-link.active {
   font-weight: 700;
   color: var(--blue);
@@ -1100,6 +1115,8 @@ button {
 .password-toggle-btn {
   position: absolute;
   right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   background: transparent;
   border: none;
   font-size: 1.1rem;
@@ -1114,7 +1131,7 @@ button {
 
 .password-toggle-btn:hover {
   opacity: 1;
-  transform: scale(1.1);
+  transform: translateY(-50%) scale(1.08);
 }
 
 .auth-submit-btn {
@@ -3875,6 +3892,71 @@ svg {
   color: #047857;
   line-height: 1.35;
   font-weight: 650;
+}
+
+.payment-choice-box {
+  display: grid;
+  gap: 10px;
+}
+
+.payment-choice-grid,
+.urgency-choice-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.payment-choice-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.urgency-choice-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.payment-choice,
+.urgency-choice {
+  min-height: 54px;
+  border: 1.5px solid rgba(15, 25, 50, 0.1);
+  border-radius: 15px;
+  background: #ffffff;
+  color: var(--navy);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(15, 25, 50, 0.05);
+}
+
+.payment-choice {
+  display: grid;
+  gap: 3px;
+  justify-items: start;
+  padding: 12px;
+  text-align: left;
+}
+
+.payment-choice span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.payment-choice.active,
+.urgency-choice.active {
+  border-color: rgba(252, 182, 26, 0.75);
+  background: linear-gradient(135deg, #fff7df 0%, #ffffff 100%);
+  box-shadow: 0 12px 28px rgba(252, 182, 26, 0.18);
+}
+
+.payment-choice.disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+@media (max-width: 460px) {
+  .payment-choice-grid,
+  .urgency-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* Main CTA Button */
