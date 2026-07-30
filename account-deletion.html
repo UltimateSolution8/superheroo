@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0F1932" />
+  <title>Request Account Deletion - Superherooo</title>
+  <meta name="description" content="Request deletion of a Superherooo Citizen, Partner, or Mediator account and associated personal data." />
+  <link rel="icon" type="image/png" href="assets/finallogo.png" />
+  <link rel="stylesheet" href="privacy.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="wrap">
+      <div class="header__inner">
+        <a href="index.html" class="header__logo">Super<span>Herooo</span></a>
+        <nav class="header__nav">
+          <a href="index.html">Home</a>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+        <a href="login.html" class="btn header__btn">Log In / Sign Up</a>
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="legal-content">
+    <div class="wrap">
+      <h1>Request Account Deletion</h1>
+      <p class="last-updated"><strong>Applies to:</strong> Superherooo Citizen, Partner, and Mediator</p>
+
+      <p>You can request deletion of your Superherooo account and associated personal data either inside the app or through the web request channel below.</p>
+
+      <h2>Request deletion in the app</h2>
+      <ol>
+        <li>Sign in to the relevant Superherooo app.</li>
+        <li>Open <strong>Profile</strong>.</li>
+        <li>Select <strong>Request account deletion</strong>.</li>
+        <li>Review the notice and select <strong>Submit request</strong>.</li>
+      </ol>
+      <p>The request is routed directly to Admin support and can be tracked in the app’s Help Center.</p>
+
+      <h2>Request deletion on the web</h2>
+      <p>Email our support team from the email address registered to your account. Include your registered phone number and whether you use the Citizen, Partner, or Mediator app. Never send a password, OTP, payment credential, or identity-document image.</p>
+      <div class="contact-card">
+        <p><strong>Email:</strong> <a href="mailto:support@superherooo.com?subject=Superherooo%20account%20deletion%20request&amp;body=Registered%20email%3A%0ARegistered%20phone%3A%0AApp%20role%20(Citizen%2FPartner%2FMediator)%3A%0A">support@superherooo.com</a></p>
+        <p><a class="btn header__btn" href="mailto:support@superherooo.com?subject=Superherooo%20account%20deletion%20request&amp;body=Registered%20email%3A%0ARegistered%20phone%3A%0AApp%20role%20(Citizen%2FPartner%2FMediator)%3A%0A">Start deletion request</a></p>
+      </div>
+
+      <h2>What happens next</h2>
+      <ul>
+        <li>Support verifies account ownership before processing the request.</li>
+        <li>Active jobs, unresolved safety cases, disputes, or outstanding settlement items may need to be completed first.</li>
+        <li>After verification, the account is disabled and data that is not legally required is deleted or irreversibly anonymised.</li>
+        <li>We aim to complete verified requests within 30 days and will notify you if a legal or operational exception requires more time.</li>
+      </ul>
+
+      <h2>Data deleted</h2>
+      <p>Subject to verification and legal obligations, deletion covers profile and contact data, saved addresses and preferences, device and notification tokens, profile photos, and other account-linked data that is no longer required.</p>
+
+      <h2>Data that may be retained</h2>
+      <p>Limited KYC, transaction, tax, accounting, fraud-prevention, safety, dispute, and legal-compliance records may be retained for the period required by applicable law. Retained records are restricted from normal product use and are deleted or anonymised when the applicable retention period ends.</p>
+
+      <h2>Questions</h2>
+      <p>See the <a href="privacy.html">Privacy Policy</a> or contact <a href="mailto:support@superherooo.com">support@superherooo.com</a>.</p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>&copy; 2026 SUPERHEROOO. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const hamburger = document.querySelector('.hamburger');
+    const nav = document.querySelector('.header__nav');
+    hamburger.addEventListener('click', () => {
+      const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+      hamburger.setAttribute('aria-expanded', String(!expanded));
+      nav.classList.toggle('is-open');
+    });
+  </script>
+</body>
+</html>

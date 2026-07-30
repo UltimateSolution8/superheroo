@@ -203,15 +203,34 @@ a:hover {
   text-decoration: underline;
 }
 
-.legal-content ul {
-  list-style: disc;
+.legal-content ul,
+.legal-content ol {
   margin-left: 24px;
   margin-bottom: 20px;
 }
 
-.legal-content ul li {
+.legal-content ul {
+  list-style: disc;
+}
+
+.legal-content ol {
+  list-style: decimal;
+}
+
+.legal-content ul li,
+.legal-content ol li {
   margin-bottom: 8px;
   color: var(--text);
+}
+
+.legal-content .btn {
+  color: var(--white);
+  text-decoration: none;
+}
+
+.legal-content .btn:hover {
+  color: var(--white);
+  text-decoration: none;
 }
 
 .last-updated {
