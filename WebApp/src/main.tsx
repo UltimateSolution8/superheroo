@@ -252,6 +252,19 @@ function requestNotificationPermission() {
   return Notification.requestPermission();
 }
 
+function registerPwaServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  const canRegister = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+  if (!canRegister) return;
+  const register = () => {
+    navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' }).catch((error) => {
+      console.warn('Superherooo PWA registration failed:', error);
+    });
+  };
+  if (document.readyState === 'complete') register();
+  else window.addEventListener('load', register, { once: true });
+}
+
 function usePwaInstall() {
   const location = useLocation();
   const { user } = useAuth();
@@ -300,20 +313,21 @@ function PwaInstallPrompt() {
   const { showToast } = useToast();
   const shouldShow = new URLSearchParams(location.search).get('install') === '1';
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const appName = location.pathname.includes('/partner') ? 'Partner' : 'App';
+  const isPartner = location.pathname.includes('/partner');
+  const appName = isPartner ? 'Partner App' : 'Superherooo App';
 
   if (!shouldShow || installed) return null;
 
   return (
     <div className="install-banner">
       <div>
-        <strong>Install Superherooo {appName}</strong>
+        <strong>Install {appName}</strong>
         <span>
           {canInstall
-            ? 'Tap Install to add the app to your home screen.'
+            ? 'Tap Install to add it to your phone home screen.'
             : isIos
               ? 'On iPhone, tap Share in Safari, then Add to Home Screen.'
-              : 'Open browser menu and choose Install app or Add to Home screen.'}
+              : 'On Android Chrome, use the browser menu and choose Install app or Add to Home screen.'}
         </span>
       </div>
       {canInstall ? (
@@ -327,7 +341,7 @@ function PwaInstallPrompt() {
           Install App
         </button>
       ) : (
-        <Link className="secondary" to={location.pathname}>Open App</Link>
+        <Link className="secondary" to={location.pathname}>{isPartner ? 'Open Partner App' : 'Open Superherooo App'}</Link>
       )}
     </div>
   );
@@ -3447,6 +3461,10 @@ function ProfileView() {
 }
 
 function App() {
+  useEffect(() => {
+    registerPwaServiceWorker();
+  }, []);
+
   return (
     <AuthProvider>
       <ToastProvider>

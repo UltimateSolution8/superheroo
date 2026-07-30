@@ -127,6 +127,26 @@ p {
   background: var(--amber-hover);
 }
 
+.nav-install-link {
+  border: 1px solid rgba(15, 25, 50, 0.16);
+  border-radius: 999px;
+  padding: 10px 14px;
+  line-height: 1;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(15, 25, 50, 0.08);
+}
+
+.nav-install-link--citizen {
+  background: var(--navy);
+  color: var(--white) !important;
+}
+
+.nav-install-link--partner {
+  background: var(--amber);
+  color: var(--navy) !important;
+  border-color: rgba(255, 198, 39, 0.9);
+}
+
 /* Icons */
 .icon-circle {
   width: 48px;

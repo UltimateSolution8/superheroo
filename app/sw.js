@@ -1,1 +1,59 @@
-if(!self.define){let e,n={};const i=(i,c)=>(i=new URL(i+".js",c).href,n[i]||new Promise(n=>{if("document"in self){const e=document.createElement("script");e.src=i,e.onload=n,document.head.appendChild(e)}else e=i,importScripts(i),n()}).then(()=>{let e=n[i];if(!e)throw new Error(`Module ${i} didn’t register its module`);return e}));self.define=(c,s)=>{const r=e||("document"in self?document.currentScript.src:"")||location.href;if(n[r])return;let o={};const a=e=>i(e,r),f={module:{uri:r},exports:o,require:a};n[r]=Promise.all(c.map(e=>f[e]||a(e))).then(e=>(s(...e),o))}}define(["./workbox-250e2fb9"],function(e){"use strict";self.addEventListener("message",e=>{e.data&&"SKIP_WAITING"===e.data.type&&self.skipWaiting()}),e.clientsClaim(),e.precacheAndRoute([{url:"index.html",revision:"07aa5bd01f5460ac8dc4e9f4ace9cef9"},{url:"icons/icon-partner-maskable-512.png",revision:"e3ea6c1c538b78f6e66fc31569df6bbc"},{url:"icons/icon-partner-maskable-192.png",revision:"379eaf61f59b4f7a3884765302ab0ca1"},{url:"icons/icon-partner-512.png",revision:"45d9dfeb460f4557ca1a58c4350eff93"},{url:"icons/icon-partner-192.png",revision:"d71803c5449a48dca5dda23395e03480"},{url:"icons/icon-citizen-maskable-512.png",revision:"0b59eee1be6bb389231bbc33e32be01a"},{url:"icons/icon-citizen-maskable-192.png",revision:"52540b12193bda93508682b879c2873e"},{url:"icons/icon-citizen-512.png",revision:"4858191fffb81205748c1dc6eaf4b1bc"},{url:"icons/icon-citizen-192.png",revision:"8c7d50a084d35c34b7c6234182dc66da"},{url:"icons/favicon-64.png",revision:"3e4396a46a0f580e2982b93b52e6e1ba"},{url:"icons/apple-touch-partner-180.png",revision:"52efed7117be5795fe580bfa456dc10b"},{url:"icons/apple-touch-citizen-180.png",revision:"3cb0cf5316df11abf5f4bcd7ef8fba48"},{url:"assets/workbox-window.prod.es5-BBnX5xw4.js",revision:null},{url:"assets/index-C1HKgNMU.js",revision:null},{url:"assets/index-DNdzD040.css",revision:null},{url:"manifest.citizen.webmanifest",revision:"8207df612f2baaac952a2ecee2ff8263"},{url:"manifest.partner.webmanifest",revision:"f654df895b1f7f8b1496573a91df3f64"},{url:"icons/apple-touch-citizen-180.png",revision:"3cb0cf5316df11abf5f4bcd7ef8fba48"},{url:"icons/apple-touch-partner-180.png",revision:"52efed7117be5795fe580bfa456dc10b"},{url:"icons/favicon-64.png",revision:"3e4396a46a0f580e2982b93b52e6e1ba"},{url:"icons/icon-citizen-192.png",revision:"8c7d50a084d35c34b7c6234182dc66da"},{url:"icons/icon-citizen-512.png",revision:"4858191fffb81205748c1dc6eaf4b1bc"},{url:"icons/icon-citizen-maskable-192.png",revision:"52540b12193bda93508682b879c2873e"},{url:"icons/icon-citizen-maskable-512.png",revision:"0b59eee1be6bb389231bbc33e32be01a"},{url:"icons/icon-partner-192.png",revision:"d71803c5449a48dca5dda23395e03480"},{url:"icons/icon-partner-512.png",revision:"45d9dfeb460f4557ca1a58c4350eff93"},{url:"icons/icon-partner-maskable-192.png",revision:"379eaf61f59b4f7a3884765302ab0ca1"},{url:"icons/icon-partner-maskable-512.png",revision:"e3ea6c1c538b78f6e66fc31569df6bbc"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(new e.NavigationRoute(e.createHandlerBoundToURL("/app/index.html"),{denylist:[/^\/app\/(sw\.js|manifest\..*\.webmanifest)$/,/\/assets\//]})),e.registerRoute(({url:e})=>/(^https?:\/\/[^/]*mysuperhero\.xyz)/.test(e.href)||e.pathname.startsWith("/socket.io"),new e.NetworkOnly,"GET"),e.registerRoute(({request:e})=>"image"===e.destination,new e.CacheFirst({cacheName:"sh-images",plugins:[new e.ExpirationPlugin({maxEntries:60,maxAgeSeconds:2592e3})]}),"GET")});
+const CACHE_NAME = 'superherooo-app-v3';
+const APP_SHELL = [
+  '/app/',
+  '/app/index.html',
+  '/app/manifest.citizen.webmanifest',
+  '/app/manifest.partner.webmanifest',
+  '/app/icons/icon-citizen-192.png',
+  '/app/icons/icon-citizen-512.png',
+  '/app/icons/icon-partner-192.png',
+  '/app/icons/icon-partner-512.png',
+];
+
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL).catch(() => undefined)),
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  if (url.origin.includes('mysuperhero.xyz') || url.pathname.startsWith('/socket.io')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request).catch(() => caches.match('/app/index.html')));
+    return;
+  }
+
+  if (request.method === 'GET' && url.pathname.startsWith('/app/')) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        const network = fetch(request)
+          .then((response) => {
+            if (response && response.ok) {
+              const copy = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            }
+            return response;
+          })
+          .catch(() => cached);
+        return cached || network;
+      }),
+    );
+  }
+});
