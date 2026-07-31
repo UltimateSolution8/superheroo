@@ -1,21 +1,23 @@
 {
+  "id": "/app/citizen",
   "short_name": "Superherooo",
-  "name": "Superherooo Web App",
+  "name": "Superherooo",
   "icons": [
     {
-      "src": "/assets/finallogo.png",
+      "src": "/app/icons/icon-citizen-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/assets/finallogo.png",
+      "src": "/app/icons/icon-citizen-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
-  "start_url": "/app/",
-  "background_color": "#0b2642",
-  "theme_color": "#0b2642",
+  "start_url": "/app/citizen?source=pwa",
+  "scope": "/app/",
+  "background_color": "#0F1932",
+  "theme_color": "#0F1932",
   "display": "standalone",
   "orientation": "portrait"
 }

@@ -349,7 +349,7 @@ function PwaInstallPrompt() {
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const routeIntent = installIntentFromPath(location.pathname);
   const isPartner = routeIntent === 'partner' || (!routeIntent && storedIntent === 'partner');
-  const appName = isPartner ? 'Partner App' : 'Superherooo App';
+  const appName = isPartner ? 'Partner' : 'Superherooo';
 
   useEffect(() => {
     const intent = installIntentFromPath(location.pathname);
@@ -387,7 +387,7 @@ function PwaInstallPrompt() {
           Install App
         </button>
       ) : (
-        <Link className="secondary" to={location.pathname}>{isPartner ? 'Open Partner App' : 'Open Superherooo App'}</Link>
+        <Link className="secondary" to={location.pathname}>{isPartner ? 'Open Partner' : 'Open Superherooo'}</Link>
       )}
     </div>
   );
