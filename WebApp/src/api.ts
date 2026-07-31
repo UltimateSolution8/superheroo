@@ -1,6 +1,303 @@
-import type { AuthResponse, CreateTaskPayload, HelperProfile, SupportTicket, SupportTicketCategory, SupportTicketDetail, Task, TaskSelfieStage, TaskStatus, UserRole } from './types';
+import type { AuthResponse, CreateTaskPayload, HelperProfile, SupportMessage, SupportTicket, SupportTicketCategory, SupportTicketDetail, Task, TaskSelfieStage, TaskStatus, UserRole } from './types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://api.mysuperhero.xyz').replace(/\/+$/, '');
+export const WEB_DEMO_MODE = String(import.meta.env.VITE_WEBAPP_DEMO_MODE || 'true').toLowerCase() !== 'false';
+const DEMO_TOKEN_PREFIX = 'demo-webapp-';
+const DEMO_TASKS_KEY = 'superherooo_demo_tasks_v1';
+const DEMO_CHAT_KEY = 'superherooo_demo_chat_v1';
+const DEMO_SUPPORT_KEY = 'superherooo_demo_support_v1';
+
+const demoBuyer = {
+  id: 'demo-buyer',
+  role: 'BUYER' as UserRole,
+  phone: '9000000001',
+  email: 'demo.citizen@superherooo.com',
+  emailVerified: true,
+  displayName: 'Demo Citizen',
+  bulkCsvEnabled: false,
+};
+
+const demoHelper = {
+  id: 'demo-helper',
+  role: 'HELPER' as UserRole,
+  phone: '9000000002',
+  email: 'demo.partner@superherooo.com',
+  emailVerified: true,
+  displayName: 'Demo Partner',
+  bulkCsvEnabled: false,
+};
+
+export function demoAuthForRole(role: 'BUYER' | 'HELPER'): AuthResponse {
+  return {
+    accessToken: `${DEMO_TOKEN_PREFIX}access-${role.toLowerCase()}`,
+    refreshToken: `${DEMO_TOKEN_PREFIX}refresh-${role.toLowerCase()}`,
+    user: role === 'HELPER' ? demoHelper : demoBuyer,
+  };
+}
+
+export function isDemoToken(token?: string | null) {
+  return WEB_DEMO_MODE && Boolean(token?.startsWith(DEMO_TOKEN_PREFIX));
+}
+
+function demoNow() {
+  return new Date().toISOString();
+}
+
+function demoId(prefix: string) {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return `${prefix}-${crypto.randomUUID()}`;
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function demoRoleFromToken(token?: string | null): 'BUYER' | 'HELPER' {
+  return token?.includes('helper') ? 'HELPER' : 'BUYER';
+}
+
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) as T : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson<T>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+  window.dispatchEvent(new CustomEvent('superherooo-demo-updated', { detail: { key } }));
+}
+
+function seedDemoTasks(): Task[] {
+  const existing = readJson<Task[] | null>(DEMO_TASKS_KEY, null);
+  if (existing) return existing;
+  const seeded: Task[] = [{
+    id: 'demo-task-seeded',
+    buyerId: demoBuyer.id,
+    buyerPhone: demoBuyer.phone,
+    buyerName: demoBuyer.displayName,
+    title: 'Pickup documents',
+    description: 'Collect a small envelope from reception and deliver it nearby.',
+    urgency: 'NORMAL',
+    timeMinutes: 45,
+    budgetPaise: 24900,
+    lat: 17.385,
+    lng: 78.4867,
+    addressText: 'Banjara Hills, Hyderabad, Telangana',
+    scheduledAt: null,
+    status: 'SEARCHING',
+    assignedHelperId: null,
+    helperPhone: null,
+    helperName: null,
+    arrivalOtp: '123456',
+    completionOtp: '654321',
+    createdAt: demoNow(),
+    landmark: 'Near main gate',
+    paymentCollectionMode: 'PAY_AFTER_SERVICE',
+    verificationMode: 'PHOTO_AND_OTP',
+  }];
+  writeJson(DEMO_TASKS_KEY, seeded);
+  return seeded;
+}
+
+function getDemoTasks() {
+  return seedDemoTasks();
+}
+
+function saveDemoTasks(tasks: Task[]) {
+  writeJson(DEMO_TASKS_KEY, tasks);
+}
+
+function replaceDemoTask(task: Task) {
+  const tasks = getDemoTasks().map((item) => item.id === task.id ? task : item);
+  saveDemoTasks(tasks);
+  return task;
+}
+
+function getDemoTask(taskId: string) {
+  const task = getDemoTasks().find((item) => item.id === taskId);
+  if (!task) throw new ApiError('Demo task not found.', 404);
+  return task;
+}
+
+function demoSelfieUrl(stage: TaskSelfieStage) {
+  const color = stage === 'ARRIVAL' ? '#10b981' : '#0f1932';
+  const label = stage === 'ARRIVAL' ? 'Arrival selfie uploaded' : 'Completion selfie uploaded';
+  return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420"><rect width="640" height="420" rx="32" fill="${color}"/><circle cx="320" cy="158" r="62" fill="#fff" opacity=".92"/><rect x="178" y="238" width="284" height="92" rx="46" fill="#fff" opacity=".92"/><text x="320" y="374" fill="#fff" font-family="Arial" font-size="28" font-weight="700" text-anchor="middle">${label}</text></svg>`)}`;
+}
+
+function getDemoMessages(taskId: string) {
+  const all = readJson<Record<string, SupportMessage[] | ChatMessageLike[]>>(DEMO_CHAT_KEY, {});
+  return (all[taskId] || []) as ChatMessageLike[];
+}
+
+type ChatMessageLike = {
+  id: string;
+  taskId: string;
+  senderUserId: string;
+  senderRole: UserRole;
+  senderName?: string | null;
+  message: string;
+  createdAt: string;
+};
+
+function saveDemoMessages(taskId: string, messages: ChatMessageLike[]) {
+  const all = readJson<Record<string, ChatMessageLike[]>>(DEMO_CHAT_KEY, {});
+  all[taskId] = messages;
+  writeJson(DEMO_CHAT_KEY, all);
+}
+
+const demoApi = {
+  createTask: async (_token: string, body: CreateTaskPayload) => {
+    const task: Task = {
+      id: demoId('demo-task'),
+      buyerId: demoBuyer.id,
+      buyerPhone: demoBuyer.phone,
+      buyerName: demoBuyer.displayName,
+      title: body.title,
+      description: body.description,
+      urgency: body.urgency,
+      timeMinutes: body.timeMinutes,
+      budgetPaise: body.budgetPaise,
+      lat: body.lat,
+      lng: body.lng,
+      addressText: body.addressText || null,
+      scheduledAt: body.scheduledAt || null,
+      status: body.scheduledAt ? 'SCHEDULED_PENDING' : 'SEARCHING',
+      assignedHelperId: null,
+      helperPhone: null,
+      helperName: null,
+      arrivalOtp: '123456',
+      completionOtp: '654321',
+      createdAt: demoNow(),
+      landmark: body.landmark || null,
+      paymentCollectionMode: 'PAY_AFTER_SERVICE',
+      verificationMode: 'PHOTO_AND_OTP',
+    };
+    saveDemoTasks([task, ...getDemoTasks()]);
+    return { taskId: task.id, offeredTo: [demoHelper.id] };
+  },
+  myTasks: async (token: string) => {
+    const role = demoRoleFromToken(token);
+    const tasks = getDemoTasks();
+    if (role === 'HELPER') {
+      return tasks.filter((task) => task.assignedHelperId === demoHelper.id || ['ASSIGNED', 'ARRIVED', 'STARTED', 'COMPLETED'].includes(task.status));
+    }
+    return tasks.filter((task) => task.buyerId === demoBuyer.id);
+  },
+  task: async (_token: string, taskId: string) => getDemoTask(taskId),
+  availableTasks: async () => getDemoTasks().filter((task) => ['SEARCHING', 'SCHEDULED_PENDING'].includes(task.status)),
+  acceptTask: async (_token: string, taskId: string) => {
+    const task = getDemoTask(taskId);
+    if (task.assignedHelperId && task.assignedHelperId !== demoHelper.id) throw new ApiError('Another partner just took this job.', 409);
+    return replaceDemoTask({
+      ...task,
+      status: 'ASSIGNED',
+      assignedHelperId: demoHelper.id,
+      helperPhone: demoHelper.phone,
+      helperName: demoHelper.displayName,
+    });
+  },
+  updateTaskStatus: async (_token: string, taskId: string, status: TaskStatus, otp?: string) => {
+    const task = getDemoTask(taskId);
+    if (status === 'ARRIVED' && !task.arrivalSelfieUrl) throw new ApiError('Please upload arrival selfie first.', 400);
+    if (status === 'STARTED' && otp !== task.arrivalOtp) throw new ApiError('Incorrect OTP.', 400);
+    if (status === 'COMPLETED' && !task.completionSelfieUrl) throw new ApiError('Please upload completion selfie first.', 400);
+    if (status === 'COMPLETED' && otp !== task.completionOtp) throw new ApiError('Incorrect OTP.', 400);
+    return replaceDemoTask({
+      ...task,
+      status,
+      workStartedAt: status === 'STARTED' ? demoNow() : task.workStartedAt,
+    });
+  },
+  uploadTaskSelfie: async (_token: string, taskId: string, stage: TaskSelfieStage, _selfie: File, lat: number, lng: number, addressText?: string | null) => {
+    const task = getDemoTask(taskId);
+    const capturedAt = demoNow();
+    if (stage === 'ARRIVAL') {
+      return replaceDemoTask({
+        ...task,
+        arrivalSelfieUrl: demoSelfieUrl(stage),
+        arrivalSelfieLat: lat,
+        arrivalSelfieLng: lng,
+        arrivalSelfieAddress: addressText || task.addressText || null,
+        arrivalSelfieCapturedAt: capturedAt,
+      });
+    }
+    return replaceDemoTask({
+      ...task,
+      completionSelfieUrl: demoSelfieUrl(stage),
+      completionSelfieLat: lat,
+      completionSelfieLng: lng,
+      completionSelfieAddress: addressText || task.addressText || null,
+      completionSelfieCapturedAt: capturedAt,
+    });
+  },
+  helperProfile: async (): Promise<HelperProfile> => ({
+    kycStatus: 'APPROVED',
+    kycFullName: demoHelper.displayName,
+    kycIdNumber: 'DEMO-APPROVED',
+    kycTokenNumber: 'DEMO-001',
+  }),
+  submitKyc: async (): Promise<HelperProfile> => ({
+    kycStatus: 'APPROVED',
+    kycFullName: demoHelper.displayName,
+    kycIdNumber: 'DEMO-APPROVED',
+  }),
+  helperOnline: async () => undefined,
+  getTaskChatMessages: async (_token: string, taskId: string) => getDemoMessages(taskId),
+  sendTaskChatMessage: async (token: string, taskId: string, message: string) => {
+    const role = demoRoleFromToken(token);
+    const msg: ChatMessageLike = {
+      id: demoId('demo-chat'),
+      taskId,
+      senderUserId: role === 'HELPER' ? demoHelper.id : demoBuyer.id,
+      senderRole: role,
+      senderName: role === 'HELPER' ? demoHelper.displayName : demoBuyer.displayName,
+      message,
+      createdAt: demoNow(),
+    };
+    saveDemoMessages(taskId, [...getDemoMessages(taskId), msg]);
+    return msg;
+  },
+  createSupportTicket: async (_token: string, body: { category: SupportTicketCategory; subject?: string | null; message: string; relatedTaskId?: string | null }): Promise<SupportTicketDetail> => {
+    const ticketId = demoId('demo-ticket');
+    const ticket: SupportTicketDetail = {
+      id: ticketId,
+      category: body.category,
+      subject: body.subject || categoryLabel(body.category),
+      status: 'OPEN',
+      priority: 'NORMAL',
+      relatedTaskId: body.relatedTaskId || null,
+      lastMessageAt: demoNow(),
+      createdAt: demoNow(),
+      messages: [{
+        id: demoId('demo-support-message'),
+        ticketId,
+        authorType: 'USER',
+        authorUserId: demoBuyer.id,
+        message: body.message,
+        createdAt: demoNow(),
+      }],
+    };
+    writeJson(DEMO_SUPPORT_KEY, [ticket, ...readJson<SupportTicketDetail[]>(DEMO_SUPPORT_KEY, [])]);
+    return ticket;
+  },
+  supportTickets: async (): Promise<SupportTicket[]> => readJson<SupportTicketDetail[]>(DEMO_SUPPORT_KEY, []),
+  supportTicket: async (_token: string, ticketId: string): Promise<SupportTicketDetail> => {
+    const ticket = readJson<SupportTicketDetail[]>(DEMO_SUPPORT_KEY, []).find((item) => item.id === ticketId);
+    if (!ticket) throw new ApiError('Support ticket not found.', 404);
+    return ticket;
+  },
+  addSupportMessage: async (_token: string, ticketId: string, message: string): Promise<SupportMessage> => {
+    const tickets = readJson<SupportTicketDetail[]>(DEMO_SUPPORT_KEY, []);
+    const msg: SupportMessage = { id: demoId('demo-support-message'), ticketId, authorType: 'USER', authorUserId: demoBuyer.id, message, createdAt: demoNow() };
+    const next = tickets.map((ticket) => ticket.id === ticketId ? { ...ticket, messages: [...(ticket.messages || []), msg], lastMessageAt: msg.createdAt } : ticket);
+    writeJson(DEMO_SUPPORT_KEY, next);
+    return msg;
+  },
+};
+
+function categoryLabel(category: string) {
+  return category.replace(/_/g, ' ').toLowerCase();
+}
 
 type ApiErrorBody = { message?: string; code?: string; details?: { fields?: Record<string, string> } };
 
@@ -123,14 +420,14 @@ export const api = {
     }),
   me: (token: string) => apiFetch<AuthResponse['user'] & { createdAt?: string }>('/api/v1/me', {}, token),
   createTask: (token: string, body: CreateTaskPayload) =>
-    apiFetch<{ taskId: string; offeredTo: string[] }>('/api/v1/tasks', { method: 'POST', body: JSON.stringify(body) }, token),
-  myTasks: (token: string) => apiFetch<Task[]>('/api/v1/tasks/mine', {}, token),
-  task: (token: string, taskId: string) => apiFetch<Task>(`/api/v1/tasks/${taskId}`, {}, token),
-  availableTasks: (token: string) => apiFetch<Task[]>('/api/v1/tasks/available', {}, token),
+    isDemoToken(token) ? demoApi.createTask(token, body) : apiFetch<{ taskId: string; offeredTo: string[] }>('/api/v1/tasks', { method: 'POST', body: JSON.stringify(body) }, token),
+  myTasks: (token: string) => isDemoToken(token) ? demoApi.myTasks(token) : apiFetch<Task[]>('/api/v1/tasks/mine', {}, token),
+  task: (token: string, taskId: string) => isDemoToken(token) ? demoApi.task(token, taskId) : apiFetch<Task>(`/api/v1/tasks/${taskId}`, {}, token),
+  availableTasks: (token: string) => isDemoToken(token) ? demoApi.availableTasks() : apiFetch<Task[]>('/api/v1/tasks/available', {}, token),
   acceptTask: (token: string, taskId: string) =>
-    apiFetch<Task>(`/api/v1/tasks/${taskId}/accept`, { method: 'POST' }, token),
+    isDemoToken(token) ? demoApi.acceptTask(token, taskId) : apiFetch<Task>(`/api/v1/tasks/${taskId}/accept`, { method: 'POST' }, token),
   updateTaskStatus: (token: string, taskId: string, status: TaskStatus, otp?: string) =>
-    apiFetch<Task>(`/api/v1/tasks/${taskId}/status`, { method: 'POST', body: JSON.stringify({ status, otp: otp || null }) }, token),
+    isDemoToken(token) ? demoApi.updateTaskStatus(token, taskId, status, otp) : apiFetch<Task>(`/api/v1/tasks/${taskId}/status`, { method: 'POST', body: JSON.stringify({ status, otp: otp || null }) }, token),
   uploadTaskSelfie: (
     token: string,
     taskId: string,
@@ -147,9 +444,9 @@ export const api = {
     if (addressText) body.set('addressText', addressText);
     body.set('capturedAt', new Date().toISOString());
     body.set('selfie', selfie);
-    return apiFetch<Task>(`/api/v1/tasks/${taskId}/selfie`, { method: 'POST', body }, token);
+    return isDemoToken(token) ? demoApi.uploadTaskSelfie(token, taskId, stage, selfie, lat, lng, addressText) : apiFetch<Task>(`/api/v1/tasks/${taskId}/selfie`, { method: 'POST', body }, token);
   },
-  helperProfile: (token: string) => apiFetch<HelperProfile>('/api/v1/helper/profile', {}, token),
+  helperProfile: (token: string) => isDemoToken(token) ? demoApi.helperProfile() : apiFetch<HelperProfile>('/api/v1/helper/profile', {}, token),
   submitKyc: (
     token: string,
     fullName: string,
@@ -166,22 +463,22 @@ export const api = {
     body.set('idFront', idFront);
     if (idBack) body.set('idBack', idBack);
     if (selfie) body.set('selfie', selfie);
-    return apiFetch<HelperProfile>('/api/v1/helper/kyc/submit', { method: 'POST', body }, token);
+    return isDemoToken(token) ? demoApi.submitKyc() : apiFetch<HelperProfile>('/api/v1/helper/kyc/submit', { method: 'POST', body }, token);
   },
   helperOnline: (token: string, online: boolean, lat?: number, lng?: number) =>
-    apiFetch<void>('/api/v1/helper/online', { method: 'PUT', body: JSON.stringify({ online, lat, lng }) }, token),
+    isDemoToken(token) ? demoApi.helperOnline() : apiFetch<void>('/api/v1/helper/online', { method: 'PUT', body: JSON.stringify({ online, lat, lng }) }, token),
   getTaskChatMessages: (token: string, taskId: string) =>
-    apiFetch<import('./types').ChatMessage[]>(`/api/v1/tasks/${taskId}/chat/messages`, {}, token),
+    isDemoToken(token) ? demoApi.getTaskChatMessages(token, taskId) : apiFetch<import('./types').ChatMessage[]>(`/api/v1/tasks/${taskId}/chat/messages`, {}, token),
   sendTaskChatMessage: (token: string, taskId: string, message: string) =>
-    apiFetch<import('./types').ChatMessage>(`/api/v1/tasks/${taskId}/chat/messages`, { method: 'POST', body: JSON.stringify({ message }) }, token),
+    isDemoToken(token) ? demoApi.sendTaskChatMessage(token, taskId, message) : apiFetch<import('./types').ChatMessage>(`/api/v1/tasks/${taskId}/chat/messages`, { method: 'POST', body: JSON.stringify({ message }) }, token),
   createSupportTicket: (
     token: string,
     body: { category: SupportTicketCategory; subject?: string | null; message: string; relatedTaskId?: string | null },
-  ) => apiFetch<SupportTicketDetail>('/api/v1/support/tickets', { method: 'POST', body: JSON.stringify(body) }, token),
-  supportTickets: (token: string) => apiFetch<SupportTicket[]>('/api/v1/support/tickets', {}, token),
-  supportTicket: (token: string, ticketId: string) => apiFetch<SupportTicketDetail>(`/api/v1/support/tickets/${ticketId}`, {}, token),
+  ) => isDemoToken(token) ? demoApi.createSupportTicket(token, body) : apiFetch<SupportTicketDetail>('/api/v1/support/tickets', { method: 'POST', body: JSON.stringify(body) }, token),
+  supportTickets: (token: string) => isDemoToken(token) ? demoApi.supportTickets() : apiFetch<SupportTicket[]>('/api/v1/support/tickets', {}, token),
+  supportTicket: (token: string, ticketId: string) => isDemoToken(token) ? demoApi.supportTicket(token, ticketId) : apiFetch<SupportTicketDetail>(`/api/v1/support/tickets/${ticketId}`, {}, token),
   addSupportMessage: (token: string, ticketId: string, message: string) =>
-    apiFetch<import('./types').SupportMessage>(`/api/v1/support/tickets/${ticketId}/messages`, { method: 'POST', body: JSON.stringify({ message }) }, token),
+    isDemoToken(token) ? demoApi.addSupportMessage(token, ticketId, message) : apiFetch<import('./types').SupportMessage>(`/api/v1/support/tickets/${ticketId}/messages`, { method: 'POST', body: JSON.stringify({ message }) }, token),
 };
 
 export interface LocationSuggestion {

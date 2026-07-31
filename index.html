@@ -36,7 +36,7 @@
           <a href="app/partner?install=1" class="nav-install-link nav-install-link--partner">Partner App</a>
           <a href="contact.html">Contact Us</a>
         </nav>
-        <a href="login.html" class="btn btn-navy header__btn" id="navLoginBtn">Log In/ Sign Up</a>
+        <a href="app/citizen?install=1" class="btn btn-navy header__btn" id="navLoginBtn">Superherooo App</a>
         <div class="hamburger"><span></span><span></span><span></span></div>
       </div>
     </div>
@@ -57,8 +57,7 @@
       <a href="app/partner?install=1" onclick="closeMobileNav()">Install Partner App</a>
       <a href="contact.html" onclick="closeMobileNav()">Contact Us</a>
     </nav>
-    <a href="login.html" class="btn btn-amber" style="margin: 24px; display: block; text-align: center;">Log In / Sign
-      Up</a>
+    <a href="app/citizen?install=1" class="btn btn-amber" style="margin: 24px; display: block; text-align: center;">Install Superherooo App</a>
   </div>
   <div class="mobile-nav__backdrop" id="mobileNavBackdrop" onclick="closeMobileNav()"></div>
 
@@ -606,12 +605,10 @@
   <script>
     // ── Hamburger / Mobile Nav ───────────────────────────
     document.addEventListener("DOMContentLoaded", () => {
-      if (localStorage.getItem('sh_token')) {
-        const btn = document.getElementById('navLoginBtn');
-        if (btn) {
-          btn.textContent = 'Profile';
-          btn.href = 'dashboard.html';
-        }
+      const btn = document.getElementById('navLoginBtn');
+      if (btn) {
+        btn.textContent = 'Superherooo App';
+        btn.href = 'app/citizen?install=1';
       }
     });
 

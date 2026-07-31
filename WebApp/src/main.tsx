@@ -39,7 +39,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { ApiError, api, searchLocations, resolveLocationCoords, reverseGeocode, toUserMessage, type LocationSuggestion } from './api';
+import { ApiError, WEB_DEMO_MODE, api, demoAuthForRole, isDemoToken, searchLocations, resolveLocationCoords, reverseGeocode, toUserMessage, type LocationSuggestion } from './api';
 import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, SupportTicket, SupportTicketCategory, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import './styles.css';
 import logo from "../public/superlogo.png";
@@ -159,6 +159,11 @@ function OfflineBanner() {
 }
 
 function loadStoredAuth(): Omit<AuthState, 'loading'> {
+  if (WEB_DEMO_MODE) {
+    const role = window.location.pathname.includes('/partner') ? 'HELPER' : 'BUYER';
+    const auth = demoAuthForRole(role);
+    return { accessToken: auth.accessToken, refreshToken: auth.refreshToken, user: auth.user };
+  }
   try {
     const raw = localStorage.getItem(authKey);
     if (!raw) return { accessToken: null, refreshToken: null, user: null };
@@ -195,12 +200,22 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    if (WEB_DEMO_MODE) {
+      const auth = demoAuthForRole(window.location.pathname.includes('/partner') ? 'HELPER' : 'BUYER');
+      setState({ accessToken: auth.accessToken, refreshToken: auth.refreshToken, user: auth.user, loading: false });
+      return;
+    }
     const refreshToken = state.refreshToken;
     if (refreshToken) api.logout(refreshToken).catch(() => undefined);
     clearAuth();
   }, [clearAuth, state.refreshToken]);
 
   useEffect(() => {
+    if (WEB_DEMO_MODE) {
+      const role = window.location.pathname.includes('/partner') ? 'HELPER' : 'BUYER';
+      applyAuth(demoAuthForRole(role));
+      return;
+    }
     const stored = loadStoredAuth();
     if (!stored.refreshToken) {
       setState({ ...stored, loading: false });
@@ -231,6 +246,10 @@ function useSocket() {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
+    if (isDemoToken(accessToken)) {
+      setSocket(null);
+      return;
+    }
     if (!accessToken || !user) {
       setSocket(null);
       return;
@@ -913,11 +932,11 @@ function Shell({ children }: { children: React.ReactNode }) {
             </Link>
           )}
           <a className="nav-link" href="/">Website</a>
-          {user ? (
+          {user && !WEB_DEMO_MODE ? (
             <button className="link-button" onClick={logout}><LogOut size={16} /> Sign out</button>
-          ) : (
+          ) : !WEB_DEMO_MODE ? (
             <Link className="nav-link active" to="/login">Sign in</Link>
-          )}
+          ) : null}
         </nav>
       </header>
       <PwaInstallPrompt />
@@ -930,11 +949,20 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 function RequireRole({ role, children }: { role: UserRole; children: React.ReactNode }) {
-  const { loading, user } = useAuth();
+  const { loading, user, applyAuth } = useAuth();
   const location = useLocation();
   const installRequested = new URLSearchParams(location.search).get('install') === '1';
   const routeIntent = installIntentFromPath(location.pathname);
   if (installRequested && routeIntent) sessionStorage.setItem(installIntentKey, routeIntent);
+  useEffect(() => {
+    if (WEB_DEMO_MODE && (!user || user.role !== role)) {
+      applyAuth(demoAuthForRole(role === 'HELPER' ? 'HELPER' : 'BUYER'));
+    }
+  }, [applyAuth, role, user?.role]);
+  if (WEB_DEMO_MODE) {
+    if (!user || user.role !== role) return <div className="center-screen">Loading Superherooo demo...</div>;
+    return <>{children}</>;
+  }
   if (loading) return <div className="center-screen">Loading Superherooo...</div>;
   if (!user) return <Navigate to={installRequested ? '/login?install=1' : '/login'} replace />;
   if (user.role !== role) return <Navigate to={user.role === 'BUYER' ? '/citizen' : '/partner'} replace />;
@@ -943,6 +971,7 @@ function RequireRole({ role, children }: { role: UserRole; children: React.React
 
 function LandingRedirect() {
   const { user, loading } = useAuth();
+  if (WEB_DEMO_MODE) return <Navigate to="/citizen" replace />;
   if (loading) return <div className="center-screen">Loading Superherooo...</div>;
   if (user?.role === 'HELPER') return <Navigate to="/partner" replace />;
   if (user?.role === 'BUYER') return <Navigate to="/citizen" replace />;
@@ -1423,7 +1452,10 @@ function CitizenDashboard() {
 
   const fillLocation = async () => {
     try {
-      const loc = await getLocation();
+      const loc = await getLocation().catch((err) => {
+        if (WEB_DEMO_MODE) return { lat: 17.385, lng: 78.4867 };
+        throw err;
+      });
       setForm((f) => ({ ...f, lat: String(loc.lat.toFixed(6)), lng: String(loc.lng.toFixed(6)) }));
       const address = await reverseGeocode(loc.lat, loc.lng);
       if (address) {
@@ -2369,7 +2401,7 @@ function PartnerDashboard() {
     let cancelled = false;
     const restoreOnline = async () => {
       try {
-        const loc = await getLocation().catch(() => lastLoc);
+        const loc = await getLocation().catch(() => WEB_DEMO_MODE ? (lastLoc || { lat: 17.385, lng: 78.4867 }) : lastLoc);
         if (!loc || cancelled) return;
         await api.helperOnline(accessToken, true, loc.lat, loc.lng);
         localStorage.setItem(partnerOnlineKey, 'true');
@@ -2399,7 +2431,10 @@ function PartnerDashboard() {
         return;
       }
       await requestNotificationPermission();
-      const loc = await getLocation();
+      const loc = await getLocation().catch((err) => {
+        if (WEB_DEMO_MODE) return { lat: 17.385, lng: 78.4867 };
+        throw err;
+      });
       await api.helperOnline(accessToken, true, loc.lat, loc.lng);
       setLastLoc(loc);
       setOnline(true);
@@ -3412,7 +3447,7 @@ function ProfileView() {
             <Link className="secondary" to={user.role === 'BUYER' ? '/citizen' : '/partner'}>
               Go to Workspace Dashboard
             </Link>
-            <button className="danger" onClick={logout}>Sign Out</button>
+            {!WEB_DEMO_MODE && <button className="danger" onClick={logout}>Sign Out</button>}
           </div>
         </div>
 
@@ -3492,10 +3527,10 @@ function App() {
           <StaticHostRedirectBridge />
           <Routes>
             <Route path="/" element={<LandingRedirect />} />
-            <Route path="/login" element={<AuthPage mode="login" />} />
-            <Route path="/signup" element={<AuthPage mode="signup" />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/login" element={WEB_DEMO_MODE ? <Navigate to="/citizen" replace /> : <AuthPage mode="login" />} />
+            <Route path="/signup" element={WEB_DEMO_MODE ? <Navigate to="/citizen" replace /> : <AuthPage mode="signup" />} />
+            <Route path="/forgot-password" element={WEB_DEMO_MODE ? <Navigate to="/citizen" replace /> : <ForgotPasswordPage />} />
+            <Route path="/reset-password" element={WEB_DEMO_MODE ? <Navigate to="/citizen" replace /> : <ResetPasswordPage />} />
             <Route path="/citizen" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
             <Route path="/citizen/create" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
             <Route path="/citizen/tasks" element={<RequireRole role="BUYER"><CitizenTasksPage /></RequireRole>} />
