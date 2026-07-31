@@ -6,16 +6,24 @@
     <title>Superherooo Web App</title>
     <meta name="description" content="Book instant verified help near you in minutes, or go online as a partner. Pay with Cash or UPI after service." />
 
-    <!-- PWA: default is the Citizen manifest; swapped to Partner at runtime by route when supported. -->
-    <link rel="manifest" href="/app/manifest.citizen.webmanifest" />
+    <!-- PWA: choose the install identity before React loads. -->
+    <script>
+      (function () {
+        var isPartner = window.location.pathname.indexOf('/app/partner') === 0;
+        var manifest = isPartner ? '/app/manifest.partner.webmanifest' : '/app/manifest.citizen.webmanifest';
+        var appleTitle = isPartner ? 'Partner' : 'Superherooo';
+        var appleIcon = isPartner ? '/app/icons/apple-touch-partner-180.png' : '/app/icons/apple-touch-citizen-180.png';
+        document.write('<link rel="manifest" href="' + manifest + '" />');
+        document.write('<meta name="apple-mobile-web-app-title" content="' + appleTitle + '" />');
+        document.write('<link rel="apple-touch-icon" href="' + appleIcon + '" />');
+      })();
+    </script>
     <meta name="theme-color" content="#0F1932" />
 
     <!-- Apple iOS Web App Support -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Superherooo" />
-    <link rel="apple-touch-icon" href="/app/icons/apple-touch-citizen-180.png" />
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
