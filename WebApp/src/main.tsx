@@ -39,7 +39,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { ApiError, WEB_DEMO_MODE, api, demoAuthForRole, isDemoToken, searchLocations, resolveLocationCoords, reverseGeocode, toUserMessage, type LocationSuggestion } from './api';
+import { ApiError, WEB_DEMO_MODE, api, demoAuthForRole, isDemoToken, searchLocations, resolveLocationCoords, reverseGeocode, toUserMessage, verifyIfscCode, type IfscLookupResult, type LocationSuggestion } from './api';
 import type { AuthResponse, AuthUser, ChatMessage, CreateTaskPayload, HelperProfile, SavedAddress, SupportTicket, SupportTicketCategory, Task, TaskSelfieStage, TaskStatus, TaskUrgency, UserRole } from './types';
 import './styles.css';
 import logo from "../public/superlogo.png";
@@ -2189,36 +2189,167 @@ function CitizenTaskPage() {
   );
 }
 
+type KycDocType = 'AADHAAR' | 'PASSPORT' | 'DRIVING_LICENSE' | 'PAN' | 'RATION_CARD' | 'OTHER';
+
+const kycDocTypes: Array<{ value: KycDocType; label: string; placeholder: string }> = [
+  { value: 'AADHAAR', label: 'Aadhaar', placeholder: '12-digit Aadhaar number' },
+  { value: 'PAN', label: 'PAN', placeholder: 'ABCDE1234F' },
+  { value: 'PASSPORT', label: 'Passport', placeholder: 'A1234567' },
+  { value: 'DRIVING_LICENSE', label: 'Driving License', placeholder: 'TS0120230001234' },
+  { value: 'RATION_CARD', label: 'Ration Card', placeholder: 'Ration card number' },
+  { value: 'OTHER', label: 'Other', placeholder: 'Document number' },
+];
+
+function sanitizeKycIdInput(value: string, docType: KycDocType): string {
+  const clean = value.trim();
+  if (docType === 'AADHAAR') return clean.replace(/\D/g, '').slice(0, 12);
+  if (docType === 'PAN') return clean.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+  if (docType === 'PASSPORT') return clean.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+  if (docType === 'DRIVING_LICENSE') return clean.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
+  if (docType === 'RATION_CARD') return clean.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
+  return clean.toUpperCase().replace(/[^A-Z0-9 -]/g, '').slice(0, 30);
+}
+
+function validateKycIdNumber(value: string, docType: KycDocType): boolean {
+  const v = value.trim().toUpperCase();
+  if (docType === 'AADHAAR') return /^\d{12}$/.test(v);
+  if (docType === 'PAN') return /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(v);
+  if (docType === 'PASSPORT') return /^[A-Z][0-9]{7}$/.test(v);
+  if (docType === 'DRIVING_LICENSE') return /^[A-Z]{2}[0-9]{2}[0-9A-Z]{8,14}$/.test(v);
+  if (docType === 'RATION_CARD') return /^[A-Z0-9]{8,20}$/.test(v);
+  return v.length >= 4 && v.length <= 30;
+}
+
+function kycIdValidationText(value: string, docType: KycDocType, otherDocType: string) {
+  if (!value.trim()) return null;
+  if (docType === 'OTHER' && otherDocType.trim().length > 0 && otherDocType.trim().length < 3) {
+    return 'Enter the document name, minimum 3 characters.';
+  }
+  if (validateKycIdNumber(value, docType)) return null;
+  if (docType === 'AADHAAR') return 'Aadhaar must be exactly 12 digits.';
+  if (docType === 'PAN') return 'PAN must be in format ABCDE1234F.';
+  if (docType === 'PASSPORT') return 'Passport must be 1 letter followed by 7 digits.';
+  if (docType === 'DRIVING_LICENSE') return 'Enter a valid driving license number.';
+  if (docType === 'RATION_CARD') return 'Ration card must be 8-20 alphanumeric characters.';
+  return 'Enter a valid document number.';
+}
+
+function validateKycFile(file: File | null, label: string, imageOnly = true) {
+  if (!file) return `${label} is required.`;
+  const allowed = imageOnly ? /^image\//i.test(file.type) : /^image\//i.test(file.type) || file.type === 'application/pdf';
+  if (!allowed) return `${label} must be an image${imageOnly ? '' : ' or PDF'}.`;
+  if (file.size > 8 * 1024 * 1024) return `${label} must be smaller than 8 MB.`;
+  return null;
+}
+
 function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; onKycUpdated: () => void }) {
   const { accessToken } = useAuth();
   const { showToast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [fullName, setFullName] = useState('');
-  const [docType, setDocType] = useState('Aadhaar Card');
+  const [docType, setDocType] = useState<KycDocType>('AADHAAR');
+  const [otherDocType, setOtherDocType] = useState('');
   const [idNumber, setIdNumber] = useState('');
   const [idFront, setIdFront] = useState<File | null>(null);
   const [idBack, setIdBack] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
+  const [accountHolderName, setAccountHolderName] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [confirmAccountNumber, setConfirmAccountNumber] = useState('');
+  const [ifscCode, setIfscCode] = useState('');
+  const [upiId, setUpiId] = useState('');
+  const [ifscResult, setIfscResult] = useState<IfscLookupResult | null>(null);
+  const [ifscBusy, setIfscBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const status = profile?.kycStatus || 'NOT_SUBMITTED';
+  const selectedDoc = kycDocTypes.find((item) => item.value === docType) || kycDocTypes[0];
+  const requiresBackUpload = docType === 'AADHAAR';
+  const idValidationText = kycIdValidationText(idNumber, docType, otherDocType);
+  const bankAccountClean = accountNumber.replace(/\s+/g, '');
+  const confirmAccountClean = confirmAccountNumber.replace(/\s+/g, '');
+  const normalizedIfsc = ifscCode.trim().toUpperCase();
+  const upiValid = !upiId.trim() || /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$/.test(upiId.trim());
+  const canEdit = status !== 'APPROVED';
+
+  useEffect(() => {
+    if (!accountHolderName && fullName.trim()) setAccountHolderName(fullName.trim());
+  }, [accountHolderName, fullName]);
+
+  const verifyIfsc = async () => {
+    setIfscBusy(true);
+    setIfscResult(null);
+    setError(null);
+    try {
+      const result = await verifyIfscCode(normalizedIfsc);
+      setIfscResult(result);
+      setBankName(result.BANK || bankName);
+      showToast(`IFSC verified: ${result.BANK}`, 'success');
+    } catch (err) {
+      const msg = toUserMessage(err);
+      setError(msg);
+      showToast(msg, 'error');
+    } finally {
+      setIfscBusy(false);
+    }
+  };
+
+  const validateForm = () => {
+    if (fullName.trim().length < 3) return 'Enter full legal name as per document.';
+    if (docType === 'OTHER' && otherDocType.trim().length < 3) return 'Enter the other document name.';
+    if (!validateKycIdNumber(idNumber, docType)) return idValidationText || 'Enter a valid document number.';
+    const frontError = validateKycFile(idFront, 'ID front photo');
+    if (frontError) return frontError;
+    if (requiresBackUpload) {
+      const backError = validateKycFile(idBack, 'Aadhaar back photo');
+      if (backError) return backError;
+    }
+    const selfieError = validateKycFile(selfie, 'Partner selfie');
+    if (selfieError) return selfieError;
+    if (accountHolderName.trim().length < 3) return 'Enter account holder name.';
+    if (bankName.trim().length < 2) return 'Enter bank name or verify IFSC to fill it.';
+    if (!/^\d{9,18}$/.test(bankAccountClean)) return 'Enter a valid 9-18 digit bank account number.';
+    if (bankAccountClean !== confirmAccountClean) return 'Bank account number and confirmation do not match.';
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(normalizedIfsc)) return 'Enter a valid 11-character IFSC code.';
+    if (!ifscResult || ifscResult.IFSC !== normalizedIfsc) return 'Verify IFSC before submitting KYC.';
+    if (!upiValid) return 'Enter a valid UPI ID or leave it blank.';
+    return null;
+  };
 
   const submitKyc = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!accessToken) return;
-    if (!idFront) {
-      setError('Please upload ID front document photo.');
-      showToast('Please upload ID front document photo.', 'error');
-      return;
-    }
-    if (!selfie) {
-      setError('Please upload partner selfie photo.');
-      showToast('Please upload partner selfie photo.', 'error');
+    const validation = validateForm();
+    if (validation || !idFront || !selfie) {
+      const msg = validation || 'Complete KYC form before submitting.';
+      setError(msg);
+      showToast(msg, 'error');
       return;
     }
     setBusy(true);
     setError(null);
     try {
-      await api.submitKyc(accessToken, fullName, docType, idNumber, idFront, idBack, selfie);
+      await api.submitKyc(
+        accessToken,
+        fullName.trim(),
+        docType === 'OTHER' ? otherDocType.trim() : docType,
+        idNumber.trim().toUpperCase(),
+        idFront,
+        requiresBackUpload ? idBack : null,
+        selfie,
+        {
+          accountHolderName: accountHolderName.trim(),
+          bankName: bankName.trim(),
+          bankAccountNumber: bankAccountClean,
+          ifscCode: normalizedIfsc,
+          ifscBank: ifscResult?.BANK || null,
+          ifscBranch: ifscResult?.BRANCH || null,
+          ifscCity: ifscResult?.CITY || null,
+          upiId: upiId.trim() || null,
+        },
+      );
       setShowForm(false);
       showToast('KYC submitted for review!', 'success');
       onKycUpdated();
@@ -2231,16 +2362,20 @@ function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; 
     }
   };
 
-  const status = profile?.kycStatus || 'NOT_SUBMITTED';
-
   return (
-    <section className="panel">
-      <h2>KYC Verification</h2>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '12px 0' }}>
-        <span className={`status-pill ${status.toLowerCase()}`}>{status}</span>
+    <section className="panel kyc-panel">
+      <div className="kyc-header">
+        <div>
+          <span className="eyebrow">Partner verification</span>
+          <h2>KYC Verification</h2>
+          <p className="muted">Upload identity documents and payout bank details for admin review.</p>
+        </div>
+        <span className={`status-pill ${status.toLowerCase().replace('_', '-')}`}>{status.replace('_', ' ')}</span>
+      </div>
+      <div className="kyc-actions">
         {status !== 'APPROVED' && (
-          <button className="secondary" onClick={() => setShowForm(!showForm)}>
-            {showForm ? 'Cancel Form' : status === 'REJECTED' ? 'Re-submit KYC' : 'Upload KYC Documents'}
+          <button className="primary kyc-complete-btn" onClick={() => setShowForm(!showForm)}>
+            <ShieldCheck size={18} /> {showForm ? 'Cancel KYC Form' : status === 'REJECTED' ? 'Re-submit KYC' : 'Complete KYC'}
           </button>
         )}
       </div>
@@ -2262,35 +2397,112 @@ function KycSection({ profile, onKycUpdated }: { profile: HelperProfile | null; 
         <p className="muted">Your KYC is fully verified. You can go online to accept nearby tasks!</p>
       )}
 
+      {profile?.bankDetails && (
+        <div className="kyc-bank-summary">
+          <strong>Bank details saved</strong>
+          <span>{profile.bankDetails.bankName || profile.bankDetails.ifscBank || 'Bank'} • Account ending {profile.bankDetails.bankAccountLast4 || '----'}</span>
+          <span>{profile.bankDetails.ifscCode}{profile.bankDetails.ifscBranch ? ` • ${profile.bankDetails.ifscBranch}` : ''}</span>
+        </div>
+      )}
+
       {showForm && (
-        <form onSubmit={submitKyc} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px', borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
+        <form onSubmit={submitKyc} className="kyc-form">
+          <div className="notice">
+            <FileText size={18} />
+            <span>Document KYC uses the existing upload flow. Bank account ownership verification needs penny-drop/payout provider setup later, so this PWA verifies IFSC and saves masked bank details for demo.</span>
+          </div>
           <label>
             Full Name (As per ID Document)
-            <input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Legal Name" aria-label="Legal Full Name" />
+            <input required disabled={!canEdit} value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Name as per ID" aria-label="Legal Full Name" />
           </label>
           <div className="grid two compact">
             <label>
               Document Type
-              <select value={docType} onChange={(e) => setDocType(e.target.value)} aria-label="Document type">
-                <option value="Aadhaar Card">Aadhaar Card</option>
-                <option value="PAN Card">PAN Card</option>
-                <option value="Driving License">Driving License</option>
-                <option value="Voter ID">Voter ID</option>
-                <option value="Passport">Passport</option>
+              <select disabled={!canEdit} value={docType} onChange={(e) => {
+                const next = e.target.value as KycDocType;
+                setDocType(next);
+                setIdNumber((value) => sanitizeKycIdInput(value, next));
+                if (next !== 'AADHAAR') setIdBack(null);
+              }} aria-label="Document type">
+                {kycDocTypes.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
               </select>
             </label>
             <label>
               Document / ID Number
-              <input required value={idNumber} onChange={(e) => setIdNumber(e.target.value)} placeholder="ID Number" aria-label="ID Number" />
+              <input required disabled={!canEdit} value={idNumber} onChange={(e) => setIdNumber(sanitizeKycIdInput(e.target.value, docType))} placeholder={selectedDoc.placeholder} aria-label="ID Number" />
             </label>
           </div>
+          {docType === 'OTHER' && (
+            <label>
+              Other document name
+              <input required disabled={!canEdit} value={otherDocType} onChange={(e) => setOtherDocType(e.target.value)} placeholder="Enter document name" aria-label="Other document name" />
+            </label>
+          )}
+          {idValidationText && <div className="field-error">{idValidationText}</div>}
 
           <div className="grid two compact">
             <SelfiePicker label="ID Document Front" file={idFront} onSelect={setIdFront} required />
-            <SelfiePicker label="ID Document Back (Optional)" file={idBack} onSelect={setIdBack} />
+            <SelfiePicker label={requiresBackUpload ? 'Aadhaar Back' : 'ID Document Back (Optional)'} file={idBack} onSelect={setIdBack} required={requiresBackUpload} />
           </div>
 
           <SelfiePicker label="Partner Selfie Photo" file={selfie} onSelect={setSelfie} required />
+
+          <div className="kyc-step-box">
+            <div className={`kyc-step ${idFront ? 'done' : ''}`}><CheckCircle2 size={18} /> ID front</div>
+            {requiresBackUpload && <div className={`kyc-step ${idBack ? 'done' : ''}`}><CheckCircle2 size={18} /> Aadhaar back</div>}
+            <div className={`kyc-step ${selfie ? 'done' : ''}`}><CheckCircle2 size={18} /> Selfie</div>
+            <div className={`kyc-step ${ifscResult ? 'done' : ''}`}><CheckCircle2 size={18} /> IFSC verified</div>
+          </div>
+
+          <div className="kyc-bank-section">
+            <div>
+              <span className="eyebrow">Payout details</span>
+              <h3>Bank Details</h3>
+            </div>
+            <div className="grid two compact">
+              <label>
+                Account Holder Name
+                <input required value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} placeholder="Name as per bank" aria-label="Account Holder Name" />
+              </label>
+              <label>
+                Bank Name
+                <input required value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="Auto-filled after IFSC verification" aria-label="Bank Name" />
+              </label>
+            </div>
+            <div className="grid two compact">
+              <label>
+                Account Number
+                <input required inputMode="numeric" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 18))} placeholder="9-18 digit account number" aria-label="Account Number" />
+              </label>
+              <label>
+                Confirm Account Number
+                <input required inputMode="numeric" value={confirmAccountNumber} onChange={(e) => setConfirmAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 18))} placeholder="Re-enter account number" aria-label="Confirm Account Number" />
+              </label>
+            </div>
+            <div className="grid two compact">
+              <label>
+                IFSC Code
+                <input required value={ifscCode} onChange={(e) => {
+                  setIfscCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11));
+                  setIfscResult(null);
+                }} placeholder="HDFC0000001" aria-label="IFSC Code" />
+              </label>
+              <label>
+                UPI ID (Optional)
+                <input value={upiId} onChange={(e) => setUpiId(e.target.value)} placeholder="name@upi" aria-label="UPI ID" />
+              </label>
+            </div>
+            <div className="kyc-ifsc-row">
+              <button type="button" className="secondary" onClick={verifyIfsc} disabled={ifscBusy || !normalizedIfsc}>
+                {ifscBusy ? 'Verifying IFSC...' : 'Verify IFSC'}
+              </button>
+              {ifscResult && (
+                <span className="ifsc-result">
+                  <CheckCircle2 size={16} /> {ifscResult.BANK} • {ifscResult.BRANCH}{ifscResult.CITY ? `, ${ifscResult.CITY}` : ''}
+                </span>
+              )}
+            </div>
+          </div>
 
           {error && <div className="notice error">{error}</div>}
           <button className="accent-btn" disabled={busy}>

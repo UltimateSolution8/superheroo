@@ -73,8 +73,22 @@ export type Task = {
   verificationMode?: TaskVerificationMode | null;
 };
 
+export type HelperKycStatus = 'NOT_SUBMITTED' | 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export type HelperBankDetails = {
+  accountHolderName?: string | null;
+  bankName?: string | null;
+  bankAccountLast4?: string | null;
+  ifscCode?: string | null;
+  ifscBank?: string | null;
+  ifscBranch?: string | null;
+  ifscCity?: string | null;
+  upiIdMasked?: string | null;
+  savedAt?: string | null;
+};
+
 export type HelperProfile = {
-  kycStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  kycStatus: HelperKycStatus;
   kycRejectionReason?: string | null;
   kycFullName?: string | null;
   kycIdNumber?: string | null;
@@ -85,6 +99,7 @@ export type HelperProfile = {
   kycTokenNumber?: string | null;
   kycQueuePosition?: number | null;
   kycEstimatedWaitMinutes?: number | null;
+  bankDetails?: HelperBankDetails | null;
 };
 
 export type CreateTaskPayload = {

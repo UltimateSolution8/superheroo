@@ -1,4 +1,4 @@
-import type { AuthResponse, CreateTaskPayload, HelperProfile, SupportMessage, SupportTicket, SupportTicketCategory, SupportTicketDetail, Task, TaskSelfieStage, TaskStatus, UserRole } from './types';
+import type { AuthResponse, CreateTaskPayload, HelperBankDetails, HelperProfile, SupportMessage, SupportTicket, SupportTicketCategory, SupportTicketDetail, Task, TaskSelfieStage, TaskStatus, UserRole } from './types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://api.mysuperhero.xyz').replace(/\/+$/, '');
 export const WEB_DEMO_MODE = String(import.meta.env.VITE_WEBAPP_DEMO_MODE || 'true').toLowerCase() !== 'false';
@@ -6,6 +6,7 @@ const DEMO_TOKEN_PREFIX = 'demo-webapp-';
 const DEMO_TASKS_KEY = 'superherooo_demo_tasks_v1';
 const DEMO_CHAT_KEY = 'superherooo_demo_chat_v1';
 const DEMO_SUPPORT_KEY = 'superherooo_demo_support_v1';
+const DEMO_KYC_KEY = 'superherooo_demo_partner_kyc_v1';
 
 const demoBuyer = {
   id: 'demo-buyer',
@@ -124,6 +125,32 @@ function demoSelfieUrl(stage: TaskSelfieStage) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420"><rect width="640" height="420" rx="32" fill="${color}"/><circle cx="320" cy="158" r="62" fill="#fff" opacity=".92"/><rect x="178" y="238" width="284" height="92" rx="46" fill="#fff" opacity=".92"/><text x="320" y="374" fill="#fff" font-family="Arial" font-size="28" font-weight="700" text-anchor="middle">${label}</text></svg>`)}`;
 }
 
+function demoKycImage(label: string) {
+  return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420"><rect width="640" height="420" rx="32" fill="#0f1932"/><rect x="64" y="76" width="512" height="268" rx="24" fill="#fff" opacity=".94"/><text x="320" y="210" fill="#0f1932" font-family="Arial" font-size="32" font-weight="700" text-anchor="middle">${label}</text><text x="320" y="258" fill="#64748b" font-family="Arial" font-size="22" text-anchor="middle">Uploaded for review</text></svg>`)}`;
+}
+
+function maskLast4(value: string) {
+  const clean = value.replace(/\s+/g, '');
+  return clean.length >= 4 ? clean.slice(-4) : clean;
+}
+
+function maskUpi(value?: string | null) {
+  if (!value) return null;
+  const [handle, provider] = value.split('@');
+  if (!handle || !provider) return value;
+  const visible = handle.length <= 3 ? handle[0] || '' : handle.slice(0, 3);
+  return `${visible}${handle.length > visible.length ? '***' : ''}@${provider}`;
+}
+
+function getDemoKycProfile(): HelperProfile {
+  return readJson<HelperProfile>(DEMO_KYC_KEY, {
+    kycStatus: 'NOT_SUBMITTED',
+    kycTokenNumber: 'DEMO-001',
+    kycQueuePosition: null,
+    kycEstimatedWaitMinutes: null,
+  });
+}
+
 function getDemoMessages(taskId: string) {
   const all = readJson<Record<string, SupportMessage[] | ChatMessageLike[]>>(DEMO_CHAT_KEY, {});
   return (all[taskId] || []) as ChatMessageLike[];
@@ -230,17 +257,42 @@ const demoApi = {
       completionSelfieCapturedAt: capturedAt,
     });
   },
-  helperProfile: async (): Promise<HelperProfile> => ({
-    kycStatus: 'APPROVED',
-    kycFullName: demoHelper.displayName,
-    kycIdNumber: 'DEMO-APPROVED',
-    kycTokenNumber: 'DEMO-001',
-  }),
-  submitKyc: async (): Promise<HelperProfile> => ({
-    kycStatus: 'APPROVED',
-    kycFullName: demoHelper.displayName,
-    kycIdNumber: 'DEMO-APPROVED',
-  }),
+  helperProfile: async (): Promise<HelperProfile> => getDemoKycProfile(),
+  submitKyc: async (
+    fullName: string,
+    docType: string,
+    idNumber: string,
+    _idFront: File,
+    idBack?: File | null,
+    _selfie?: File | null,
+    bankDetails?: HelperBankDetails & { bankAccountNumber?: string | null; upiId?: string | null },
+  ): Promise<HelperProfile> => {
+    const profile: HelperProfile = {
+      kycStatus: 'PENDING',
+      kycFullName: fullName.trim(),
+      kycIdNumber: idNumber.trim().toUpperCase(),
+      kycDocFrontUrl: demoKycImage('ID Front'),
+      kycDocBackUrl: idBack ? demoKycImage('ID Back') : null,
+      kycSelfieUrl: demoKycImage('Partner Selfie'),
+      kycSubmittedAt: demoNow(),
+      kycTokenNumber: 'DEMO-001',
+      kycQueuePosition: 1,
+      kycEstimatedWaitMinutes: 30,
+      bankDetails: bankDetails ? {
+        accountHolderName: bankDetails.accountHolderName || fullName.trim(),
+        bankName: bankDetails.bankName || bankDetails.ifscBank || null,
+        bankAccountLast4: bankDetails.bankAccountNumber ? maskLast4(bankDetails.bankAccountNumber) : bankDetails.bankAccountLast4 || null,
+        ifscCode: bankDetails.ifscCode || null,
+        ifscBank: bankDetails.ifscBank || null,
+        ifscBranch: bankDetails.ifscBranch || null,
+        ifscCity: bankDetails.ifscCity || null,
+        upiIdMasked: maskUpi(bankDetails.upiId || bankDetails.upiIdMasked),
+        savedAt: demoNow(),
+      } : null,
+    };
+    writeJson(DEMO_KYC_KEY, profile);
+    return profile;
+  },
   helperOnline: async () => undefined,
   getTaskChatMessages: async (_token: string, taskId: string) => getDemoMessages(taskId),
   sendTaskChatMessage: async (token: string, taskId: string, message: string) => {
@@ -455,6 +507,7 @@ export const api = {
     idFront: File,
     idBack?: File | null,
     selfie?: File | null,
+    bankDetails?: HelperBankDetails & { bankAccountNumber?: string | null; upiId?: string | null },
   ) => {
     const body = new FormData();
     body.set('fullName', fullName);
@@ -463,7 +516,7 @@ export const api = {
     body.set('idFront', idFront);
     if (idBack) body.set('idBack', idBack);
     if (selfie) body.set('selfie', selfie);
-    return isDemoToken(token) ? demoApi.submitKyc() : apiFetch<HelperProfile>('/api/v1/helper/kyc/submit', { method: 'POST', body }, token);
+    return isDemoToken(token) ? demoApi.submitKyc(fullName, docType, idNumber, idFront, idBack, selfie, bankDetails) : apiFetch<HelperProfile>('/api/v1/helper/kyc/submit', { method: 'POST', body }, token);
   },
   helperOnline: (token: string, online: boolean, lat?: number, lng?: number) =>
     isDemoToken(token) ? demoApi.helperOnline() : apiFetch<void>('/api/v1/helper/online', { method: 'PUT', body: JSON.stringify({ online, lat, lng }) }, token),
@@ -487,6 +540,31 @@ export interface LocationSuggestion {
   lng?: number;
   placeId?: string;
   provider: 'osm' | 'photon' | 'ola' | 'google';
+}
+
+export type IfscLookupResult = {
+  IFSC: string;
+  BANK: string;
+  BRANCH: string;
+  CITY?: string;
+  STATE?: string;
+  ADDRESS?: string;
+  UPI?: boolean;
+  IMPS?: boolean;
+  NEFT?: boolean;
+  RTGS?: boolean;
+};
+
+export async function verifyIfscCode(ifsc: string): Promise<IfscLookupResult> {
+  const normalized = ifsc.trim().toUpperCase();
+  if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(normalized)) {
+    throw new ApiError('Enter a valid 11-character IFSC code.', 400);
+  }
+  const res = await fetch(`https://ifsc.razorpay.com/${encodeURIComponent(normalized)}`);
+  if (!res.ok) {
+    throw new ApiError('Could not verify this IFSC code. Please check and try again.', res.status);
+  }
+  return res.json();
 }
 
 const OLA_MAPS_API_KEY = import.meta.env.VITE_OLA_MAPS_API_KEY || '';
