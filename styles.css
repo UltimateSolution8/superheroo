@@ -294,6 +294,18 @@ p {
   transform: translateY(-1px);
 }
 
+.nav-install-link--kyc {
+  background: linear-gradient(135deg, #0F1932, #253858);
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(15, 25, 50, 0.18);
+}
+
+.nav-install-link--kyc:hover {
+  background: linear-gradient(135deg, #F5B21B, #FFD36D);
+  color: var(--navy) !important;
+  transform: translateY(-1px);
+}
+
 .header__btn {
   padding: 8px 18px;
   font-size: 0.82rem;

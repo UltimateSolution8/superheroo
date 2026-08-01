@@ -142,6 +142,17 @@ function maskUpi(value?: string | null) {
   return `${visible}${handle.length > visible.length ? '***' : ''}@${provider}`;
 }
 
+function payoutPayloadFromBankDetails(bankDetails?: HelperBankDetails & { bankAccountNumber?: string | null; upiId?: string | null }) {
+  if (!bankDetails) return null;
+  return {
+    accountHolderName: bankDetails.accountHolderName || '',
+    bankName: bankDetails.bankName || bankDetails.ifscBank || '',
+    bankAccountLast4: bankDetails.bankAccountNumber ? maskLast4(bankDetails.bankAccountNumber) : bankDetails.bankAccountLast4 || '',
+    ifscCode: (bankDetails.ifscCode || '').trim().toUpperCase(),
+    upiIdMasked: maskUpi(bankDetails.upiId || bankDetails.upiIdMasked),
+  };
+}
+
 function getDemoKycProfile(): HelperProfile {
   return readJson<HelperProfile>(DEMO_KYC_KEY, {
     kycStatus: 'NOT_SUBMITTED',
@@ -516,7 +527,17 @@ export const api = {
     body.set('idFront', idFront);
     if (idBack) body.set('idBack', idBack);
     if (selfie) body.set('selfie', selfie);
-    return isDemoToken(token) ? demoApi.submitKyc(fullName, docType, idNumber, idFront, idBack, selfie, bankDetails) : apiFetch<HelperProfile>('/api/v1/helper/kyc/submit', { method: 'POST', body }, token);
+    if (isDemoToken(token)) return demoApi.submitKyc(fullName, docType, idNumber, idFront, idBack, selfie, bankDetails);
+    return apiFetch<HelperProfile>('/api/v1/helper/kyc/submit', { method: 'POST', body }, token)
+      .then(async (profile) => {
+        const payout = payoutPayloadFromBankDetails(bankDetails);
+        if (!payout?.accountHolderName || !payout.bankAccountLast4 || !payout.ifscCode) return profile;
+        const savedPayout = await apiFetch<HelperBankDetails>('/api/v1/helper/payout-account', {
+          method: 'PUT',
+          body: JSON.stringify(payout),
+        }, token);
+        return { ...profile, bankDetails: savedPayout };
+      });
   },
   helperOnline: (token: string, online: boolean, lat?: number, lng?: number) =>
     isDemoToken(token) ? demoApi.helperOnline() : apiFetch<void>('/api/v1/helper/online', { method: 'PUT', body: JSON.stringify({ online, lat, lng }) }, token),
