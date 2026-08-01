@@ -102,6 +102,13 @@ export type HelperProfile = {
   bankDetails?: HelperBankDetails | null;
 };
 
+export type PublicPartnerKycResponse = {
+  id: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  referenceId: string;
+  submittedAt?: string | null;
+};
+
 export type CreateTaskPayload = {
   title: string;
   description: string;

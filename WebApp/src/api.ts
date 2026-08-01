@@ -1,4 +1,4 @@
-import type { AuthResponse, CreateTaskPayload, HelperBankDetails, HelperProfile, SupportMessage, SupportTicket, SupportTicketCategory, SupportTicketDetail, Task, TaskSelfieStage, TaskStatus, UserRole } from './types';
+import type { AuthResponse, CreateTaskPayload, HelperBankDetails, HelperProfile, PublicPartnerKycResponse, SupportMessage, SupportTicket, SupportTicketCategory, SupportTicketDetail, Task, TaskSelfieStage, TaskStatus, UserRole } from './types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://api.mysuperhero.xyz').replace(/\/+$/, '');
 export const WEB_DEMO_MODE = String(import.meta.env.VITE_WEBAPP_DEMO_MODE || 'true').toLowerCase() !== 'false';
@@ -538,6 +538,40 @@ export const api = {
         }, token);
         return { ...profile, bankDetails: savedPayout };
       });
+  },
+  submitPublicPartnerKyc: (
+    body: {
+      fullName: string;
+      phone: string;
+      email: string;
+      docType: string;
+      idNumber: string;
+      idFront: File;
+      idBack?: File | null;
+      selfie: File;
+      accountHolderName?: string | null;
+      bankName?: string | null;
+      bankAccountNumber?: string | null;
+      ifscCode?: string | null;
+      upiId?: string | null;
+    },
+  ) => {
+    const form = new FormData();
+    form.set('fullName', body.fullName);
+    form.set('phone', body.phone);
+    form.set('email', body.email);
+    form.set('docType', body.docType);
+    form.set('idNumber', body.idNumber);
+    form.set('idFront', body.idFront);
+    if (body.idBack) form.set('idBack', body.idBack);
+    form.set('selfie', body.selfie);
+    if (body.accountHolderName) form.set('accountHolderName', body.accountHolderName);
+    if (body.bankName) form.set('bankName', body.bankName);
+    if (body.bankAccountNumber) form.set('bankAccountLast4', maskLast4(body.bankAccountNumber));
+    if (body.ifscCode) form.set('ifscCode', body.ifscCode.trim().toUpperCase());
+    const maskedUpi = maskUpi(body.upiId);
+    if (maskedUpi) form.set('upiIdMasked', maskedUpi);
+    return apiFetch<PublicPartnerKycResponse>('/api/public/partner-kyc', { method: 'POST', body: form });
   },
   helperOnline: (token: string, online: boolean, lat?: number, lng?: number) =>
     isDemoToken(token) ? demoApi.helperOnline() : apiFetch<void>('/api/v1/helper/online', { method: 'PUT', body: JSON.stringify({ online, lat, lng }) }, token),

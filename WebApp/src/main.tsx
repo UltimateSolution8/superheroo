@@ -52,7 +52,6 @@ const authNoticeKey = 'superherooo_auth_notice';
 const savedAddressesKey = 'superherooo_saved_addresses';
 const staticRedirectKey = 'superherooo_app_redirect';
 const installIntentKey = 'superherooo_pwa_install_intent';
-const realKycAuthKey = 'superherooo_partner_real_kyc_auth';
 const activeStatuses: TaskStatus[] = ['AI_PENDING', 'AI_APPROVED', 'ADMIN_REVIEW', 'ADMIN_APPROVED', 'PAYMENT_PENDING', 'SCHEDULED_PENDING', 'SEARCHING', 'ASSIGNED', 'ARRIVED', 'STARTED'];
 const partnerOnlineKey = 'superherooo_partner_online';
 const partnerLastLocationKey = 'superherooo_partner_last_location';
@@ -2259,28 +2258,11 @@ function KycSection({
   initialOpen?: boolean;
   fullScreen?: boolean;
 }) {
-  const { accessToken } = useAuth();
   const { showToast } = useToast();
   const [showForm, setShowForm] = useState(initialOpen);
-  const [realKycAuth, setRealKycAuth] = useState<AuthResponse | null>(() => {
-    try {
-      const raw = localStorage.getItem(realKycAuthKey);
-      return raw ? JSON.parse(raw) as AuthResponse : null;
-    } catch {
-      localStorage.removeItem(realKycAuthKey);
-      return null;
-    }
-  });
-  const [showRealAuth, setShowRealAuth] = useState(false);
-  const [realAuthMode, setRealAuthMode] = useState<'login' | 'signup'>('login');
-  const [realAuthEmail, setRealAuthEmail] = useState('');
-  const [realAuthPassword, setRealAuthPassword] = useState('');
-  const [realAuthPhone, setRealAuthPhone] = useState('');
-  const [realAuthName, setRealAuthName] = useState('');
-  const [showRealAuthPassword, setShowRealAuthPassword] = useState(false);
-  const [realAuthBusy, setRealAuthBusy] = useState(false);
-  const [realAuthError, setRealAuthError] = useState<string | null>(null);
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [docType, setDocType] = useState<KycDocType>('AADHAAR');
   const [otherDocType, setOtherDocType] = useState('');
   const [idNumber, setIdNumber] = useState('');
@@ -2297,6 +2279,7 @@ function KycSection({
   const [ifscBusy, setIfscBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submittedReference, setSubmittedReference] = useState<string | null>(null);
 
   const status = profile?.kycStatus || 'NOT_SUBMITTED';
   const selectedDoc = kycDocTypes.find((item) => item.value === docType) || kycDocTypes[0];
@@ -2307,73 +2290,10 @@ function KycSection({
   const normalizedIfsc = ifscCode.trim().toUpperCase();
   const upiValid = !upiId.trim() || /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$/.test(upiId.trim());
   const canEdit = status !== 'APPROVED';
-  const usingDemoSession = isDemoToken(accessToken);
-  const realHelperLabel = realKycAuth?.user?.email || realKycAuth?.user?.phone || null;
 
   useEffect(() => {
     if (!accountHolderName && fullName.trim()) setAccountHolderName(fullName.trim());
   }, [accountHolderName, fullName]);
-
-  const saveRealKycAuth = (auth: AuthResponse) => {
-    localStorage.setItem(realKycAuthKey, JSON.stringify(auth));
-    setRealKycAuth(auth);
-    setShowRealAuth(false);
-  };
-
-  const clearRealKycAuth = () => {
-    localStorage.removeItem(realKycAuthKey);
-    setRealKycAuth(null);
-    setShowRealAuth(true);
-  };
-
-  const submitRealAuth = async () => {
-    const email = realAuthEmail.trim().toLowerCase();
-    const password = realAuthPassword;
-    const problem = passwordProblem(password);
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      setRealAuthError('Enter a valid helper email address.');
-      return;
-    }
-    if (problem) {
-      setRealAuthError(problem);
-      return;
-    }
-    if (realAuthMode === 'signup') {
-      if (!realAuthName.trim()) {
-        setRealAuthError('Enter your full name.');
-        return;
-      }
-      if (!isValidIndianMobile(realAuthPhone)) {
-        setRealAuthError('Enter a valid 10-digit Indian mobile number.');
-        return;
-      }
-    }
-    setRealAuthBusy(true);
-    setRealAuthError(null);
-    try {
-      const auth = realAuthMode === 'signup'
-        ? await api.signup({
-          email,
-          password,
-          phone: normalizeIndianMobile(realAuthPhone),
-          displayName: realAuthName.trim(),
-          role: 'HELPER',
-        })
-        : await api.login(email, password);
-      if (auth.user.role !== 'HELPER') {
-        setRealAuthError('Use a Partner helper account for KYC submission.');
-        return;
-      }
-      saveRealKycAuth(auth);
-      showToast(realAuthMode === 'signup' ? 'Partner account created for KYC.' : 'Partner account connected for KYC.', 'success');
-    } catch (err) {
-      const msg = toUserMessage(err);
-      setRealAuthError(msg);
-      showToast(msg, 'error');
-    } finally {
-      setRealAuthBusy(false);
-    }
-  };
 
   const verifyIfsc = async () => {
     setIfscBusy(true);
@@ -2395,6 +2315,8 @@ function KycSection({
 
   const validateForm = () => {
     if (fullName.trim().length < 3) return 'Enter full legal name as per document.';
+    if (!isValidIndianMobile(phone)) return 'Enter a valid 10-digit Indian mobile number.';
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return 'Enter a valid email address.';
     if (docType === 'OTHER' && otherDocType.trim().length < 3) return 'Enter the other document name.';
     if (!validateKycIdNumber(idNumber, docType)) return idValidationText || 'Enter a valid document number.';
     const frontError = validateKycFile(idFront, 'ID front photo');
@@ -2415,15 +2337,7 @@ function KycSection({
     return null;
   };
 
-  const submitKyc = async (persistToAdmin: boolean) => {
-    const token = persistToAdmin ? realKycAuth?.accessToken : accessToken;
-    if (!token) {
-      setShowRealAuth(true);
-      const msg = 'Sign in or create a Partner account to submit KYC to Admin.';
-      setError(msg);
-      showToast(msg, 'info');
-      return;
-    }
+  const submitKyc = async () => {
     const validation = validateForm();
     if (validation || !idFront || !selfie) {
       const msg = validation || 'Complete KYC form before submitting.';
@@ -2434,36 +2348,26 @@ function KycSection({
     setBusy(true);
     setError(null);
     try {
-      await api.submitKyc(
-        token,
-        fullName.trim(),
-        docType === 'OTHER' ? otherDocType.trim() : docType,
-        idNumber.trim().toUpperCase(),
+      const response = await api.submitPublicPartnerKyc({
+        fullName: fullName.trim(),
+        phone: normalizeIndianMobile(phone),
+        email: email.trim().toLowerCase(),
+        docType: docType === 'OTHER' ? otherDocType.trim() : docType,
+        idNumber: idNumber.trim().toUpperCase(),
         idFront,
-        requiresBackUpload ? idBack : null,
+        idBack: requiresBackUpload ? idBack : null,
         selfie,
-        {
-          accountHolderName: accountHolderName.trim(),
-          bankName: bankName.trim(),
-          bankAccountNumber: bankAccountClean,
-          ifscCode: normalizedIfsc,
-          ifscBank: ifscResult?.BANK || null,
-          ifscBranch: ifscResult?.BRANCH || null,
-          ifscCity: ifscResult?.CITY || null,
-          upiId: upiId.trim() || null,
-        },
-      );
+        accountHolderName: accountHolderName.trim(),
+        bankName: bankName.trim(),
+        bankAccountNumber: bankAccountClean,
+        ifscCode: normalizedIfsc,
+        upiId: upiId.trim() || null,
+      });
+      setSubmittedReference(response.referenceId || response.id);
       setShowForm(false);
-      showToast(persistToAdmin ? 'KYC submitted to Admin review!' : 'Demo KYC saved locally.', 'success');
-      if (persistToAdmin) {
-        onKycUpdated();
-      } else {
-        onKycUpdated();
-      }
+      showToast('KYC submitted for Admin review!', 'success');
+      onKycUpdated();
     } catch (err) {
-      if (persistToAdmin && err instanceof ApiError && [401, 403].includes(err.status)) {
-        clearRealKycAuth();
-      }
       const msg = toUserMessage(err);
       setError(msg);
       showToast(msg, 'error');
@@ -2478,17 +2382,19 @@ function KycSection({
         <div>
           <span className="eyebrow">Partner verification</span>
           <h2>{fullScreen ? 'Complete Partner KYC' : 'KYC Verification'}</h2>
-          <p className="muted">{fullScreen ? 'Submit identity documents and payout details for Admin review.' : 'Upload identity documents and payout bank details for admin review.'}</p>
+          <p className="muted">{fullScreen ? 'Submit identity documents and payout details for Admin review. No account is needed.' : 'Upload identity documents and payout bank details for admin review.'}</p>
         </div>
         <span className={`status-pill ${status.toLowerCase().replace('_', '-')}`}>{status.replace('_', ' ')}</span>
       </div>
-      <div className="kyc-actions">
-        {status !== 'APPROVED' && (
+      {!fullScreen && (
+        <div className="kyc-actions">
+          {status !== 'APPROVED' && (
           <button className="primary kyc-complete-btn" onClick={() => setShowForm(!showForm)}>
             <ShieldCheck size={18} /> {showForm ? 'Cancel KYC Form' : status === 'REJECTED' ? 'Re-submit KYC' : 'Complete KYC'}
           </button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {profile?.kycRejectionReason && (
         <div className="notice error" style={{ margin: '10px 0' }}>
@@ -2515,66 +2421,33 @@ function KycSection({
         </div>
       )}
 
+      {submittedReference && (
+        <div className="notice success" style={{ marginTop: 12 }}>
+          <CheckCircle2 size={18} />
+          <span>KYC submitted. Reference ID: <strong>{submittedReference}</strong>. Admin review is pending and our team can contact you by phone or email.</span>
+        </div>
+      )}
+
       {showForm && (
-        <form onSubmit={(e) => { e.preventDefault(); void submitKyc(false); }} className="kyc-form">
+        <form onSubmit={(e) => { e.preventDefault(); void submitKyc(); }} className="kyc-form">
           <div className="notice">
             <FileText size={18} />
-            <span>Demo submit stays on this phone. Submit to Admin Review uses a real Partner account, saves document KYC to the backend, and stores only masked payout details.</span>
+            <span>This form submits directly to Admin review. We store your documents, contact details, IFSC summary, and only the last 4 digits of your account number.</span>
           </div>
-          {usingDemoSession && (
-            <div className="real-kyc-box">
-              <div>
-                <strong>Admin review submission</strong>
-                <span>{realHelperLabel ? `Connected as ${realHelperLabel}` : 'Connect or create a real Partner account to send this KYC to Admin.'}</span>
-              </div>
-              <button type="button" className="secondary" onClick={() => realHelperLabel ? clearRealKycAuth() : setShowRealAuth((value) => !value)}>
-                {realHelperLabel ? 'Change Account' : 'Connect Account'}
-              </button>
-            </div>
-          )}
-          {showRealAuth && (
-            <div className="real-kyc-auth">
-              <div className="segmented tiny">
-                <button type="button" className={realAuthMode === 'login' ? 'active' : ''} onClick={() => setRealAuthMode('login')}>Sign in</button>
-                <button type="button" className={realAuthMode === 'signup' ? 'active' : ''} onClick={() => setRealAuthMode('signup')}>Create</button>
-              </div>
-              <div className="grid two compact">
-                <label>
-                  Partner Email
-                  <input value={realAuthEmail} onChange={(e) => setRealAuthEmail(e.target.value)} placeholder="partner@example.com" aria-label="Partner email" />
-                </label>
-                <label>
-                  Password
-                  <span className="password-field compact-password">
-                    <input type={showRealAuthPassword ? 'text' : 'password'} value={realAuthPassword} onChange={(e) => setRealAuthPassword(e.target.value)} placeholder="Password" aria-label="Partner password" />
-                    <button type="button" onClick={() => setShowRealAuthPassword((value) => !value)} aria-label={showRealAuthPassword ? 'Hide password' : 'Show password'}>
-                      {showRealAuthPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </span>
-                </label>
-              </div>
-              {realAuthMode === 'signup' && (
-                <div className="grid two compact">
-                  <label>
-                    Full Name
-                    <input value={realAuthName} onChange={(e) => setRealAuthName(e.target.value)} placeholder="Partner full name" aria-label="Partner full name" />
-                  </label>
-                  <label>
-                    Mobile Number
-                    <input inputMode="tel" value={realAuthPhone} onChange={(e) => setRealAuthPhone(e.target.value)} placeholder="10-digit mobile" aria-label="Partner mobile number" />
-                  </label>
-                </div>
-              )}
-              {realAuthError && <div className="field-error">{realAuthError}</div>}
-              <button type="button" className="primary" disabled={realAuthBusy} onClick={() => void submitRealAuth()}>
-                {realAuthBusy ? 'Connecting...' : realAuthMode === 'signup' ? 'Create Partner Account' : 'Sign In for KYC'}
-              </button>
-            </div>
-          )}
           <label>
             Full Name (As per ID Document)
             <input required disabled={!canEdit} value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Name as per ID" aria-label="Legal Full Name" />
           </label>
+          <div className="grid two compact">
+            <label>
+              Mobile Number
+              <input required inputMode="tel" disabled={!canEdit} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10-digit mobile" aria-label="Mobile Number" />
+            </label>
+            <label>
+              Email Address
+              <input required type="email" disabled={!canEdit} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="partner@example.com" aria-label="Email Address" />
+            </label>
+          </div>
           <div className="grid two compact">
             <label>
               Document Type
@@ -2665,11 +2538,8 @@ function KycSection({
           </div>
 
           {error && <div className="notice error">{error}</div>}
-          <button className="accent-btn" disabled={busy}>
-            {busy ? 'Submitting KYC...' : 'Save Demo KYC'}
-          </button>
-          <button type="button" className="primary submit-admin-btn" disabled={busy} onClick={() => void submitKyc(true)}>
-            {busy ? 'Submitting...' : 'Submit to Admin Review'}
+          <button className="primary submit-admin-btn" disabled={busy}>
+            {busy ? 'Submitting...' : 'Submit KYC for Admin Review'}
           </button>
         </form>
       )}
@@ -2703,22 +2573,6 @@ function PartnerKycLaunchCard({ profile }: { profile: HelperProfile | null }) {
 }
 
 function PartnerKycPage() {
-  const { accessToken } = useAuth();
-  const [profile, setProfile] = useState<HelperProfile | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    if (!accessToken) return;
-    try {
-      setProfile(await api.helperProfile(accessToken));
-      setError(null);
-    } catch (err) {
-      setError(toUserMessage(err));
-    }
-  }, [accessToken]);
-
-  useEffect(() => { load(); }, [load]);
-
   return (
     <Shell>
       <main className="workspace kyc-page-workspace">
@@ -2729,11 +2583,10 @@ function PartnerKycPage() {
           <div>
             <span className="eyebrow">Superherooo Partner</span>
             <h1>Verification Center</h1>
-            <p>Complete KYC in one secure workspace. Your demo flow stays local; Admin review uses a real Partner account.</p>
+            <p>Complete KYC in one secure workspace. No login or Partner account is needed to send your details for Admin review.</p>
           </div>
         </section>
-        {error && <div className="notice error">{error}</div>}
-        <KycSection profile={profile} onKycUpdated={load} initialOpen fullScreen />
+        <KycSection profile={null} onKycUpdated={() => undefined} initialOpen fullScreen />
       </main>
     </Shell>
   );
@@ -3975,7 +3828,7 @@ function App() {
             <Route path="/partner/earnings" element={<RequireRole role="HELPER"><PartnerEarningsPage /></RequireRole>} />
             <Route path="/partner/inbox" element={<RequireRole role="HELPER"><PartnerInboxPage /></RequireRole>} />
             <Route path="/partner/profile" element={<RequireRole role="HELPER"><ProfileView /></RequireRole>} />
-            <Route path="/partner/kyc" element={<RequireRole role="HELPER"><PartnerKycPage /></RequireRole>} />
+            <Route path="/partner/kyc" element={<PartnerKycPage />} />
             <Route path="/partner/support" element={<RequireRole role="HELPER"><SupportCenterPage /></RequireRole>} />
             <Route path="/partner/tasks/:taskId" element={<RequireRole role="HELPER"><PartnerTaskPage /></RequireRole>} />
             <Route path="*" element={<Navigate to="/" replace />} />
