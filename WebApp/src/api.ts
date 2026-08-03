@@ -1,7 +1,7 @@
 import type { AuthResponse, CreateTaskPayload, HelperBankDetails, HelperProfile, PublicPartnerKycResponse, SupportMessage, SupportTicket, SupportTicketCategory, SupportTicketDetail, Task, TaskSelfieStage, TaskStatus, UserRole } from './types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://api.mysuperhero.xyz').replace(/\/+$/, '');
-export const WEB_DEMO_MODE = String(import.meta.env.VITE_WEBAPP_DEMO_MODE || 'true').toLowerCase() !== 'false';
+export const WEB_DEMO_MODE = String(import.meta.env.VITE_WEBAPP_DEMO_MODE || 'false').toLowerCase() === 'true';
 const DEMO_TOKEN_PREFIX = 'demo-webapp-';
 const DEMO_TASKS_KEY = 'superherooo_demo_tasks_v1';
 const DEMO_CHAT_KEY = 'superherooo_demo_chat_v1';
@@ -471,6 +471,16 @@ export const api = {
     }),
   logout: (refreshToken: string) =>
     apiFetch<void>('/api/v1/auth/logout', { method: 'POST', body: JSON.stringify({ refreshToken }) }),
+  startPhoneOtp: (phone: string, role: UserRole, channel = 'sms') =>
+    apiFetch<{ phone: string; sent: boolean; devOtp?: string | null }>('/api/v1/auth/otp/start', {
+      method: 'POST',
+      body: JSON.stringify({ phone, role, channel }),
+    }),
+  verifyPhoneOtp: (phone: string, otp: string, role: UserRole) =>
+    apiFetch<AuthResponse>('/api/v1/auth/otp/verify', {
+      method: 'POST',
+      body: JSON.stringify({ phone, otp, role }),
+    }),
   startEmailOtp: (email: string) =>
     apiFetch<{ email: string; sent: boolean; devOtp?: string | null }>('/api/v1/auth/email/otp/start', {
       method: 'POST',

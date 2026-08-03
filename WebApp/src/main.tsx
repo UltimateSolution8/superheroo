@@ -46,8 +46,9 @@ import logo from "../public/superlogo.png";
 import superhero from "../public/hero.jpeg"
 
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://realtime.mysuperhero.xyz').replace(/\/+$/, '');
-const showDevOtp = String(import.meta.env.VITE_DEV_SHOW_OTP || 'false').toLowerCase() === 'true';
-const authKey = 'superherooo_web_auth';
+const showDevOtp = String(import.meta.env.VITE_DEV_SHOW_OTP || 'true').toLowerCase() === 'true';
+const legacyAuthKey = 'superherooo_web_auth';
+const authKeyPrefix = 'superherooo_web_auth_';
 const authNoticeKey = 'superherooo_auth_notice';
 const savedAddressesKey = 'superherooo_saved_addresses';
 const staticRedirectKey = 'superherooo_app_redirect';
@@ -94,6 +95,27 @@ type AuthContextValue = AuthState & {
   logout: () => void;
   setUser: (user: AuthUser) => void;
 };
+
+function authKeyForRole(role: UserRole) {
+  return `${authKeyPrefix}${role}`;
+}
+
+function roleIntentFromPath(pathname = window.location.pathname): 'BUYER' | 'HELPER' {
+  return pathname.includes('/partner') ? 'HELPER' : 'BUYER';
+}
+
+function storedAuthForRole(role: UserRole): AuthResponse | null {
+  try {
+    const raw = localStorage.getItem(authKeyForRole(role));
+    if (!raw) return null;
+    const auth = JSON.parse(raw) as AuthResponse;
+    if (auth.user?.role !== role) return null;
+    return auth;
+  } catch {
+    localStorage.removeItem(authKeyForRole(role));
+    return null;
+  }
+}
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -160,19 +182,14 @@ function OfflineBanner() {
 
 function loadStoredAuth(): Omit<AuthState, 'loading'> {
   if (WEB_DEMO_MODE) {
-    const role = window.location.pathname.includes('/partner') ? 'HELPER' : 'BUYER';
+    const role = roleIntentFromPath();
     const auth = demoAuthForRole(role);
     return { accessToken: auth.accessToken, refreshToken: auth.refreshToken, user: auth.user };
   }
-  try {
-    const raw = localStorage.getItem(authKey);
-    if (!raw) return { accessToken: null, refreshToken: null, user: null };
-    const auth = JSON.parse(raw) as AuthResponse;
-    return { accessToken: auth.accessToken, refreshToken: auth.refreshToken, user: auth.user };
-  } catch {
-    localStorage.removeItem(authKey);
-    return { accessToken: null, refreshToken: null, user: null };
-  }
+  const auth = storedAuthForRole(roleIntentFromPath());
+  return auth
+    ? { accessToken: auth.accessToken, refreshToken: auth.refreshToken, user: auth.user }
+    : { accessToken: null, refreshToken: null, user: null };
 }
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -180,7 +197,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshRef = useRef<Promise<AuthResponse> | null>(null);
 
   const applyAuth = useCallback((auth: AuthResponse) => {
-    localStorage.setItem(authKey, JSON.stringify(auth));
+    localStorage.setItem(authKeyForRole(auth.user.role), JSON.stringify(auth));
+    localStorage.removeItem(legacyAuthKey);
     setState({ accessToken: auth.accessToken, refreshToken: auth.refreshToken, user: auth.user, loading: false });
   }, []);
 
@@ -188,20 +206,22 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     setState((current) => {
       if (!current.accessToken || !current.refreshToken) return current;
       const next = { accessToken: current.accessToken, refreshToken: current.refreshToken, user };
-      localStorage.setItem(authKey, JSON.stringify(next));
+      localStorage.setItem(authKeyForRole(user.role), JSON.stringify(next));
       return { ...next, loading: false };
     });
   }, []);
 
   const clearAuth = useCallback((notice?: string) => {
     if (notice) sessionStorage.setItem(authNoticeKey, notice);
-    localStorage.removeItem(authKey);
+    const role = state.user?.role || roleIntentFromPath();
+    localStorage.removeItem(authKeyForRole(role));
+    localStorage.removeItem(legacyAuthKey);
     setState({ accessToken: null, refreshToken: null, user: null, loading: false });
-  }, []);
+  }, [state.user?.role]);
 
   const logout = useCallback(() => {
     if (WEB_DEMO_MODE) {
-      const auth = demoAuthForRole(window.location.pathname.includes('/partner') ? 'HELPER' : 'BUYER');
+      const auth = demoAuthForRole(roleIntentFromPath());
       setState({ accessToken: auth.accessToken, refreshToken: auth.refreshToken, user: auth.user, loading: false });
       return;
     }
@@ -212,7 +232,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (WEB_DEMO_MODE) {
-      const role = window.location.pathname.includes('/partner') ? 'HELPER' : 'BUYER';
+      const role = roleIntentFromPath();
       applyAuth(demoAuthForRole(role));
       return;
     }
@@ -964,13 +984,24 @@ function RequireRole({ role, children }: { role: UserRole; children: React.React
       applyAuth(demoAuthForRole(role === 'HELPER' ? 'HELPER' : 'BUYER'));
     }
   }, [applyAuth, role, user?.role]);
+  useEffect(() => {
+    if (WEB_DEMO_MODE || loading || user?.role === role) return;
+    const stored = storedAuthForRole(role);
+    if (stored) applyAuth(stored);
+  }, [applyAuth, loading, role, user?.role]);
   if (WEB_DEMO_MODE) {
     if (!user || user.role !== role) return <div className="center-screen">Loading Superherooo demo...</div>;
     return <>{children}</>;
   }
+  const storedForRequestedRole = !loading && user?.role !== role ? storedAuthForRole(role) : null;
   if (loading) return <div className="center-screen">Loading Superherooo...</div>;
-  if (!user) return <Navigate to={installRequested ? '/login?install=1' : '/login'} replace />;
-  if (user.role !== role) return <Navigate to={user.role === 'BUYER' ? '/citizen' : '/partner'} replace />;
+  if (storedForRequestedRole) return <div className="center-screen">Switching Superherooo app...</div>;
+  if (!user || user.role !== role) {
+    const next = `${location.pathname}${location.search}`;
+    const params = new URLSearchParams({ role, next });
+    if (installRequested) params.set('install', '1');
+    return <Navigate to={`/login?${params.toString()}`} replace />;
+  }
   return <>{children}</>;
 }
 
@@ -996,16 +1027,19 @@ function StaticHostRedirectBridge() {
   return null;
 }
 
-function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
+function AuthPage({ mode: _mode }: { mode: 'login' | 'signup' }) {
   const { applyAuth } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const [role, setRole] = useState<UserRole>('BUYER');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const initialRole = params.get('role') === 'HELPER' ? 'HELPER' : 'BUYER';
+  const nextPath = params.get('next');
+  const [role, setRole] = useState<UserRole>(initialRole);
   const [phone, setPhone] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [devOtp, setDevOtp] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(() => {
     const notice = sessionStorage.getItem(authNoticeKey);
     if (notice) sessionStorage.removeItem(authNoticeKey);
@@ -1018,23 +1052,26 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
     setError(null);
     setBusy(true);
     try {
-      const cleanedEmail = email.trim().toLowerCase();
-      const cleanedName = displayName.trim();
       const cleanedPhone = normalizeIndianMobile(phone);
-      const passwordIssue = passwordProblem(password);
-      if (mode === 'signup') {
-        if (cleanedName.length < 2) throw new Error('Enter your full name.');
-        if (!isValidIndianMobile(phone)) throw new Error('Enter a valid 10-digit Indian mobile number.');
-        if (passwordIssue) throw new Error(passwordIssue);
+      if (!isValidIndianMobile(phone)) throw new Error('Enter a valid 10-digit Indian mobile number.');
+      if (!otpSent) {
+        const response = await api.startPhoneOtp(cleanedPhone, role);
+        setDevOtp(showDevOtp ? response.devOtp || null : null);
+        setOtpSent(true);
+        showToast('OTP generated. Enter the code to continue.', 'success');
+        return;
       }
-      const auth = mode === 'signup'
-        ? await api.signup({ email: cleanedEmail, password, phone: cleanedPhone, displayName: cleanedName, role })
-        : await api.login(cleanedEmail, password);
+      if (!/^\d{4,8}$/.test(otp.trim())) throw new Error('Enter the OTP shown above.');
+      const auth = await api.verifyPhoneOtp(cleanedPhone, otp.trim(), role);
       if (!['BUYER', 'HELPER'].includes(auth.user.role)) throw new Error('This web app supports citizen and partner accounts only.');
       applyAuth(auth);
       requestNotificationPermission().catch(() => undefined);
-      showToast(mode === 'signup' ? 'Account created successfully!' : 'Signed in successfully!', 'success');
-      navigate(auth.user.role === 'BUYER' ? '/citizen' : '/partner', { replace: true });
+      showToast('Signed in successfully!', 'success');
+      const fallback = auth.user.role === 'BUYER' ? '/citizen' : '/partner';
+      const nextMatchesRole = auth.user.role === 'HELPER'
+        ? nextPath?.startsWith('/partner')
+        : nextPath?.startsWith('/citizen');
+      navigate(nextPath && nextPath.startsWith('/') && !nextPath.startsWith('//') && nextMatchesRole ? nextPath : fallback, { replace: true });
     } catch (err) {
       const msg = toUserMessage(err);
       setError(msg);
@@ -1051,10 +1088,10 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
           <span className="eyebrow">
             <span className="live-pulse" /> Superherooo Web App
           </span>
-          <h1>{mode === 'signup' ? 'Create your account' : 'Sign in to Superherooo'}</h1>
-          <p>Book urgent non-skilled help or accept nearby jobs directly from your browser in minutes.</p>
+          <h1>{role === 'HELPER' ? 'Partner login' : 'Superherooo login'}</h1>
+          <p>Use your mobile number and the demo OTP to continue. No password or Exotel OTP is required for this web demo.</p>
           <div className="trust-row">
-            <span><ShieldCheck size={16} /> Email verified</span>
+            <span><ShieldCheck size={16} /> Phone OTP</span>
             <span><MapPin size={16} /> Realtime location</span>
             <span><CreditCard size={16} /> Cash/UPI after service</span>
           </div>
@@ -1075,8 +1112,8 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
         </section>
         <form className="panel auth-panel" onSubmit={submit}>
           <div className="auth-form-header">
-            <h2>{mode === 'signup' ? 'Get started' : 'Welcome back'}</h2>
-            <p>{mode === 'signup' ? 'Create your account in less than 30 seconds' : 'Sign in to access your account & live bookings'}</p>
+            <h2>{otpSent ? 'Enter OTP' : 'Continue with phone'}</h2>
+            <p>{otpSent ? `We generated an OTP for +91 ${normalizeIndianMobile(phone)}.` : 'Choose the app role and enter a 10-digit Indian mobile number.'}</p>
           </div>
 
           <div className="segmented">
@@ -1088,78 +1125,49 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             </button>
           </div>
 
-          {mode === 'signup' && (
+          <label className="input-group">
+            <span className="label-text">Mobile Number</span>
+            <div className="input-icon-wrapper">
+              <span className="input-icon"><Phone size={18} /></span>
+              <input
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value.replace(/\D/g, '').slice(0, 12));
+                  setOtpSent(false);
+                  setDevOtp(null);
+                  setOtp('');
+                }}
+                inputMode="tel"
+                autoComplete="tel"
+                pattern="(?:91|0)?[6-9][0-9]{9}"
+                required
+                placeholder="10-digit mobile number"
+              />
+            </div>
+          </label>
+
+          {otpSent && (
             <label className="input-group">
-              <span className="label-text">Full Name</span>
+              <span className="label-text">OTP</span>
               <div className="input-icon-wrapper">
-                <span className="input-icon"><User size={18} /></span>
+                <span className="input-icon"><Lock size={18} /></span>
                 <input
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 8))}
                   required
-                  autoComplete="name"
-                  placeholder="e.g. Rahul Sharma"
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
+                  placeholder="Enter OTP"
                 />
               </div>
             </label>
           )}
 
-          <label className="input-group">
-            <span className="label-text">Email Address</span>
-            <div className="input-icon-wrapper">
-              <span className="input-icon"><Inbox size={18} /></span>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="you@domain.com"
-              />
+          {devOtp && (
+            <div className="notice success">
+              <ShieldCheck size={18} />
+              <span>Demo OTP: <strong>{devOtp}</strong></span>
             </div>
-          </label>
-
-          <label className="input-group">
-            <span className="label-text">Password</span>
-            <div className="input-icon-wrapper">
-              <span className="input-icon"><Lock size={18} /></span>
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                type={showPassword ? 'text' : 'password'}
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                required
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                className="password-toggle-btn"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </label>
-
-          {mode === 'signup' && (
-            <label className="input-group">
-              <span className="label-text">Mobile Phone</span>
-              <div className="input-icon-wrapper">
-                <span className="input-icon"><Phone size={18} /></span>
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 12))}
-                  required
-                  autoComplete="tel"
-                  inputMode="tel"
-                  pattern="(?:91|0)?[6-9][0-9]{9}"
-                  placeholder="10-digit contact number"
-                />
-              </div>
-              <small className="field-hint">Used only for service coordination. Web sign-in stays email and password.</small>
-            </label>
           )}
 
           {error && <div className="notice error">{error}</div>}
@@ -1171,21 +1179,13 @@ function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
               </>
             ) : (
               <>
-                {mode === 'signup' ? 'Create Account' : 'Sign In'} <span className="btn-arrow">→</span>
+                {otpSent ? 'Verify & Continue' : 'Get OTP'} <span className="btn-arrow">→</span>
               </>
             )}
           </button>
 
-          {mode === 'login' && (
-            <Link className="auth-link-centered" to="/forgot-password">Forgot password?</Link>
-          )}
-
           <p className="muted" style={{ textAlign: 'center', marginTop: '4px', fontSize: '0.9rem' }}>
-            {mode === 'signup' ? (
-              <>Already have an account? <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 700 }}>Sign in</Link></>
-            ) : (
-              <>New to Superherooo? <Link to="/signup" style={{ color: 'var(--blue)', fontWeight: 700 }}>Create account</Link></>
-            )}
+            {role === 'HELPER' ? 'Partner KYC is required before going online.' : 'Book Superherooo tasks after OTP login.'}
           </p>
         </form>
       </main>
@@ -2258,11 +2258,10 @@ function KycSection({
   initialOpen?: boolean;
   fullScreen?: boolean;
 }) {
+  const { accessToken, user } = useAuth();
   const { showToast } = useToast();
   const [showForm, setShowForm] = useState(initialOpen);
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [docType, setDocType] = useState<KycDocType>('AADHAAR');
   const [otherDocType, setOtherDocType] = useState('');
   const [idNumber, setIdNumber] = useState('');
@@ -2292,6 +2291,10 @@ function KycSection({
   const canEdit = status !== 'APPROVED';
 
   useEffect(() => {
+    if (!fullName && user?.displayName) setFullName(user.displayName);
+  }, [fullName, user?.displayName]);
+
+  useEffect(() => {
     if (!accountHolderName && fullName.trim()) setAccountHolderName(fullName.trim());
   }, [accountHolderName, fullName]);
 
@@ -2315,8 +2318,6 @@ function KycSection({
 
   const validateForm = () => {
     if (fullName.trim().length < 3) return 'Enter full legal name as per document.';
-    if (!isValidIndianMobile(phone)) return 'Enter a valid 10-digit Indian mobile number.';
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return 'Enter a valid email address.';
     if (docType === 'OTHER' && otherDocType.trim().length < 3) return 'Enter the other document name.';
     if (!validateKycIdNumber(idNumber, docType)) return idValidationText || 'Enter a valid document number.';
     const frontError = validateKycFile(idFront, 'ID front photo');
@@ -2345,25 +2346,35 @@ function KycSection({
       showToast(msg, 'error');
       return;
     }
+    if (!accessToken) {
+      const msg = 'Sign in with phone OTP before submitting KYC.';
+      setError(msg);
+      showToast(msg, 'error');
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      const response = await api.submitPublicPartnerKyc({
-        fullName: fullName.trim(),
-        phone: normalizeIndianMobile(phone),
-        email: email.trim().toLowerCase(),
-        docType: docType === 'OTHER' ? otherDocType.trim() : docType,
-        idNumber: idNumber.trim().toUpperCase(),
+      const response = await api.submitKyc(
+        accessToken,
+        fullName.trim(),
+        docType === 'OTHER' ? otherDocType.trim() : docType,
+        idNumber.trim().toUpperCase(),
         idFront,
-        idBack: requiresBackUpload ? idBack : null,
+        requiresBackUpload ? idBack : null,
         selfie,
-        accountHolderName: accountHolderName.trim(),
-        bankName: bankName.trim(),
-        bankAccountNumber: bankAccountClean,
-        ifscCode: normalizedIfsc,
-        upiId: upiId.trim() || null,
-      });
-      setSubmittedReference(response.referenceId || response.id);
+        {
+          accountHolderName: accountHolderName.trim(),
+          bankName: bankName.trim(),
+          bankAccountNumber: bankAccountClean,
+          ifscCode: normalizedIfsc,
+          ifscBank: ifscResult?.BANK || bankName.trim(),
+          ifscBranch: ifscResult?.BRANCH || null,
+          ifscCity: ifscResult?.CITY || null,
+          upiId: upiId.trim() || null,
+        },
+      );
+      setSubmittedReference(response.kycTokenNumber || 'Pending');
       setShowForm(false);
       showToast('KYC submitted for Admin review!', 'success');
       onKycUpdated();
@@ -2382,7 +2393,7 @@ function KycSection({
         <div>
           <span className="eyebrow">Partner verification</span>
           <h2>{fullScreen ? 'Complete Partner KYC' : 'KYC Verification'}</h2>
-          <p className="muted">{fullScreen ? 'Submit identity documents and payout details for Admin review. No account is needed.' : 'Upload identity documents and payout bank details for admin review.'}</p>
+          <p className="muted">{fullScreen ? 'Submit identity documents and payout details for Admin review from your Partner account.' : 'Upload identity documents and payout bank details for admin review.'}</p>
         </div>
         <span className={`status-pill ${status.toLowerCase().replace('_', '-')}`}>{status.replace('_', ' ')}</span>
       </div>
@@ -2432,21 +2443,15 @@ function KycSection({
         <form onSubmit={(e) => { e.preventDefault(); void submitKyc(); }} className="kyc-form">
           <div className="notice">
             <FileText size={18} />
-            <span>This form submits directly to Admin review. We store your documents, contact details, IFSC summary, and only the last 4 digits of your account number.</span>
+            <span>This form submits your logged-in Partner KYC to Admin review. We store your documents, IFSC summary, and only the last 4 digits of your account number.</span>
           </div>
           <label>
             Full Name (As per ID Document)
             <input required disabled={!canEdit} value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Name as per ID" aria-label="Legal Full Name" />
           </label>
-          <div className="grid two compact">
-            <label>
-              Mobile Number
-              <input required inputMode="tel" disabled={!canEdit} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10-digit mobile" aria-label="Mobile Number" />
-            </label>
-            <label>
-              Email Address
-              <input required type="email" disabled={!canEdit} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="partner@example.com" aria-label="Email Address" />
-            </label>
+          <div className="notice compact-contact-note">
+            <Phone size={18} />
+            <span>Logged in as <strong>{user?.phone ? `+91 ${normalizeIndianMobile(user.phone)}` : 'Partner'}</strong>. Admin will review this helper account.</span>
           </div>
           <div className="grid two compact">
             <label>
@@ -2573,6 +2578,20 @@ function PartnerKycLaunchCard({ profile }: { profile: HelperProfile | null }) {
 }
 
 function PartnerKycPage() {
+  const { accessToken } = useAuth();
+  const [profile, setProfile] = useState<HelperProfile | null>(null);
+
+  const loadProfile = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      setProfile(await api.helperProfile(accessToken));
+    } catch {
+      setProfile(null);
+    }
+  }, [accessToken]);
+
+  useEffect(() => { loadProfile(); }, [loadProfile]);
+
   return (
     <Shell>
       <main className="workspace kyc-page-workspace">
@@ -2583,10 +2602,10 @@ function PartnerKycPage() {
           <div>
             <span className="eyebrow">Superherooo Partner</span>
             <h1>Verification Center</h1>
-            <p>Complete KYC in one secure workspace. No login or Partner account is needed to send your details for Admin review.</p>
+            <p>Complete KYC in one secure workspace. Admin approval unlocks online status and live job acceptance.</p>
           </div>
         </section>
-        <KycSection profile={null} onKycUpdated={() => undefined} initialOpen fullScreen />
+        <KycSection profile={profile} onKycUpdated={loadProfile} initialOpen fullScreen />
       </main>
     </Shell>
   );
@@ -3813,9 +3832,9 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingRedirect />} />
             <Route path="/login" element={WEB_DEMO_MODE ? <Navigate to="/citizen" replace /> : <AuthPage mode="login" />} />
-            <Route path="/signup" element={WEB_DEMO_MODE ? <Navigate to="/citizen" replace /> : <AuthPage mode="signup" />} />
-            <Route path="/forgot-password" element={WEB_DEMO_MODE ? <Navigate to="/citizen" replace /> : <ForgotPasswordPage />} />
-            <Route path="/reset-password" element={WEB_DEMO_MODE ? <Navigate to="/citizen" replace /> : <ResetPasswordPage />} />
+            <Route path="/signup" element={<Navigate to="/login" replace />} />
+            <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
+            <Route path="/reset-password" element={<Navigate to="/login" replace />} />
             <Route path="/citizen" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
             <Route path="/citizen/create" element={<RequireRole role="BUYER"><CitizenDashboard /></RequireRole>} />
             <Route path="/citizen/tasks" element={<RequireRole role="BUYER"><CitizenTasksPage /></RequireRole>} />
@@ -3828,7 +3847,7 @@ function App() {
             <Route path="/partner/earnings" element={<RequireRole role="HELPER"><PartnerEarningsPage /></RequireRole>} />
             <Route path="/partner/inbox" element={<RequireRole role="HELPER"><PartnerInboxPage /></RequireRole>} />
             <Route path="/partner/profile" element={<RequireRole role="HELPER"><ProfileView /></RequireRole>} />
-            <Route path="/partner/kyc" element={<PartnerKycPage />} />
+            <Route path="/partner/kyc" element={<RequireRole role="HELPER"><PartnerKycPage /></RequireRole>} />
             <Route path="/partner/support" element={<RequireRole role="HELPER"><SupportCenterPage /></RequireRole>} />
             <Route path="/partner/tasks/:taskId" element={<RequireRole role="HELPER"><PartnerTaskPage /></RequireRole>} />
             <Route path="*" element={<Navigate to="/" replace />} />
