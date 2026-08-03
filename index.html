@@ -37,7 +37,6 @@
           <a href="app/partner/kyc" class="nav-install-link nav-install-link--kyc">Partner KYC</a>
           <a href="contact.html">Contact Us</a>
         </nav>
-        <a href="app/citizen?install=1" class="btn btn-navy header__btn" id="navLoginBtn">Superherooo App</a>
         <div class="hamburger"><span></span><span></span><span></span></div>
       </div>
     </div>
@@ -606,13 +605,6 @@
 
   <script>
     // ── Hamburger / Mobile Nav ───────────────────────────
-    document.addEventListener("DOMContentLoaded", () => {
-      const btn = document.getElementById('navLoginBtn');
-      if (btn) {
-        btn.textContent = 'Superherooo App';
-        btn.href = 'app/citizen?install=1';
-      }
-    });
 
     const hamburger = document.querySelector('.hamburger');
     const mobileNav = document.getElementById('mobileNav');

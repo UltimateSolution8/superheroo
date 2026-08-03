@@ -1860,6 +1860,24 @@ p {
 }
 
 /* =========================================
+   DESKTOP / LAPTOP BREAKPOINT (≥ 1025px)
+   ========================================= */
+@media (min-width: 1025px) {
+  .hero {
+    height: 720px;
+    padding-top: 40px;
+  }
+
+  .hero__content {
+    transform: translateY(-68px);
+  }
+
+  .page-header {
+    padding: 140px 0 60px;
+  }
+}
+
+/* =========================================
    RESPONSIVE DESIGN — TABLET BREAKPOINT (641px - 1024px)
    ========================================= */
 @media (min-width: 641px) and (max-width: 1024px) {
