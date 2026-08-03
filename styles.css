@@ -339,9 +339,9 @@ p {
   position: relative;
   min-height: 640px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   padding-top: 110px;
-  padding-bottom: 40px;
+  padding-bottom: 0;
   background: var(--navy);
   overflow: hidden;
 }
@@ -353,7 +353,7 @@ p {
 .hero__grid {
   display: grid;
   grid-template-columns: 60% 40%;
-  align-items: center;
+  align-items: flex-end;
   gap: 24px;
   position: relative;
   z-index: 2;
@@ -365,25 +365,29 @@ p {
   width: 100%;
   max-width: 100%;
   transform: none;
+  padding-bottom: 50px;
 }
 
 .hero__image-col {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: flex-end;
   position: relative;
   z-index: 2;
   height: 100%;
+  margin-bottom: 0;
 }
 
 .hero__person-img {
-  max-width: 100%;
+  max-width: 118%;
   height: auto;
-  max-height: 480px;
+  max-height: 560px;
   object-fit: contain;
-  object-position: bottom right;
-  margin-top: 20px;
-  border-radius: 12px;
+  object-position: bottom center;
+  margin-bottom: -2px;
+  transform: scale(1.15) translateX(-25px);
+  transform-origin: bottom center;
+  border-radius: 0;
 }
 
 .hero__badge {
@@ -1878,22 +1882,32 @@ p {
   .hero {
     min-height: 640px;
     padding-top: 115px;
-    padding-bottom: 40px;
+    padding-bottom: 0;
+    align-items: flex-end;
   }
 
   .hero__grid {
-    grid-template-columns: 60% 40%;
-    align-items: center;
-    gap: 32px;
+    grid-template-columns: 58% 42%;
+    align-items: flex-end;
+    gap: 24px;
   }
 
   .hero__content {
     transform: none;
+    padding-bottom: 60px;
+  }
+
+  .hero__image-col {
+    justify-content: flex-start;
   }
 
   .hero__person-img {
-    max-height: 480px;
-    margin-top: 24px;
+    max-height: 570px;
+    max-width: 120%;
+    margin-top: 0;
+    margin-bottom: -2px;
+    transform: scale(1.18) translateX(-35px);
+    transform-origin: bottom center;
   }
 
   .page-header {
