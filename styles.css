@@ -2511,47 +2511,59 @@ p {
   .hero__cta-buttons {
     display: flex !important;
     flex-direction: row !important;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
     width: 100% !important;
-    gap: 8px !important;
+    gap: 10px !important;
   }
 
   .btn-playstore {
-    flex: 1 1 0 !important;
+    flex: 1 1 160px !important;
     min-width: 0 !important;
-    width: 50% !important;
-    max-width: 50% !important;
+    max-width: 100% !important;
     justify-content: flex-start !important;
-    padding: 8px 10px !important;
-    min-height: 52px !important;
-    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    min-height: 50px !important;
+    border-radius: 12px !important;
     box-sizing: border-box !important;
+    overflow: visible !important;
   }
 
   .btn-playstore__icon {
-    margin-right: 6px !important;
+    margin-right: 10px !important;
+    flex-shrink: 0 !important;
   }
 
   .btn-playstore__icon svg {
-    width: 22px !important;
-    height: 22px !important;
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .btn-playstore__content {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    overflow: visible !important;
   }
 
   .btn-playstore__sub {
-    font-size: 0.52rem !important;
-    letter-spacing: 0.02em !important;
+    font-size: 0.55rem !important;
+    letter-spacing: 0.03em !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
   }
 
   .btn-playstore__title {
-    font-size: 0.88rem !important;
-    letter-spacing: -0.02em !important;
+    font-size: 0.9rem !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
   }
 
   .btn-playstore__tag {
-    font-size: 0.52rem !important;
-    padding: 1px 4px !important;
+    font-size: 0.55rem !important;
+    padding: 2px 5px !important;
     margin-top: 2px !important;
   }
 
@@ -2564,41 +2576,47 @@ p {
   }
 }
 
-/* Small Mobile Breakpoint (≤ 380px) */
-@media (max-width: 380px) {
+/* Small Mobile Breakpoint (≤ 480px) - Stack store buttons for maximum legibility */
+@media (max-width: 480px) {
   .hero__title {
-    font-size: 1.6rem !important;
+    font-size: 1.7rem !important;
   }
 
   .hero__desc {
-    font-size: 0.84rem !important;
+    font-size: 0.88rem !important;
   }
 
   .cta__buttons,
   .hero__cta-buttons {
-    gap: 6px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
   }
 
   .btn-playstore {
-    padding: 6px 8px !important;
-    min-height: 48px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+    padding: 12px 16px !important;
+    min-height: 52px !important;
   }
 
   .btn-playstore__icon {
-    margin-right: 4px !important;
+    margin-right: 12px !important;
   }
 
   .btn-playstore__icon svg {
-    width: 20px !important;
-    height: 20px !important;
+    width: 24px !important;
+    height: 24px !important;
   }
 
   .btn-playstore__title {
-    font-size: 0.8rem !important;
+    font-size: 0.95rem !important;
   }
 
   .btn-playstore__sub {
-    font-size: 0.48rem !important;
+    font-size: 0.58rem !important;
   }
 }
 
