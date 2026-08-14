@@ -2087,10 +2087,21 @@ p {
     align-items: flex-start !important;
   }
 
-  /* Hide the person image on small screens — background color is enough */
+  /* Ensure hero person image is visible and responsive on mobile */
   .hero #hero-person-img,
-  .hero>img {
-    display: none !important;
+  .hero__person-img {
+    display: block !important;
+    max-width: 90%;
+    max-height: 380px;
+    margin: 20px auto 0;
+    object-fit: contain;
+  }
+
+  .hero__image-col {
+    display: flex !important;
+    justify-content: center;
+    width: 100%;
+    margin-top: 16px;
   }
 
   /* Dark navy gradient as fallback bg on mobile */
