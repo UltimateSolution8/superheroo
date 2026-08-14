@@ -1,32 +1,36 @@
 /* ==========================================================================
    SUPERHEROOO DYNAMIC FESTIVAL SYSTEM (CSS)
-   Industry Standard Prominent Festive Theme Styling
+   Fixed Top Banner + Dynamic Header Offset (Industry Standard Layout)
    ========================================================================== */
 
-/* --- 1. PROMINENT FESTIVAL BANNER TOP BAR --- */
+/* --- 1. FIXED TOP FESTIVAL BANNER --- */
 .festival-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  z-index: 1001;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  padding: 10px 18px;
+  padding: 0 16px;
   text-align: center;
-  position: relative;
-  z-index: 1000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   letter-spacing: 0.3px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 /* Independence Day & Republic Day (Prominent Tricolor) */
 .festival-banner.festival-theme--independence,
 .festival-banner.festival-theme--republic {
-  background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 48%, #138808 100%);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.8);
+  background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.9);
   color: #0A192F;
 }
 
@@ -48,6 +52,19 @@
   color: #FFFFFF;
 }
 
+/* --- DYNAMIC HEADER & PAGE OFFSET WHEN FESTIVAL BANNER IS ACTIVE --- */
+body.has-festival-banner .header {
+  top: 44px !important;
+  transition: top 0.3s ease;
+}
+
+body.has-festival-banner .hero,
+body.has-festival-banner .page-header,
+body.has-festival-banner main {
+  margin-top: 44px;
+  transition: margin-top 0.3s ease;
+}
+
 /* --- BANNER CONTENT BADGE --- */
 .festival-banner__content {
   display: flex;
@@ -55,40 +72,42 @@
   gap: 10px;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(10px);
-  padding: 6px 22px;
+  padding: 4px 20px;
   border-radius: 50px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 153, 51, 0.4);
 }
 
 .festival-banner__flag {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   animation: flagWave 2s ease-in-out infinite alternate;
 }
 
 .festival-banner__text {
   color: #0c2340;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 800;
   letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 .festival-banner__close {
   background: rgba(0, 0, 0, 0.12);
   border: none;
   color: #222;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 800;
   line-height: 1;
   transition: all 0.2s ease;
-  margin-left: 8px;
+  margin-left: 6px;
+  flex-shrink: 0;
 }
 
 .festival-banner__close:hover {
@@ -96,7 +115,7 @@
   color: #000;
 }
 
-/* --- 2. PROMINENT HERO SECTION FESTIVAL BADGE --- */
+/* --- 2. HERO SECTION FESTIVAL BADGE --- */
 .festival-hero-badge {
   display: inline-flex;
   align-items: center;
@@ -137,19 +156,23 @@
 }
 
 /* --- 4. RESPONSIVE --- */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .festival-banner {
-    font-size: 0.82rem;
-    padding: 8px 12px;
+    height: 40px;
+    padding: 0 10px;
+  }
+  body.has-festival-banner .header {
+    top: 40px !important;
+  }
+  body.has-festival-banner .hero,
+  body.has-festival-banner .page-header,
+  body.has-festival-banner main {
+    margin-top: 40px;
   }
   .festival-banner__content {
-    padding: 4px 14px;
+    padding: 3px 12px;
   }
   .festival-banner__text {
-    font-size: 0.8rem;
-  }
-  .festival-hero-badge {
-    font-size: 0.82rem;
-    padding: 6px 14px;
+    font-size: 0.78rem;
   }
 }

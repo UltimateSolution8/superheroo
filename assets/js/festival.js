@@ -1,15 +1,6 @@
 /**
- * SUPERHEROOO DYNAMIC FESTIVAL ENGINE (INDUSTRY STANDARD CALENDAR)
- * 
- * Behavior:
- * - On NORMAL DAYS: Website operates in 100% standard brand mode (no festival banners).
- * - On FESTIVAL DAYS & LEAD-UP WINDOWS: Automatically activates a subtle, pleasant festive theme.
- *   - National Holidays (Independence Day / Republic Day): Active 2-3 days prior + 1 day after.
- *   - Multi-day Festivals (Navratri / Durga Puja): Active 4 days prior through Dussehra.
- *   - Major Cultural Festivals (Diwali / Holi): Active 3-5 days prior through conclusion.
- * 
- * Testing Overrides:
- * - Pass URL query string: ?festival=independence | navratri | diwali | republic | holi | none
+ * SUPERHEROOO DYNAMIC FESTIVAL ENGINE
+ * Fixed Top Banner + Dynamic Header Offset (Industry Standard Layout)
  */
 (function() {
   'use strict';
@@ -21,10 +12,10 @@
       name: 'Independence Day',
       themeClass: 'festival-theme--independence',
       flag: '🇮🇳',
-      bannerText: 'Wishing Everyone a Happy 80th Independence Day! Superherooo — Freedom from Everyday Chores! 🎉',
+      bannerText: 'Wishing Everyone a Happy 80th Independence Day! SuperHerooo — Freedom from Everyday Chores! 🎉',
       badgeText: '🇮🇳 Happy 80th Independence Day — Get Helper in Minutes',
       // Aug 13 to Aug 16 (Lead time: 2 days prior to Aug 15)
-      startMonth: 7, startDate: 13, // August 13 (0-indexed month)
+      startMonth: 7, startDate: 13, // August 13
       endMonth: 7, endDate: 16     // August 16
     },
     {
@@ -32,9 +23,8 @@
       name: 'Navratri & Dussehra',
       themeClass: 'festival-theme--navratri',
       flag: '🌺',
-      bannerText: 'Wishing Everyone Happy Navratri & Dussehra! Celebrate joyfully while Superherooo handles your chores! 🌺',
+      bannerText: 'Wishing Everyone Happy Navratri & Dussehra! Celebrate joyfully while SuperHerooo handles your chores! 🌺',
       badgeText: '🌺 Happy Navratri & Dussehra — Get Helper in Minutes',
-      // Example Navratri lead-up window (4 days early)
       startMonth: 8, startDate: 20, // September 20
       endMonth: 9, endDate: 5        // October 5
     },
@@ -43,9 +33,8 @@
       name: 'Diwali & Dhanteras',
       themeClass: 'festival-theme--diwali',
       flag: '🪔',
-      bannerText: 'Wishing Everyone a Bright & Prosperous Diwali! Light up your home with Superherooo services! ✨',
+      bannerText: 'Wishing Everyone a Bright & Prosperous Diwali! Light up your home with SuperHerooo services! ✨',
       badgeText: '🪔 Happy Diwali — Get Helper in Minutes',
-      // Example Diwali lead-up window (5 days prior to Dhanteras)
       startMonth: 9, startDate: 25, // October 25
       endMonth: 10, endDate: 5       // November 5
     },
@@ -54,9 +43,8 @@
       name: 'Republic Day',
       themeClass: 'festival-theme--republic',
       flag: '🇮🇳',
-      bannerText: 'Happy Republic Day! Freedom to relax while Superherooo manages your daily tasks! 🇮🇳',
+      bannerText: 'Happy Republic Day! Freedom to relax while SuperHerooo manages your daily tasks! 🇮🇳',
       badgeText: '🇮🇳 Happy Republic Day — Get Helper in Minutes',
-      // Jan 24 to Jan 27 (Lead time: 2 days prior to Jan 26)
       startMonth: 0, startDate: 24, // January 24
       endMonth: 0, endDate: 27      // January 27
     },
@@ -65,7 +53,7 @@
       name: 'Holi',
       themeClass: 'festival-theme--holi',
       flag: '🎨',
-      bannerText: 'Wishing Everyone a Joyous & Colorful Holi! Superherooo wishes you happiness & peace of mind! 🎨',
+      bannerText: 'Wishing Everyone a Joyous & Colorful Holi! SuperHerooo wishes you happiness & peace of mind! 🎨',
       badgeText: '🎨 Happy Holi — Get Helper in Minutes',
       startMonth: 2, startDate: 20, // March 20
       endMonth: 2, endDate: 26      // March 26
@@ -119,7 +107,8 @@
       return;
     }
 
-    // Apply festival theme class to root body
+    // Mark body so CSS offsets fixed header properly
+    document.body.classList.add('has-festival-banner');
     document.body.classList.add(festival.themeClass);
 
     // 1. Inject Top Announcement Banner
@@ -138,6 +127,7 @@
 
     document.getElementById('closeFestivalBanner').addEventListener('click', function() {
       bannerEl.style.display = 'none';
+      document.body.classList.remove('has-festival-banner');
       sessionStorage.setItem('dismiss_festival_' + festival.id, 'true');
     });
 
