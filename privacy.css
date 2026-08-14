@@ -469,6 +469,7 @@ a:hover {
 }
 
 @media (max-width: 768px) {
+
   .legal-table,
   .legal-table thead,
   .legal-table tbody,
@@ -508,7 +509,7 @@ a:hover {
     font-weight: 600;
     color: var(--navy);
   }
-  
+
   .legal-table .highlight-col {
     width: auto;
   }
@@ -571,7 +572,7 @@ a:hover {
   padding: 8px 16px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .meta-label {
@@ -679,4 +680,3 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
-

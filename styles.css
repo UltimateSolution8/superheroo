@@ -206,10 +206,11 @@ p {
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
-  padding: 8px 20px;
+  padding: 0px 20px;
   border-radius: 100px;
   box-shadow: 0 4px 25px rgba(15, 25, 50, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.8);
+  overflow: visible;
 }
 
 .header__logo {
@@ -424,11 +425,13 @@ p {
 }
 
 .hero__title .brand-super {
-  color: #FFFFFF; /* White */
+  color: #FFFFFF;
+  /* White */
 }
 
 .hero__title .brand-herooo {
-  color: #FCB61A; /* Golden */
+  color: #FCB61A;
+  /* Golden */
 }
 
 .hero__desc {
@@ -905,7 +908,7 @@ p {
   margin-bottom: 14px;
 }
 
-.benefits > p {
+.benefits>p {
   font-size: clamp(0.95rem, 2vw, 1.1rem);
   color: #64748B;
   max-width: 620px;
@@ -1276,7 +1279,7 @@ p {
   line-height: 1.25;
 }
 
-.promise__content > p {
+.promise__content>p {
   font-size: clamp(0.95rem, 2vw, 1.05rem);
   color: #64748B;
   margin-bottom: 28px;
@@ -1935,6 +1938,7 @@ p {
    RESPONSIVE DESIGN — TABLET BREAKPOINT (641px - 1024px)
    ========================================= */
 @media (min-width: 641px) and (max-width: 1024px) {
+
   /* Floating Header on Tablet */
   .header__nav,
   .header__btn {
@@ -2334,6 +2338,7 @@ p {
 
 /* Tablet Breakpoint (641px to 1024px) */
 @media (min-width: 641px) and (max-width: 1024px) {
+
   .cta__buttons,
   .hero__cta-buttons {
     flex-direction: row !important;
@@ -2355,6 +2360,7 @@ p {
 
 /* Mobile Breakpoint (≤ 640px) - Responsive Typography, Side-by-Side Buttons & Layout Spacing */
 @media (max-width: 640px) {
+
   /* Reduce excessive section padding on mobile */
   section {
     padding: 44px 0 !important;
