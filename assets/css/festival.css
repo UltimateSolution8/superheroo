@@ -1,18 +1,18 @@
 /* ==========================================================================
    SUPERHEROOO DYNAMIC FESTIVAL SYSTEM (CSS)
-   Industry Standard Pleasant Festive Theme Styling
+   Industry Standard Prominent Festive Theme Styling
    ========================================================================== */
 
-/* --- 1. BASE FESTIVAL BANNER TOP BAR --- */
+/* --- 1. PROMINENT FESTIVAL BANNER TOP BAR --- */
 .festival-banner {
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  padding: 8px 16px;
+  padding: 10px 18px;
   text-align: center;
   position: relative;
   z-index: 1000;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -22,28 +22,27 @@
   transition: all 0.3s ease;
 }
 
-/* --- THEME VARIATIONS --- */
-
-/* Independence Day & Republic Day (Tricolor) */
+/* Independence Day & Republic Day (Prominent Tricolor) */
 .festival-banner.festival-theme--independence,
 .festival-banner.festival-theme--republic {
-  background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+  background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 48%, #138808 100%);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.8);
   color: #0A192F;
 }
 
-/* Navratri & Dussehra (Golden Saffron & Royal Magenta) */
+/* Navratri & Dussehra */
 .festival-banner.festival-theme--navratri {
   background: linear-gradient(90deg, #FF6F00 0%, #FFD54F 50%, #E91E63 100%);
   color: #0F1932;
 }
 
-/* Diwali (Deep Amber & Flickering Gold) */
+/* Diwali */
 .festival-banner.festival-theme--diwali {
   background: linear-gradient(90deg, #1A0033 0%, #FFB300 50%, #800020 100%);
   color: #FFFFFF;
 }
 
-/* Holi (Vibrant Festive Pastel Gradient) */
+/* Holi */
 .festival-banner.festival-theme--holi {
   background: linear-gradient(90deg, #FF4081 0%, #7C4DFF 50%, #00E676 100%);
   color: #FFFFFF;
@@ -53,81 +52,74 @@
 .festival-banner__content {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
-  padding: 4px 18px;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  padding: 6px 22px;
   border-radius: 50px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 153, 51, 0.4);
 }
 
 .festival-banner__flag {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   animation: flagWave 2s ease-in-out infinite alternate;
 }
 
 .festival-banner__text {
   color: #0c2340;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
 }
 
 .festival-banner__close {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.12);
   border: none;
-  color: #333;
-  width: 22px;
-  height: 22px;
+  color: #222;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 700;
   line-height: 1;
   transition: all 0.2s ease;
-  margin-left: 6px;
+  margin-left: 8px;
 }
 
 .festival-banner__close:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.25);
   color: #000;
 }
 
-/* --- 2. HERO SECTION FESTIVAL WISH BADGE --- */
+/* --- 2. PROMINENT HERO SECTION FESTIVAL BADGE --- */
 .festival-hero-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, rgba(255, 153, 51, 0.15) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(19, 136, 8, 0.15) 100%);
-  border: 1px solid rgba(255, 153, 51, 0.4);
-  padding: 6px 16px;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(255, 153, 51, 0.22) 0%, rgba(255, 255, 255, 0.35) 50%, rgba(19, 136, 8, 0.22) 100%);
+  border: 1.5px solid rgba(255, 153, 51, 0.6);
+  padding: 8px 20px;
   border-radius: 30px;
   color: #FFFFFF;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 15px rgba(255, 153, 51, 0.15);
-  backdrop-filter: blur(10px);
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 20px rgba(255, 153, 51, 0.25);
+  backdrop-filter: blur(12px);
   animation: pulseGlow 3s ease-in-out infinite;
 }
 
-.festival-hero-badge.festival-theme--diwali {
-  background: linear-gradient(135deg, rgba(255, 179, 0, 0.2) 0%, rgba(128, 0, 32, 0.3) 100%);
-  border-color: rgba(255, 179, 0, 0.5);
-}
-
-.festival-hero-badge.festival-theme--navratri {
-  background: linear-gradient(135deg, rgba(255, 111, 0, 0.2) 0%, rgba(233, 30, 99, 0.25) 100%);
-  border-color: rgba(255, 111, 0, 0.5);
-}
-
 .festival-hero-badge span.tricolor-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   display: inline-block;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
 }
 .tricolor-dot.saffron { background: #FF9933; }
 .tricolor-dot.white { background: #FFFFFF; }
@@ -135,25 +127,29 @@
 
 /* --- 3. ANIMATIONS --- */
 @keyframes flagWave {
-  0% { transform: rotate(-4deg) scale(1); }
-  100% { transform: rotate(4deg) scale(1.08); }
+  0% { transform: rotate(-5deg) scale(1); }
+  100% { transform: rotate(5deg) scale(1.12); }
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 4px 15px rgba(255, 153, 51, 0.18); }
-  50% { box-shadow: 0 4px 22px rgba(19, 136, 8, 0.28); }
+  0%, 100% { box-shadow: 0 6px 20px rgba(255, 153, 51, 0.25); }
+  50% { box-shadow: 0 6px 28px rgba(19, 136, 8, 0.35); }
 }
 
 /* --- 4. RESPONSIVE --- */
 @media (max-width: 640px) {
   .festival-banner {
-    font-size: 0.78rem;
-    padding: 6px 10px;
+    font-size: 0.82rem;
+    padding: 8px 12px;
   }
   .festival-banner__content {
-    padding: 3px 10px;
+    padding: 4px 14px;
   }
   .festival-banner__text {
-    font-size: 0.76rem;
+    font-size: 0.8rem;
+  }
+  .festival-hero-badge {
+    font-size: 0.82rem;
+    padding: 6px 14px;
   }
 }

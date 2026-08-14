@@ -423,6 +423,14 @@ p {
   color: var(--amber);
 }
 
+.hero__title .brand-super {
+  color: #FCB61A; /* Golden */
+}
+
+.hero__title .brand-hero {
+  color: #3B82F6; /* Royal Blue */
+}
+
 .hero__desc {
   font-size: clamp(0.95rem, 2vw, 1.1rem);
   color: rgba(255, 255, 255, 0.85);
