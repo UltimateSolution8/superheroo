@@ -1,0 +1,159 @@
+/* ==========================================================================
+   SUPERHEROOO DYNAMIC FESTIVAL SYSTEM (CSS)
+   Industry Standard Pleasant Festive Theme Styling
+   ========================================================================== */
+
+/* --- 1. BASE FESTIVAL BANNER TOP BAR --- */
+.festival-banner {
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  text-align: center;
+  position: relative;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  letter-spacing: 0.3px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* --- THEME VARIATIONS --- */
+
+/* Independence Day & Republic Day (Tricolor) */
+.festival-banner.festival-theme--independence,
+.festival-banner.festival-theme--republic {
+  background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+  color: #0A192F;
+}
+
+/* Navratri & Dussehra (Golden Saffron & Royal Magenta) */
+.festival-banner.festival-theme--navratri {
+  background: linear-gradient(90deg, #FF6F00 0%, #FFD54F 50%, #E91E63 100%);
+  color: #0F1932;
+}
+
+/* Diwali (Deep Amber & Flickering Gold) */
+.festival-banner.festival-theme--diwali {
+  background: linear-gradient(90deg, #1A0033 0%, #FFB300 50%, #800020 100%);
+  color: #FFFFFF;
+}
+
+/* Holi (Vibrant Festive Pastel Gradient) */
+.festival-banner.festival-theme--holi {
+  background: linear-gradient(90deg, #FF4081 0%, #7C4DFF 50%, #00E676 100%);
+  color: #FFFFFF;
+}
+
+/* --- BANNER CONTENT BADGE --- */
+.festival-banner__content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  padding: 4px 18px;
+  border-radius: 50px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.festival-banner__flag {
+  font-size: 1.25rem;
+  animation: flagWave 2s ease-in-out infinite alternate;
+}
+
+.festival-banner__text {
+  color: #0c2340;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.festival-banner__close {
+  background: rgba(0, 0, 0, 0.08);
+  border: none;
+  color: #333;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  line-height: 1;
+  transition: all 0.2s ease;
+  margin-left: 6px;
+}
+
+.festival-banner__close:hover {
+  background: rgba(0, 0, 0, 0.2);
+  color: #000;
+}
+
+/* --- 2. HERO SECTION FESTIVAL WISH BADGE --- */
+.festival-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 153, 51, 0.15) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(19, 136, 8, 0.15) 100%);
+  border: 1px solid rgba(255, 153, 51, 0.4);
+  padding: 6px 16px;
+  border-radius: 30px;
+  color: #FFFFFF;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 15px rgba(255, 153, 51, 0.15);
+  backdrop-filter: blur(10px);
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+.festival-hero-badge.festival-theme--diwali {
+  background: linear-gradient(135deg, rgba(255, 179, 0, 0.2) 0%, rgba(128, 0, 32, 0.3) 100%);
+  border-color: rgba(255, 179, 0, 0.5);
+}
+
+.festival-hero-badge.festival-theme--navratri {
+  background: linear-gradient(135deg, rgba(255, 111, 0, 0.2) 0%, rgba(233, 30, 99, 0.25) 100%);
+  border-color: rgba(255, 111, 0, 0.5);
+}
+
+.festival-hero-badge span.tricolor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.tricolor-dot.saffron { background: #FF9933; }
+.tricolor-dot.white { background: #FFFFFF; }
+.tricolor-dot.green { background: #138808; }
+
+/* --- 3. ANIMATIONS --- */
+@keyframes flagWave {
+  0% { transform: rotate(-4deg) scale(1); }
+  100% { transform: rotate(4deg) scale(1.08); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 4px 15px rgba(255, 153, 51, 0.18); }
+  50% { box-shadow: 0 4px 22px rgba(19, 136, 8, 0.28); }
+}
+
+/* --- 4. RESPONSIVE --- */
+@media (max-width: 640px) {
+  .festival-banner {
+    font-size: 0.78rem;
+    padding: 6px 10px;
+  }
+  .festival-banner__content {
+    padding: 3px 10px;
+  }
+  .festival-banner__text {
+    font-size: 0.76rem;
+  }
+}
