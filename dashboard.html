@@ -1,8 +1,10 @@
-
 <!doctype html>
 <html lang="en">
+
 <head>
-  <link rel="icon" type="image/png" href="assets/finallogo.png" />
+  <link rel="icon" type="image/png" href="assets/superlogo.png" />
+  <link rel="shortcut icon" href="assets/superlogo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/superlogo.png" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Profile — Superherooo</title>
@@ -11,12 +13,12 @@
     document.addEventListener("DOMContentLoaded", () => {
       const token = localStorage.getItem('sh_token');
       const userStr = localStorage.getItem('sh_user');
-      
+
       if (!token || !userStr) {
         window.location.href = 'login.html';
         return;
       }
-      
+
       const user = JSON.parse(userStr);
       document.getElementById('userName').textContent = user.full_name;
       document.getElementById('userEmail').textContent = user.email;
@@ -31,17 +33,20 @@
     }
   </script>
 </head>
+
 <body style="background: var(--light-gray);">
 
   <!-- HEADER -->
   <header class="header" style="background: var(--navy);">
     <div class="wrap">
       <div class="header__inner" style="background: transparent; box-shadow: none; padding: 12px 0;">
-        <a href="index.html" class="header__logo">
-          <img src="assets/finallogo.png" alt="SuperHerooo" style="height:52px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(255,255,255,0.2));" />
-          <span class="header__brand" style="margin-left: 6px; font-size: 1.35rem; display: inline-flex; flex-direction: column; justify-content: center; line-height: 1.1; font-weight: 800;">
-            <span><span style="color: #FCB61A;">Super</span><span style="color: #FFFFFF;">Herooo</span></span>
-            <small style="font-size: 0.68rem; color: #FCB61A; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;">Get Helper in Minutes</small>
+        <a href="index.html" class="header__logo" style="gap: 2px;">
+          <img src="assets/finallogo.png" alt="SuperHerooo"
+            style="height: 66px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(255,255,255,0.2));" />
+          <span class="header__brand"
+            style="margin-left: 2px; display: inline-flex; flex-direction: column; justify-content: center; line-height: 0.95; font-weight: 800;">
+            <span style="font-size: 1.35rem; font-weight: 900; line-height: 1.0;"><span style="color: #FCB61A;">Super</span><span style="color: #FFFFFF;">Herooo</span></span>
+            <small style="font-size: 10px; color: #FCB61A; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; white-space: nowrap; margin-top: 1px;">Get Helper in Minutes</small>
           </span>
         </a>
         <nav class="header__nav" style="display: flex; align-items: center;">
@@ -58,11 +63,14 @@
     <div class="wrap">
       <div class="premium-form-card" style="max-width: 600px; margin: 0 auto; padding: 40px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <div style="width: 80px; height: 80px; background: var(--amber); color: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 0 auto 16px;">👤</div>
+          <div
+            style="width: 80px; height: 80px; background: var(--amber); color: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 0 auto 16px;">
+            👤</div>
           <h1 id="userName" style="color: var(--navy); margin-bottom: 8px;">Loading...</h1>
-          <span id="userRole" class="hero__badge" style="background: rgba(15,25,50,0.1); color: var(--navy); padding: 4px 12px; font-size: 0.8rem;"></span>
+          <span id="userRole" class="hero__badge"
+            style="background: rgba(15,25,50,0.1); color: var(--navy); padding: 4px 12px; font-size: 0.8rem;"></span>
         </div>
-        
+
         <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
           <h3 style="margin-bottom: 16px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Account Details</h3>
           <p style="margin-bottom: 12px;"><strong>Email:</strong> <span id="userEmail"></span></p>
@@ -77,4 +85,5 @@
   </main>
 
 </body>
+
 </html>
