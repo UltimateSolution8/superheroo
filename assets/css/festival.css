@@ -1,6 +1,6 @@
 /* ==========================================================================
    SUPERHEROOO DYNAMIC FESTIVAL SYSTEM (CSS)
-   Fixed Top Banner + Dynamic Header Offset (Industry Standard Layout)
+   Ultra-Responsive Fixed Top Banner & Simplified Hero Wish Badge
    ========================================================================== */
 
 /* --- 1. FIXED TOP FESTIVAL BANNER --- */
@@ -9,20 +9,20 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 44px;
+  min-height: 42px;
+  height: auto;
   z-index: 1001;
   font-family: inherit;
   font-size: 0.9rem;
   font-weight: 700;
-  padding: 0 16px;
+  padding: 4px 14px;
   text-align: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   letter-spacing: 0.3px;
-  overflow: hidden;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
@@ -54,14 +54,14 @@
 
 /* --- DYNAMIC HEADER & PAGE OFFSET WHEN FESTIVAL BANNER IS ACTIVE --- */
 body.has-festival-banner .header {
-  top: 44px !important;
+  top: 42px !important;
   transition: top 0.3s ease;
 }
 
 body.has-festival-banner .hero,
 body.has-festival-banner .page-header,
 body.has-festival-banner main {
-  margin-top: 44px;
+  margin-top: 42px;
   transition: margin-top 0.3s ease;
 }
 
@@ -69,17 +69,19 @@ body.has-festival-banner main {
 .festival-banner__content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(10px);
-  padding: 4px 20px;
+  padding: 4px 18px;
   border-radius: 50px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 153, 51, 0.4);
+  max-width: 100%;
 }
 
 .festival-banner__flag {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
+  flex-shrink: 0;
   animation: flagWave 2s ease-in-out infinite alternate;
 }
 
@@ -88,7 +90,6 @@ body.has-festival-banner main {
   font-size: 0.88rem;
   font-weight: 800;
   letter-spacing: 0.2px;
-  white-space: nowrap;
 }
 
 .festival-banner__close {
@@ -106,7 +107,7 @@ body.has-festival-banner main {
   font-weight: 800;
   line-height: 1;
   transition: all 0.2s ease;
-  margin-left: 6px;
+  margin-left: 4px;
   flex-shrink: 0;
 }
 
@@ -119,13 +120,13 @@ body.has-festival-banner main {
 .festival-hero-badge {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: linear-gradient(135deg, rgba(255, 153, 51, 0.22) 0%, rgba(255, 255, 255, 0.35) 50%, rgba(19, 136, 8, 0.22) 100%);
   border: 1.5px solid rgba(255, 153, 51, 0.6);
-  padding: 8px 20px;
+  padding: 6px 18px;
   border-radius: 30px;
   color: #FFFFFF;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
   margin-bottom: 20px;
   box-shadow: 0 6px 20px rgba(255, 153, 51, 0.25);
@@ -134,8 +135,8 @@ body.has-festival-banner main {
 }
 
 .festival-hero-badge span.tricolor-dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   display: inline-block;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
@@ -155,24 +156,34 @@ body.has-festival-banner main {
   50% { box-shadow: 0 6px 28px rgba(19, 136, 8, 0.35); }
 }
 
-/* --- 4. RESPONSIVE --- */
-@media (max-width: 768px) {
+/* --- 4. MOBILE RESPONSIVE RULES --- */
+@media (max-width: 640px) {
   .festival-banner {
-    height: 40px;
-    padding: 0 10px;
+    min-height: 38px;
+    padding: 4px 8px;
   }
   body.has-festival-banner .header {
-    top: 40px !important;
+    top: 38px !important;
   }
   body.has-festival-banner .hero,
   body.has-festival-banner .page-header,
   body.has-festival-banner main {
-    margin-top: 40px;
+    margin-top: 38px;
   }
   .festival-banner__content {
-    padding: 3px 12px;
+    padding: 3px 10px;
+    gap: 6px;
   }
   .festival-banner__text {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
+    line-height: 1.25;
+  }
+  .festival-banner__flag {
+    font-size: 1.1rem;
+  }
+  .festival-hero-badge {
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    margin-bottom: 16px;
   }
 }
