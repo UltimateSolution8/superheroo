@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/png" href="assets/superlogo.png" />
-  <link rel="shortcut icon" href="assets/superlogo.png" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/superlogo.png" />
+  <link rel="icon" type="image/png" href="assets/finallogo.png" />
+  <link rel="shortcut icon" href="assets/finallogo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/finallogo.png" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0F1932" />
@@ -25,19 +25,51 @@
   <!-- HEADER -->
   <header class="header">
     <div class="wrap">
-      <div class="header__inner" style="background: var(--white); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-        <a href="index.html" class="header__logo">Super<span>Herooo</span></a>
+      <div class="header__inner">
+        <a href="index.html" class="header__logo" style="gap: 4px;">
+          <img src="assets/finallogo.png" alt="SuperHerooo"
+            style="height: 58px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,71,255,0.12));" />
+          <span class="header__brand"
+            style="margin-left: 2px; display: inline-flex; align-items: center; line-height: 1; font-weight: 800;">
+            <span style="font-size: 1.3rem; font-weight: 800; line-height: 1;"><span
+                style="color: #FCB61A;">Super</span><span style="color: var(--navy);">Herooo</span></span>
+          </span>
+        </a>
         <nav class="header__nav">
-          <a href="index.html">Home</a>
-          <a href="services.html">Services</a>
-          <a href="index.html#journey">How It Works</a>
-          <a href="become-a-hero.html">Become a Hero</a>
+          <a href="index.html" class="active">Home</a>
+          <a href="index.html#how-it-works">How It Works</a>
+          <a href="index.html#become-a-hero">Become a Hero</a>
+          <a href="index.html#get-app">Get the App</a>
+          <a href="app/citizen?install=1" class="nav-install-link nav-install-link--citizen">Superherooo App</a>
+          <a href="app/partner?install=1" class="nav-install-link nav-install-link--partner">Partner App</a>
+          <a href="app/partner/kyc" class="nav-install-link nav-install-link--kyc">Partner KYC</a>
+          <a href="contact.html">Contact Us</a>
         </nav>
-        <a href="login.html" class="btn btn-navy header__btn">Log In/ Sign Up</a>
         <div class="hamburger"><span></span><span></span><span></span></div>
       </div>
     </div>
   </header>
+
+  <!-- MOBILE NAV DRAWER -->
+  <div class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav__header">
+      <img src="assets/finallogo.png" alt="SuperHerooo" style="height: 56px;" />
+      <button class="mobile-nav__close" id="mobileNavClose" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="mobile-nav__links">
+      <a href="index.html" onclick="closeMobileNav()">Home</a>
+      <a href="index.html#how-it-works" onclick="closeMobileNav()">How It Works</a>
+      <a href="index.html#become-a-hero" onclick="closeMobileNav()">Become a Hero</a>
+      <a href="index.html#get-app" onclick="closeMobileNav()">Get the App</a>
+      <a href="app/citizen?install=1" onclick="closeMobileNav()">Install Superherooo App</a>
+      <a href="app/partner?install=1" onclick="closeMobileNav()">Install Partner App</a>
+      <a href="app/partner/kyc" onclick="closeMobileNav()">Partner KYC</a>
+      <a href="contact.html" onclick="closeMobileNav()">Contact Us</a>
+    </nav>
+    <a href="https://play.google.com/store/apps/details?id=com.helpinminutes.citizen" target="_blank" rel="noopener"
+      class="btn btn-amber" style="margin: 24px; display: block; text-align: center;">Install Superherooo App</a>
+  </div>
+  <div class="mobile-nav__backdrop" id="mobileNavBackdrop" onclick="closeMobileNav()"></div>
 
   <main class="legal-content wrap">
     <h1>Superherooo Insurance Policy</h1>
@@ -76,19 +108,29 @@
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <div class="footer__logo">Super<span>Herooo</span></div>
-          <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of Indian homes since 2018.</p>
-          <div class="footer__social">
-            <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank">Fb</a>
-            <a href="https://x.com/superherooo2026" target="_blank">Tw</a>
-            <a href="https://www.linkedin.com/company/112068924/" target="_blank">In</a>
+          <a href="index.html" class="footer__logo"><img src="assets/finallogo.png" alt="SuperHerooo"
+              style="height: 94px; width: 94px; border-radius: 0; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 4px 10px rgba(0,71,255,0.2));" /></a>
+          <p class="footer__desc" style="font-weight: 600; color: #FFFFFF; font-size: 0.95rem; margin-bottom: 8px;">
+            Superherooo</p>
+          <p class="footer__desc">Elevating the lives of our service heroes and bringing peace of mind to millions of
+            Indian homes since 2018.</p>
+          <div class="footer__social" style="display: flex; gap: 16px;">
+            <a href="https://www.facebook.com/profile.php?id=61585019523069" target="_blank" aria-label="Facebook">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 320 512"><path d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z" /></svg>
+            </a>
+            <a href="https://x.com/superherooo2026" target="_blank" aria-label="X (Twitter)">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 512 512"><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z" /></svg>
+            </a>
+            <a href="https://www.linkedin.com/company/112068924/" target="_blank" aria-label="LinkedIn">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 448 512"><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z" /></svg>
+            </a>
           </div>
         </div>
         <div>
           <h4>Quick Links</h4>
           <ul>
             <li><a href="index.html#values">About Us</a></li>
-            <li><a href="services.html">Services Directory</a></li>
+            <li><a href="index.html#services">Services Directory</a></li>
             <li><a href="contact.html">Contact Us</a></li>
             <li><a href="index.html#faq">FAQ</a></li>
           </ul>
@@ -97,6 +139,7 @@
           <h4>Legal</h4>
           <ul>
             <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="account-deletion.html">Account Deletion</a></li>
             <li><a href="terms.html">Terms of Service</a></li>
             <li><a href="insurance.html">Insurance Policy</a></li>
           </ul>
@@ -104,6 +147,27 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    const hamburger = document.querySelector('.hamburger');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+
+    function openMobileNav() {
+      mobileNav.classList.add('open');
+      mobileNavBackdrop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav() {
+      mobileNav.classList.remove('open');
+      mobileNavBackdrop.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    hamburger.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+  </script>
 
 </body>
 </html>
