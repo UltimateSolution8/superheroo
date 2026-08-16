@@ -1,118 +1,2828 @@
 <!doctype html>
 <html lang="en">
+
 <head>
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0f1932">
-  <meta name="description" content="Request deletion of a Superherooo account and its associated personal data.">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#0F1932">
+
+  <meta
+    name="description"
+    content="Request deletion of a Superherooo account and its associated personal data."
+  >
+
+  <!-- =====================================================
+       SUPERHEROOO FAVICON
+  ====================================================== -->
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="assets/finallogo.png"
+  >
+
+  <link
+    rel="shortcut icon"
+    href="assets/finallogo.png"
+    type="image/png"
+  >
+
+  <link
+    rel="apple-touch-icon"
+    href="assets/finallogo.png"
+  >
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
+
   <title>Request Account Deletion | Superherooo</title>
+
+
+  <!-- =====================================================
+       INTERNAL CSS
+  ====================================================== -->
+
   <style>
+
+    /* =====================================================
+       ROOT
+    ====================================================== */
+
     :root {
-      color-scheme: light;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #172033;
-      background: #f5f7fb;
+
+      --navy: #101a35;
+      --navy-soft: #1a2949;
+
+      --orange: #ff7a00;
+      --orange-light: #fff4e8;
+
+      --text: #18243d;
+      --text-light: #52617a;
+
+      --muted: #6f7c91;
+
+      --border: #e1e7ef;
+      --border-light: #edf0f5;
+
+      --background: #ffffff;
+      --card: #ffffff;
+
+      --shadow:
+        0 10px 30px rgba(15, 25, 50, 0.06);
+
+      --shadow-hover:
+        0 14px 35px rgba(15, 25, 50, 0.09);
+
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
     }
-    * { box-sizing: border-box; }
-    body { margin: 0; line-height: 1.65; }
-    header {
-      background: #0f1932;
-      color: #fff;
-      padding: 18px 24px;
+
+
+    /* =====================================================
+       RESET
+    ====================================================== */
+
+    * {
+      box-sizing: border-box;
     }
-    .nav, main, footer {
-      width: min(760px, calc(100% - 32px));
-      margin: 0 auto;
+
+    html {
+      scroll-behavior: smooth;
     }
-    .nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      color: var(--text);
+      line-height: 1.65;
     }
-    .brand { color: #fff; font-size: 1.2rem; font-weight: 800; text-decoration: none; }
-    .brand span { color: #62d7ff; }
-    .privacy { color: #dce8ff; }
-    main {
-      margin-top: 32px;
-      margin-bottom: 32px;
-      padding: clamp(24px, 5vw, 48px);
-      background: #fff;
-      border: 1px solid #e4e9f2;
-      border-radius: 18px;
-      box-shadow: 0 12px 35px rgba(15, 25, 50, .08);
-    }
-    h1 { margin: 0 0 8px; color: #0f1932; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.15; }
-    h2 { margin-top: 32px; color: #0f1932; font-size: 1.25rem; }
-    p, li { color: #465169; }
-    ol, ul { padding-left: 24px; }
-    .eyebrow { margin: 0 0 20px; color: #5b6780; font-weight: 650; }
-    .action {
-      margin: 24px 0;
-      padding: 22px;
-      background: #eff9ff;
-      border: 1px solid #bfeaff;
-      border-radius: 14px;
-    }
-    .button {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 12px 18px;
-      border-radius: 10px;
-      background: #1269e8;
-      color: #fff;
-      font-weight: 750;
+
+    a {
       text-decoration: none;
     }
-    a { color: #075fc7; }
-    footer { padding: 0 0 32px; text-align: center; color: #667085; font-size: .9rem; }
+
+    img {
+      max-width: 100%;
+    }
+
+
+    /* =====================================================
+       NAVBAR
+    ====================================================== */
+
+    .site-header {
+
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+
+      width: 100%;
+
+      padding:
+        18px 0 0;
+
+      background: transparent;
+    }
+
+
+    .navbar {
+
+      width:
+        min(1238px, calc(100% - 40px));
+
+      min-height: 64px;
+
+      margin: 0 auto;
+
+      padding:
+        0 22px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 20px;
+
+      background: #ffffff;
+
+      border-radius: 40px;
+
+      box-shadow:
+        0 12px 35px rgba(15, 25, 50, 0.10);
+    }
+
+
+    /* =====================================================
+       NAVBAR LOGO
+    ====================================================== */
+
+    .navbar-logo {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      flex-shrink: 0;
+
+      color: var(--navy);
+    }
+
+
+    .navbar-logo img {
+
+      width: 58px;
+      height: 58px;
+
+      object-fit: contain;
+
+      display: block;
+    }
+
+
+    .navbar-brand {
+
+      font-size: 1.25rem;
+
+      font-weight: 800;
+
+      letter-spacing: -0.5px;
+
+      white-space: nowrap;
+    }
+
+
+    .navbar-brand .super {
+      color: #ffad00;
+    }
+
+
+    .navbar-brand .herooo {
+      color: var(--navy);
+    }
+
+
+    /* =====================================================
+       DESKTOP NAVIGATION
+    ====================================================== */
+
+    .navbar-links {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: flex-end;
+
+      gap: 4px;
+
+      flex: 1;
+    }
+
+
+    .navbar-links a {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      min-height: 40px;
+
+      padding:
+        8px 12px;
+
+      border-radius: 22px;
+
+      color: #16213a;
+
+      font-size: 0.88rem;
+
+      font-weight: 650;
+
+      white-space: nowrap;
+
+      transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease;
+    }
+
+
+    .navbar-links a:hover {
+
+      background: #f1f4f9;
+
+      transform:
+        translateY(-1px);
+    }
+
+
+    /* =====================================================
+       NAVBAR APP BUTTONS
+    ====================================================== */
+
+    .navbar-links .app-btn {
+
+      padding:
+        8px 18px;
+
+      margin-left: 3px;
+
+      font-weight: 750;
+
+      box-shadow:
+        0 5px 14px rgba(15, 25, 50, 0.12);
+    }
+
+
+    .navbar-links .super-app {
+
+      background: var(--navy);
+
+      color: #ffffff;
+    }
+
+
+    .navbar-links .super-app:hover {
+
+      background: #1b2948;
+
+      color: #ffffff;
+    }
+
+
+    .navbar-links .partner-app {
+
+      background: #ffb914;
+
+      color: #172033;
+    }
+
+
+    .navbar-links .partner-app:hover {
+
+      background: #ffc93e;
+
+      color: #172033;
+    }
+
+
+    .navbar-links .partner-kyc {
+
+      background: var(--navy);
+
+      color: #ffffff;
+    }
+
+
+    .navbar-links .partner-kyc:hover {
+
+      background: #1b2948;
+
+      color: #ffffff;
+    }
+
+
+    /* =====================================================
+       MOBILE MENU BUTTON
+    ====================================================== */
+
+    .menu-button {
+
+      display: none;
+
+      width: 44px;
+      height: 44px;
+
+      padding: 0;
+
+      border: 0;
+
+      border-radius: 50%;
+
+      background: #f2f4f8;
+
+      cursor: pointer;
+
+      align-items: center;
+
+      justify-content: center;
+
+      flex-direction: column;
+
+      gap: 5px;
+    }
+
+
+    .menu-button span {
+
+      width: 20px;
+      height: 2px;
+
+      border-radius: 5px;
+
+      background: var(--navy);
+
+      transition: 0.25s ease;
+    }
+
+
+    /* =====================================================
+       MOBILE MENU
+    ====================================================== */
+
+    .mobile-menu {
+
+      position: fixed;
+
+      top: 0;
+      right: 0;
+
+      z-index: 3000;
+
+      width:
+        min(350px, 88vw);
+
+      height: 100vh;
+
+      padding: 22px;
+
+      background: #ffffff;
+
+      box-shadow:
+        -15px 0 45px rgba(15, 25, 50, 0.18);
+
+      transform:
+        translateX(110%);
+
+      transition:
+        transform 0.3s ease;
+
+      overflow-y: auto;
+    }
+
+
+    .mobile-menu.open {
+
+      transform:
+        translateX(0);
+    }
+
+
+    .mobile-menu-header {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      padding-bottom: 18px;
+
+      border-bottom:
+        1px solid #e8ebf1;
+    }
+
+
+    .mobile-menu-logo {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+    }
+
+
+    .mobile-menu-logo img {
+
+      width: 55px;
+      height: 55px;
+
+      object-fit: contain;
+    }
+
+
+    .mobile-menu-brand {
+
+      font-size: 1.15rem;
+
+      font-weight: 800;
+    }
+
+
+    .mobile-menu-brand .super {
+      color: #ffad00;
+    }
+
+
+    .mobile-menu-brand .herooo {
+      color: var(--navy);
+    }
+
+
+    .mobile-close {
+
+      width: 42px;
+      height: 42px;
+
+      border: 0;
+
+      border-radius: 50%;
+
+      background: #f1f4f8;
+
+      color: var(--navy);
+
+      font-size: 20px;
+
+      cursor: pointer;
+    }
+
+
+    .mobile-links {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 7px;
+
+      padding: 25px 0;
+    }
+
+
+    .mobile-links a {
+
+      padding:
+        14px 15px;
+
+      border-radius: 12px;
+
+      color: #16213a;
+
+      font-weight: 650;
+
+      transition:
+        0.2s ease;
+    }
+
+
+    .mobile-links a:hover {
+
+      background: #f2f5fa;
+
+      color: #1269e8;
+    }
+
+
+    .mobile-links .mobile-super-app {
+
+      background: var(--navy);
+
+      color: #ffffff;
+
+      text-align: center;
+
+      margin-top: 5px;
+    }
+
+
+    .mobile-links .mobile-partner-app {
+
+      background: #ffb914;
+
+      color: var(--navy);
+
+      text-align: center;
+    }
+
+
+    .mobile-links .mobile-kyc {
+
+      background: var(--navy);
+
+      color: #ffffff;
+
+      text-align: center;
+    }
+
+
+    .mobile-backdrop {
+
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 2500;
+
+      background:
+        rgba(15, 25, 50, 0.45);
+
+      opacity: 0;
+
+      visibility: hidden;
+
+      transition:
+        0.3s ease;
+    }
+
+
+    .mobile-backdrop.open {
+
+      opacity: 1;
+
+      visibility: visible;
+    }
+
+
+    /* =====================================================
+       MAIN DOCUMENT AREA
+       PRIVACY POLICY STYLE
+    ====================================================== */
+
+    .page-container {
+
+      width:
+        min(1238px, calc(100% - 40px));
+
+      margin:
+        0 auto;
+
+      padding:
+        72px 0 90px;
+    }
+
+
+    /* =====================================================
+       DOCUMENT HEADER
+    ====================================================== */
+
+    .document-header {
+
+      max-width: 900px;
+
+      margin-bottom: 38px;
+    }
+
+
+    .document-label {
+
+      margin:
+        0 0 8px;
+
+      color: var(--orange);
+
+      font-size:
+        0.78rem;
+
+      font-weight: 800;
+
+      letter-spacing:
+        0.22em;
+
+      text-transform:
+        uppercase;
+    }
+
+
+    .company-name {
+
+      margin:
+        0 0 18px;
+
+      color:
+        #31415f;
+
+      font-size:
+        1rem;
+
+      font-weight:
+        450;
+    }
+
+
+    .document-header h1 {
+
+      margin:
+        0;
+
+      color:
+        var(--navy);
+
+      font-size:
+        clamp(2.5rem, 5vw, 3.7rem);
+
+      font-weight:
+        800;
+
+      line-height:
+        1.08;
+
+      letter-spacing:
+        -0.045em;
+    }
+
+
+    .title-line {
+
+      width:
+        86px;
+
+      height:
+        4px;
+
+      margin:
+        18px 0 17px;
+
+      background:
+        var(--orange);
+
+      border-radius:
+        5px;
+    }
+
+
+    .document-subtitle {
+
+      margin:
+        0;
+
+      color:
+        #53617a;
+
+      font-size:
+        1.08rem;
+
+      font-style:
+        italic;
+    }
+
+
+    /* =====================================================
+       META CARDS
+    ====================================================== */
+
+    .meta-cards {
+
+      display:
+        flex;
+
+      flex-wrap:
+        wrap;
+
+      gap:
+        14px;
+
+      margin:
+        28px 0 28px;
+    }
+
+
+    .meta-card {
+
+      min-width:
+        145px;
+
+      padding:
+        11px 17px 13px;
+
+      background:
+        #ffffff;
+
+      border:
+        1px solid var(--border);
+
+      border-radius:
+        9px;
+
+      box-shadow:
+        0 5px 15px rgba(15, 25, 50, 0.035);
+    }
+
+
+    .meta-label {
+
+      display:
+        block;
+
+      margin-bottom:
+        2px;
+
+      color:
+        var(--orange);
+
+      font-size:
+        0.7rem;
+
+      font-weight:
+        750;
+
+      letter-spacing:
+        0.08em;
+
+      text-transform:
+        uppercase;
+    }
+
+
+    .meta-value {
+
+      color:
+        var(--navy);
+
+      font-size:
+        0.88rem;
+
+      font-weight:
+        650;
+    }
+
+
+    /* =====================================================
+       INTRODUCTION CARD
+    ====================================================== */
+
+    .intro-card {
+
+      position:
+        relative;
+
+      margin:
+        28px 0 42px;
+
+      padding:
+        20px 25px;
+
+      background:
+        #ffffff;
+
+      border:
+        1px solid var(--border-light);
+
+      border-radius:
+        14px;
+
+      box-shadow:
+        var(--shadow);
+
+      overflow:
+        hidden;
+    }
+
+
+    .intro-card::before {
+
+      content:
+        "";
+
+      position:
+        absolute;
+
+      left:
+        0;
+
+      top:
+        0;
+
+      bottom:
+        0;
+
+      width:
+        4px;
+
+      background:
+        var(--orange);
+    }
+
+
+    .intro-card p {
+
+      margin:
+        0;
+
+      color:
+        #334564;
+
+      font-size:
+        1rem;
+
+      line-height:
+        1.8;
+    }
+
+
+    /* =====================================================
+       CONTENT CARD
+    ====================================================== */
+
+    .content-card {
+
+      background:
+        #ffffff;
+
+      border:
+        1px solid var(--border);
+
+      border-radius:
+        14px;
+
+      box-shadow:
+        var(--shadow);
+
+      padding:
+        38px 40px 42px;
+    }
+
+
+    /* =====================================================
+       SECTION
+    ====================================================== */
+
+    .content-section {
+
+      padding:
+        0 0 30px;
+
+      margin-bottom:
+        30px;
+
+      border-bottom:
+        1px solid #edf0f4;
+    }
+
+
+    .content-section:last-child {
+
+      margin-bottom:
+        0;
+
+      padding-bottom:
+        0;
+
+      border-bottom:
+        0;
+    }
+
+
+    .section-number {
+
+      display:
+        inline-block;
+
+      margin-bottom:
+        7px;
+
+      color:
+        var(--orange);
+
+      font-size:
+        0.75rem;
+
+      font-weight:
+        800;
+
+      letter-spacing:
+        0.08em;
+    }
+
+
+    .content-section h2 {
+
+      margin:
+        0 0 12px;
+
+      color:
+        var(--navy);
+
+      font-size:
+        1.42rem;
+
+      font-weight:
+        750;
+
+      line-height:
+        1.3;
+    }
+
+
+    .content-section p {
+
+      margin:
+        0 0 14px;
+
+      color:
+        #4d5d76;
+
+      font-size:
+        0.97rem;
+
+      line-height:
+        1.8;
+    }
+
+
+    .content-section p:last-child {
+
+      margin-bottom:
+        0;
+    }
+
+
+    /* =====================================================
+       LISTS
+    ====================================================== */
+
+    .content-list {
+
+      margin:
+        12px 0 0;
+
+      padding-left:
+        22px;
+    }
+
+
+    .content-list li {
+
+      margin-bottom:
+        9px;
+
+      padding-left:
+        5px;
+
+      color:
+        #4d5d76;
+
+      font-size:
+        0.96rem;
+
+      line-height:
+        1.7;
+    }
+
+
+    .content-list li::marker {
+
+      color:
+        var(--orange);
+
+      font-weight:
+        700;
+    }
+
+
+    /* =====================================================
+       HIGHLIGHT BOX
+    ====================================================== */
+
+    .highlight-box {
+
+      margin:
+        22px 0 0;
+
+      padding:
+        18px 20px;
+
+      background:
+        var(--orange-light);
+
+      border:
+        1px solid #ffe0bd;
+
+      border-radius:
+        10px;
+    }
+
+
+    .highlight-box strong {
+
+      color:
+        var(--navy);
+
+      font-size:
+        0.95rem;
+    }
+
+
+    .highlight-box p {
+
+      margin:
+        5px 0 0;
+
+      font-size:
+        0.91rem;
+    }
+
+
+    /* =====================================================
+       EMAIL ACTION
+    ====================================================== */
+
+    .email-action {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        space-between;
+
+      gap:
+        25px;
+
+      margin:
+        24px 0 0;
+
+      padding:
+        22px 24px;
+
+      background:
+        #f8fafc;
+
+      border:
+        1px solid #e3e8ef;
+
+      border-radius:
+        12px;
+    }
+
+
+    .email-content {
+
+      flex:
+        1;
+    }
+
+
+    .email-content strong {
+
+      display:
+        block;
+
+      margin-bottom:
+        4px;
+
+      color:
+        var(--navy);
+
+      font-size:
+        1rem;
+    }
+
+
+    .email-content p {
+
+      margin:
+        0;
+
+      color:
+        #607089;
+
+      font-size:
+        0.9rem;
+    }
+
+
+    .button {
+
+      display:
+        inline-flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        center;
+
+      flex-shrink:
+        0;
+
+      padding:
+        12px 20px;
+
+      border-radius:
+        8px;
+
+      background:
+        var(--orange);
+
+      color:
+        #ffffff;
+
+      font-size:
+        0.88rem;
+
+      font-weight:
+        750;
+
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+    }
+
+
+    .button:hover {
+
+      background:
+        #e96c00;
+
+      color:
+        #ffffff;
+
+      transform:
+        translateY(-2px);
+
+      box-shadow:
+        0 8px 20px rgba(255, 122, 0, 0.22);
+    }
+
+
+    /* =====================================================
+       LINKS
+    ====================================================== */
+
+    .content-card a {
+
+      color:
+        #075fc7;
+
+      font-weight:
+        650;
+    }
+
+
+    .content-card a:hover {
+
+      color:
+        var(--orange);
+    }
+
+
+    /* =====================================================
+       FINAL CONTACT BOX
+    ====================================================== */
+
+    .contact-box {
+
+      margin-top:
+        18px;
+
+      padding:
+        22px;
+
+      background:
+        #f8fafc;
+
+      border:
+        1px solid var(--border);
+
+      border-radius:
+        10px;
+    }
+
+
+    .contact-box p {
+
+      margin:
+        0;
+
+      color:
+        #53617a;
+
+      font-size:
+        0.94rem;
+    }
+
+
+    /* =====================================================
+       FOOTER
+    ====================================================== */
+
+    .site-footer {
+
+      background:
+        var(--navy);
+
+      color:
+        #ffffff;
+
+      margin-top:
+        0;
+    }
+
+
+    .footer-container {
+
+      width:
+        min(1238px, calc(100% - 40px));
+
+      margin:
+        0 auto;
+
+      padding:
+        80px 0 35px;
+    }
+
+
+    .footer-grid {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        1.5fr 1fr 1fr;
+
+      gap:
+        80px;
+
+      padding-bottom:
+        65px;
+    }
+
+
+    /* =====================================================
+       FOOTER BRAND
+    ====================================================== */
+
+    .footer-brand {
+
+      max-width:
+        340px;
+    }
+
+
+    .footer-logo {
+
+      width:
+        80px;
+
+      height:
+        80px;
+
+      object-fit:
+        contain;
+
+      display:
+        block;
+
+      margin-bottom:
+        16px;
+    }
+
+
+    .footer-brand-name {
+
+      margin-bottom:
+        8px;
+
+      font-size:
+        1.05rem;
+
+      font-weight:
+        800;
+
+      color:
+        #ffffff;
+    }
+
+
+    .footer-description {
+
+      margin:
+        0;
+
+      max-width:
+        330px;
+
+      color:
+        #aeb9cf;
+
+      font-size:
+        0.94rem;
+
+      line-height:
+        1.65;
+    }
+
+
+    /* =====================================================
+       SOCIAL
+    ====================================================== */
+
+    .social-links {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        14px;
+
+      margin-top:
+        30px;
+    }
+
+
+    .social-link {
+
+      width:
+        43px;
+
+      height:
+        43px;
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        center;
+
+      border-radius:
+        50%;
+
+      background:
+        #26334f;
+
+      color:
+        #ffffff;
+
+      font-size:
+        1rem;
+
+      font-weight:
+        800;
+
+      transition:
+        background 0.25s ease,
+        transform 0.25s ease;
+    }
+
+
+    .social-link:hover {
+
+      background:
+        #ffb914;
+
+      color:
+        var(--navy);
+
+      transform:
+        translateY(-3px);
+    }
+
+
+    /* =====================================================
+       FOOTER COLUMNS
+    ====================================================== */
+
+    .footer-column h3 {
+
+      margin:
+        0 0 22px;
+
+      color:
+        #ffffff;
+
+      font-size:
+        1.05rem;
+
+      font-weight:
+        750;
+    }
+
+
+    .footer-column a {
+
+      display:
+        block;
+
+      width:
+        fit-content;
+
+      margin-bottom:
+        17px;
+
+      color:
+        #aeb9cf;
+
+      font-size:
+        0.94rem;
+
+      transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+    }
+
+
+    .footer-column a:hover {
+
+      color:
+        #ffb914;
+
+      transform:
+        translateX(2px);
+    }
+
+
+    /* =====================================================
+       FOOTER BOTTOM
+    ====================================================== */
+
+    .footer-bottom {
+
+      padding-top:
+        22px;
+
+      border-top:
+        1px solid rgba(255, 255, 255, 0.10);
+
+      text-align:
+        center;
+    }
+
+
+    .footer-bottom p {
+
+      margin:
+        0;
+
+      color:
+        #8f9bb3;
+
+      font-size:
+        0.86rem;
+    }
+
+
+    /* =====================================================
+       RESPONSIVE NAVBAR
+    ====================================================== */
+
+    @media (max-width: 1100px) {
+
+      .navbar {
+
+        width:
+          min(1238px, calc(100% - 28px));
+
+        padding:
+          0 16px;
+      }
+
+
+      .navbar-links {
+
+        gap:
+          1px;
+      }
+
+
+      .navbar-links a {
+
+        padding-left:
+          8px;
+
+        padding-right:
+          8px;
+
+        font-size:
+          0.82rem;
+      }
+
+
+      .navbar-links .app-btn {
+
+        padding-left:
+          13px;
+
+        padding-right:
+          13px;
+      }
+
+    }
+
+
+    /* =====================================================
+       TABLET NAVIGATION
+    ====================================================== */
+
+    @media (max-width: 900px) {
+
+      .navbar-links {
+
+        display:
+          none;
+      }
+
+
+      .menu-button {
+
+        display:
+          flex;
+      }
+
+
+      .navbar {
+
+        min-height:
+          68px;
+      }
+
+
+      .page-container {
+
+        padding-top:
+          60px;
+      }
+
+    }
+
+
+    /* =====================================================
+       TABLET CONTENT
+    ====================================================== */
+
+    @media (max-width: 800px) {
+
+      .footer-grid {
+
+        grid-template-columns:
+          1fr 1fr;
+
+        gap:
+          50px;
+      }
+
+
+      .footer-brand {
+
+        grid-column:
+          1 / -1;
+      }
+
+
+      .content-card {
+
+        padding:
+          32px 28px 35px;
+      }
+
+    }
+
+
+    /* =====================================================
+       MOBILE
+    ====================================================== */
+
+    @media (max-width: 600px) {
+
+      .site-header {
+
+        padding-top:
+          10px;
+      }
+
+
+      .navbar {
+
+        width:
+          calc(100% - 24px);
+
+        min-height:
+          62px;
+
+        padding:
+          0 12px 0 15px;
+
+        border-radius:
+          35px;
+      }
+
+
+      .navbar-logo img {
+
+        width:
+          50px;
+
+        height:
+          50px;
+      }
+
+
+      .navbar-brand {
+
+        font-size:
+          1.05rem;
+      }
+
+
+      /* Document */
+
+      .page-container {
+
+        width:
+          calc(100% - 28px);
+
+        padding:
+          45px 0 55px;
+      }
+
+
+      .document-header {
+
+        margin-bottom:
+          25px;
+      }
+
+
+      .document-label {
+
+        font-size:
+          0.7rem;
+
+        letter-spacing:
+          0.18em;
+      }
+
+
+      .company-name {
+
+        font-size:
+          0.88rem;
+
+        margin-bottom:
+          15px;
+      }
+
+
+      .document-header h1 {
+
+        font-size:
+          2.25rem;
+
+        letter-spacing:
+          -0.035em;
+      }
+
+
+      .title-line {
+
+        width:
+          65px;
+
+        height:
+          3px;
+
+        margin:
+          15px 0;
+      }
+
+
+      .document-subtitle {
+
+        font-size:
+          0.98rem;
+      }
+
+
+      /* Meta */
+
+      .meta-cards {
+
+        display:
+          grid;
+
+        grid-template-columns:
+          1fr 1fr;
+
+        gap:
+          10px;
+
+        margin-top:
+          22px;
+      }
+
+
+      .meta-card {
+
+        min-width:
+          0;
+
+        padding:
+          10px 12px;
+      }
+
+
+      .meta-card:last-child {
+
+        grid-column:
+          1 / -1;
+      }
+
+
+      .meta-label {
+
+        font-size:
+          0.62rem;
+      }
+
+
+      .meta-value {
+
+        font-size:
+          0.82rem;
+      }
+
+
+      /* Intro */
+
+      .intro-card {
+
+        margin:
+          22px 0 28px;
+
+        padding:
+          17px 18px 17px 21px;
+      }
+
+
+      .intro-card p {
+
+        font-size:
+          0.91rem;
+
+        line-height:
+          1.7;
+      }
+
+
+      /* Content */
+
+      .content-card {
+
+        padding:
+          26px 20px 30px;
+
+        border-radius:
+          12px;
+      }
+
+
+      .content-section {
+
+        padding-bottom:
+          25px;
+
+        margin-bottom:
+          25px;
+      }
+
+
+      .content-section h2 {
+
+        font-size:
+          1.2rem;
+      }
+
+
+      .content-section p {
+
+        font-size:
+          0.91rem;
+
+        line-height:
+          1.75;
+      }
+
+
+      .content-list {
+
+        padding-left:
+          19px;
+      }
+
+
+      .content-list li {
+
+        font-size:
+          0.9rem;
+
+        margin-bottom:
+          8px;
+      }
+
+
+      /* Email */
+
+      .email-action {
+
+        flex-direction:
+          column;
+
+        align-items:
+          stretch;
+
+        gap:
+          15px;
+
+        padding:
+          18px;
+      }
+
+
+      .button {
+
+        width:
+          100%;
+
+        text-align:
+          center;
+      }
+
+
+      /* Footer */
+
+      .footer-container {
+
+        width:
+          calc(100% - 40px);
+
+        padding:
+          55px 0 25px;
+      }
+
+
+      .footer-grid {
+
+        display:
+          flex;
+
+        flex-direction:
+          column;
+
+        gap:
+          40px;
+
+        padding-bottom:
+          40px;
+      }
+
+
+      .footer-brand {
+
+        max-width:
+          100%;
+      }
+
+
+      .footer-logo {
+
+        width:
+          75px;
+
+        height:
+          75px;
+      }
+
+
+      .footer-description {
+
+        max-width:
+          100%;
+      }
+
+
+      .footer-column a {
+
+        margin-bottom:
+          14px;
+      }
+
+
+      .footer-bottom {
+
+        text-align:
+          left;
+      }
+
+    }
+
+
+    /* =====================================================
+       VERY SMALL MOBILE
+    ====================================================== */
+
+    @media (max-width: 400px) {
+
+      .navbar-brand {
+
+        display:
+          none;
+      }
+
+
+      .mobile-menu {
+
+        width:
+          90vw;
+      }
+
+
+      .meta-cards {
+
+        grid-template-columns:
+          1fr;
+      }
+
+
+      .meta-card:last-child {
+
+        grid-column:
+          auto;
+      }
+
+
+      .footer-container {
+
+        width:
+          calc(100% - 30px);
+      }
+
+    }
+
   </style>
+
 </head>
+
+
 <body>
-  <header>
-    <div class="nav">
-      <a class="brand" href="/">Super<span>Herooo</span></a>
-      <a class="privacy" href="/privacy.html">Privacy Policy</a>
+
+
+  <!-- =====================================================
+       NAVBAR
+  ====================================================== -->
+
+  <header class="site-header">
+
+    <div class="navbar">
+
+      <a
+        href="/"
+        class="navbar-logo"
+      >
+
+        <img
+          src="assets/finallogo.png"
+          alt="Superherooo Logo"
+        >
+
+        <span class="navbar-brand">
+          <span class="super">Super</span><span class="herooo">Herooo</span>
+        </span>
+
+      </a>
+
+
+      <!-- Desktop Navigation -->
+
+      <nav class="navbar-links">
+
+        <a href="/">
+          Home
+        </a>
+
+        <a href="/#how-it-works">
+          How It Works
+        </a>
+
+        <a href="/#become-a-hero">
+          Become a Hero
+        </a>
+
+        <a href="/#get-app">
+          Get the App
+        </a>
+
+        <a
+          href="app/citizen?install=1"
+          class="app-btn super-app"
+        >
+          Superherooo App
+        </a>
+
+        <a
+          href="app/partner?install=1"
+          class="app-btn partner-app"
+        >
+          Partner App
+        </a>
+
+        <a
+          href="app/partner/kyc"
+          class="app-btn partner-kyc"
+        >
+          Partner KYC
+        </a>
+
+        <a href="contact.html">
+          Contact Us
+        </a>
+
+      </nav>
+
+
+      <!-- Mobile Menu Button -->
+
+      <button
+        class="menu-button"
+        id="menuButton"
+        aria-label="Open navigation menu"
+        type="button"
+      >
+
+        <span></span>
+        <span></span>
+        <span></span>
+
+      </button>
+
     </div>
+
   </header>
 
-  <main>
-    <h1>Request account deletion</h1>
-    <p class="eyebrow">For Superherooo Citizen, Partner, and Mediator accounts</p>
 
-    <p>You can request deletion of your Superherooo account and associated personal data from the app or by contacting our support team. You do not need to install an additional app or create another account.</p>
 
-    <h2>Request deletion in the app</h2>
-    <ol>
-      <li>Sign in to the relevant Superherooo app.</li>
-      <li>Open <strong>Profile</strong>.</li>
-      <li>Select <strong>Request account deletion</strong>.</li>
-      <li>Review the notice and submit the request.</li>
-    </ol>
+  <!-- =====================================================
+       MOBILE NAVIGATION
+  ====================================================== -->
 
-    <div class="action">
-      <strong>Request deletion by email</strong>
-      <p>Email us from the address registered to your account. Include your registered phone number and whether you use the Citizen, Partner, or Mediator app. Never include your password, OTP, payment credentials, or identity-document images.</p>
-      <a class="button" href="mailto:support@superherooo.com?subject=Superherooo%20account%20deletion%20request&amp;body=Registered%20email%3A%0ARegistered%20phone%3A%0AApp%20(Citizen%2FPartner%2FMediator)%3A%0A">Start deletion request</a>
+  <div
+    class="mobile-menu"
+    id="mobileMenu"
+  >
+
+    <div class="mobile-menu-header">
+
+      <a
+        href="/"
+        class="mobile-menu-logo"
+      >
+
+        <img
+          src="assets/finallogo.png"
+          alt="Superherooo Logo"
+        >
+
+        <span class="mobile-menu-brand">
+          <span class="super">Super</span><span class="herooo">Herooo</span>
+        </span>
+
+      </a>
+
+
+      <button
+        type="button"
+        class="mobile-close"
+        id="mobileClose"
+        aria-label="Close navigation menu"
+      >
+        ×
+      </button>
+
     </div>
 
-    <h2>What happens next</h2>
-    <ul>
-      <li>Support verifies account ownership before processing the request.</li>
-      <li>Active jobs, disputes, safety cases, or outstanding settlements may need to be resolved first.</li>
-      <li>Verified deletion requests are normally completed within 30 days.</li>
-    </ul>
 
-    <h2>Data deleted</h2>
-    <p>Subject to verification and legal obligations, deletion covers profile and contact information, saved addresses and preferences, device and notification tokens, profile photos, and other account-linked data that is no longer required.</p>
+    <nav class="mobile-links">
 
-    <h2>Data that may be retained</h2>
-    <p>Limited transaction, tax, accounting, fraud-prevention, safety, dispute, KYC, and legal-compliance records may be retained for the period required by applicable law. Retained records are restricted from normal product use and deleted or anonymized when the applicable retention period ends.</p>
+      <a href="/">
+        Home
+      </a>
 
-    <h2>Questions</h2>
-    <p>Read our <a href="/privacy.html">Privacy Policy</a> or contact <a href="mailto:support@superherooo.com">support@superherooo.com</a>.</p>
-  </main>
+      <a href="/#how-it-works">
+        How It Works
+      </a>
 
-  <footer>&copy; 2026 Superherooo. All rights reserved.</footer>
+      <a href="/#become-a-hero">
+        Become a Hero
+      </a>
+
+      <a href="/#get-app">
+        Get the App
+      </a>
+
+      <a
+        href="app/citizen?install=1"
+        class="mobile-super-app"
+      >
+        Superherooo App
+      </a>
+
+      <a
+        href="app/partner?install=1"
+        class="mobile-partner-app"
+      >
+        Partner App
+      </a>
+
+      <a
+        href="app/partner/kyc"
+        class="mobile-kyc"
+      >
+        Partner KYC
+      </a>
+
+      <a href="contact.html">
+        Contact Us
+      </a>
+
+    </nav>
+
+  </div>
+
+
+  <div
+    class="mobile-backdrop"
+    id="mobileBackdrop"
+  ></div>
+
+
+
+  <!-- =====================================================
+       ACCOUNT DELETION DOCUMENT
+  ====================================================== -->
+
+  <div class="page-container">
+
+
+    <!-- DOCUMENT HEADER -->
+
+    <section class="document-header">
+
+      <p class="document-label">
+        SUPERHEROOO
+      </p>
+
+      <p class="company-name">
+        A brand of SUPERHEROOO PRIVATE LIMITED
+      </p>
+
+      <h1>
+        Request Account Deletion
+      </h1>
+
+      <div class="title-line"></div>
+
+      <p class="document-subtitle">
+        Mobile Application &amp; Website Platform
+      </p>
+
+
+      <!-- Metadata -->
+
+      <div class="meta-cards">
+
+        <div class="meta-card">
+
+          <span class="meta-label">
+            Effective Date
+          </span>
+
+          <span class="meta-value">
+            July 1, 2026
+          </span>
+
+        </div>
+
+
+        <div class="meta-card">
+
+          <span class="meta-label">
+            Last Updated
+          </span>
+
+          <span class="meta-value">
+            July 1, 2026
+          </span>
+
+        </div>
+
+
+        <div class="meta-card">
+
+          <span class="meta-label">
+            Document
+          </span>
+
+          <span class="meta-value">
+            Account Deletion
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         INTRODUCTION
+    ====================================================== -->
+
+    <div class="intro-card">
+
+      <p>
+
+        You can request deletion of your Superherooo account and
+        associated personal data from the app or by contacting our
+        support team. You do not need to install an additional app
+        or create another account.
+
+      </p>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MAIN CONTENT CARD
+    ====================================================== -->
+
+    <main class="content-card">
+
+
+      <!-- =================================================
+           SECTION 01
+      ================================================== -->
+
+      <section class="content-section">
+
+        <span class="section-number">
+          01
+        </span>
+
+        <h2>
+          Request deletion in the app
+        </h2>
+
+        <ol class="content-list">
+
+          <li>
+            Sign in to the relevant Superherooo app.
+          </li>
+
+          <li>
+            Open <strong>Profile</strong>.
+          </li>
+
+          <li>
+            Select <strong>Request account deletion</strong>.
+          </li>
+
+          <li>
+            Review the notice and submit the request.
+          </li>
+
+        </ol>
+
+      </section>
+
+
+
+      <!-- =================================================
+           SECTION 02
+      ================================================== -->
+
+      <section class="content-section">
+
+        <span class="section-number">
+          02
+        </span>
+
+        <h2>
+          Request deletion by email
+        </h2>
+
+        <p>
+
+          Email us from the address registered to your account.
+          Include your registered phone number and whether you use
+          the Citizen, Partner, or Mediator app.
+
+        </p>
+
+        <div class="highlight-box">
+
+          <strong>
+            Security reminder
+          </strong>
+
+          <p>
+
+            Never include your password, OTP, payment credentials,
+            or identity-document images in your email.
+
+          </p>
+
+        </div>
+
+
+        <div class="email-action">
+
+          <div class="email-content">
+
+            <strong>
+              Start your deletion request
+            </strong>
+
+            <p>
+              Contact our support team using your registered email address.
+            </p>
+
+          </div>
+
+
+          <a
+            class="button"
+            href="mailto:support@superherooo.com?subject=Superherooo%20account%20deletion%20request&amp;body=Registered%20email%3A%0ARegistered%20phone%3A%0AApp%20(Citizen%2FPartner%2FMediator)%3A%0A"
+          >
+            Start Deletion Request
+          </a>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- =================================================
+           SECTION 03
+      ================================================== -->
+
+      <section class="content-section">
+
+        <span class="section-number">
+          03
+        </span>
+
+        <h2>
+          What happens next
+        </h2>
+
+        <ul class="content-list">
+
+          <li>
+            Support verifies account ownership before processing
+            the request.
+          </li>
+
+          <li>
+            Active jobs, disputes, safety cases, or outstanding
+            settlements may need to be resolved first.
+          </li>
+
+          <li>
+            Verified deletion requests are normally completed
+            within 30 days.
+          </li>
+
+        </ul>
+
+      </section>
+
+
+
+      <!-- =================================================
+           SECTION 04
+      ================================================== -->
+
+      <section class="content-section">
+
+        <span class="section-number">
+          04
+        </span>
+
+        <h2>
+          Data deleted
+        </h2>
+
+        <p>
+
+          Subject to verification and legal obligations, deletion
+          covers profile and contact information, saved addresses
+          and preferences, device and notification tokens, profile
+          photos, and other account-linked data that is no longer
+          required.
+
+        </p>
+
+      </section>
+
+
+
+      <!-- =================================================
+           SECTION 05
+      ================================================== -->
+
+      <section class="content-section">
+
+        <span class="section-number">
+          05
+        </span>
+
+        <h2>
+          Data that may be retained
+        </h2>
+
+        <p>
+
+          Limited transaction, tax, accounting, fraud-prevention,
+          safety, dispute, KYC, and legal-compliance records may be
+          retained for the period required by applicable law.
+
+        </p>
+
+        <p>
+
+          Retained records are restricted from normal product use
+          and deleted or anonymized when the applicable retention
+          period ends.
+
+        </p>
+
+      </section>
+
+
+
+      <!-- =================================================
+           SECTION 06
+      ================================================== -->
+
+      <section class="content-section">
+
+        <span class="section-number">
+          06
+        </span>
+
+        <h2>
+          Questions
+        </h2>
+
+        <p>
+
+          If you have questions about account deletion or how your
+          personal data is handled, please review our
+          <a href="/privacy.html">
+            Privacy Policy
+          </a>
+          or contact our support team.
+
+        </p>
+
+
+        <div class="contact-box">
+
+          <p>
+
+            Support:
+            <a href="mailto:support@superherooo.com">
+              support@superherooo.com
+            </a>
+
+          </p>
+
+        </div>
+
+      </section>
+
+
+    </main>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+
+  <footer class="site-footer">
+
+    <div class="footer-container">
+
+
+      <div class="footer-grid">
+
+
+        <!-- BRAND -->
+
+        <div class="footer-brand">
+
+          <img
+            src="assets/finallogo.png"
+            alt="Superherooo"
+            class="footer-logo"
+          >
+
+
+          <div class="footer-brand-name">
+            Superherooo
+          </div>
+
+
+          <p class="footer-description">
+
+            Elevating the lives of our service heroes and
+            bringing peace of mind to millions of Indian
+            homes since 2018.
+
+          </p>
+
+
+          <!-- Social Links -->
+
+          <div class="social-links">
+
+            <a
+              href="#"
+              class="social-link"
+              aria-label="Facebook"
+              title="Facebook"
+            >
+              f
+            </a>
+
+
+            <a
+              href="#"
+              class="social-link"
+              aria-label="X"
+              title="X"
+            >
+              𝕏
+            </a>
+
+
+            <a
+              href="#"
+              class="social-link"
+              aria-label="LinkedIn"
+              title="LinkedIn"
+            >
+              in
+            </a>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- QUICK LINKS -->
+
+        <div class="footer-column">
+
+          <h3>
+            Quick Links
+          </h3>
+
+
+          <a href="/#about">
+            About Us
+          </a>
+
+
+          <a href="/#services">
+            Services Directory
+          </a>
+
+
+          <a href="/contact.html">
+            Contact Us
+          </a>
+
+
+          <a href="/#faq">
+            FAQ
+          </a>
+
+        </div>
+
+
+
+        <!-- LEGAL -->
+
+        <div class="footer-column">
+
+          <h3>
+            Legal
+          </h3>
+
+
+          <a href="/privacy.html">
+            Privacy Policy
+          </a>
+
+
+          <a href="/delete-account.html">
+            Account Deletion
+          </a>
+
+
+          <a href="/terms.html">
+            Terms of Service
+          </a>
+
+
+          <a href="/insurance.html">
+            Insurance Policy
+          </a>
+
+        </div>
+
+
+      </div>
+
+
+
+      <!-- FOOTER BOTTOM -->
+
+      <div class="footer-bottom">
+
+        <p>
+          &copy; 2026 Superherooo. All rights reserved.
+        </p>
+
+      </div>
+
+
+    </div>
+
+  </footer>
+
+
+
+  <!-- =====================================================
+       MOBILE NAVIGATION JAVASCRIPT
+  ====================================================== -->
+
+  <script>
+
+    const menuButton =
+      document.getElementById("menuButton");
+
+    const mobileMenu =
+      document.getElementById("mobileMenu");
+
+    const mobileClose =
+      document.getElementById("mobileClose");
+
+    const mobileBackdrop =
+      document.getElementById("mobileBackdrop");
+
+
+    function openMobileMenu() {
+
+      mobileMenu.classList.add("open");
+
+      mobileBackdrop.classList.add("open");
+
+      document.body.style.overflow = "hidden";
+
+    }
+
+
+    function closeMobileMenu() {
+
+      mobileMenu.classList.remove("open");
+
+      mobileBackdrop.classList.remove("open");
+
+      document.body.style.overflow = "";
+
+    }
+
+
+    menuButton.addEventListener(
+      "click",
+      openMobileMenu
+    );
+
+
+    mobileClose.addEventListener(
+      "click",
+      closeMobileMenu
+    );
+
+
+    mobileBackdrop.addEventListener(
+      "click",
+      closeMobileMenu
+    );
+
+
+    document
+      .querySelectorAll(".mobile-links a")
+      .forEach(link => {
+
+        link.addEventListener(
+          "click",
+          closeMobileMenu
+        );
+
+      });
+
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (event.key === "Escape") {
+
+          closeMobileMenu();
+
+        }
+
+      }
+    );
+
+  </script>
+
+
 </body>
+
 </html>
