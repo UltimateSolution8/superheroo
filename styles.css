@@ -405,7 +405,7 @@ p {
 }
 
 .hero__title {
-  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  font-size: clamp(2rem, 4.3vw, 3.8rem);
   font-weight: 800;
   color: var(--white);
   line-height: 1.1;
@@ -3140,4 +3140,1048 @@ textarea.form-control {
   .app-card p {
     min-height: 0;
   }
+}
+
+.header__logo img {
+  height: 40 px !important;
+  width: auto !important;
+  object-fit: contain;
+}
+/* =========================================================
+   HERO — MATCH NAVBAR WIDTH + RESPONSIVE
+   ========================================================= */
+
+
+/* =========================================================
+   DESKTOP — 1025px AND ABOVE
+   ========================================================= */
+
+@media (min-width: 1025px) {
+
+    /* -----------------------------------------------------
+       HERO
+       ----------------------------------------------------- */
+
+    .hero {
+        min-height: 100vh !important;
+        height: 100vh !important;
+
+        padding-top: 120px !important;
+        padding-bottom: 0 !important;
+
+        display: flex;
+        align-items: flex-end;
+
+        overflow: hidden;
+    }
+
+
+    /* -----------------------------------------------------
+       IMPORTANT:
+       HERO CONTENT MUST HAVE SAME WIDTH AS NAVBAR
+       ----------------------------------------------------- */
+
+    .hero .wrap {
+        width: min(1240px, calc(100% - 40px)) !important;
+
+        max-width: 1240px !important;
+
+        height: calc(100vh - 120px) !important;
+
+        margin-left: auto !important;
+        margin-right: auto !important;
+
+        display: flex;
+        align-items: flex-end;
+    }
+
+
+    /* -----------------------------------------------------
+       HERO GRID
+       ----------------------------------------------------- */
+
+    .hero__grid {
+
+        width: 100% !important;
+        height: 100% !important;
+
+        display: grid !important;
+
+        /*
+         * More space for text,
+         * slightly less for person.
+         */
+        grid-template-columns: 58% 42% !important;
+
+        align-items: end !important;
+
+        gap: 10px !important;
+
+        margin: 0 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       HERO TEXT
+       ----------------------------------------------------- */
+
+    .hero__content {
+
+        width: 100% !important;
+
+        align-self: end !important;
+
+        padding-bottom: 75px !important;
+
+        margin: 0 !important;
+
+        position: relative;
+
+        z-index: 2;
+    }
+
+
+    /* -----------------------------------------------------
+       PERSON COLUMN
+       ----------------------------------------------------- */
+
+    .hero__image-col {
+
+        width: 100% !important;
+        height: 100% !important;
+
+        display: flex !important;
+
+        align-items: flex-end !important;
+
+        justify-content: flex-end !important;
+
+        align-self: end !important;
+
+        overflow: visible !important;
+
+        margin: 0 !important;
+
+        padding: 0 !important;
+
+        position: relative;
+
+        z-index: 1;
+    }
+
+
+    /* -----------------------------------------------------
+       PERSON
+       ----------------------------------------------------- */
+
+    .hero__person-img {
+
+        display: block !important;
+
+        width: auto !important;
+        height: auto !important;
+
+        /*
+         * Smaller than your current version.
+         */
+        max-height: 610px !important;
+
+        /*
+         * IMPORTANT:
+         * Prevent image from escaping the container.
+         */
+        max-width: 100% !important;
+
+        /*
+         * No artificial enlargement.
+         */
+        transform: none !important;
+
+        transform-origin: bottom right !important;
+
+        margin: 0 !important;
+
+        object-fit: contain !important;
+
+        object-position: bottom right !important;
+    }
+}
+
+
+
+/* =========================================================
+   LARGE DESKTOP — 1400px AND ABOVE
+   ========================================================= */
+
+@media (min-width: 1400px) {
+
+    .hero .wrap {
+        width: min(1240px, calc(100% - 60px)) !important;
+
+        max-width: 1240px !important;
+    }
+
+
+    .hero__grid {
+        grid-template-columns: 57% 43% !important;
+    }
+
+
+    .hero__content {
+        padding-bottom: 75px !important;
+    }
+
+
+    .hero__person-img {
+        max-height: 610px !important;
+
+        max-width: 100% !important;
+
+        transform: none !important;
+    }
+}
+
+
+
+/* =========================================================
+   EXTRA LARGE DESKTOP — 1600px+
+   ========================================================= */
+
+@media (min-width: 1600px) {
+
+    .hero .wrap {
+        max-width: 1240px !important;
+    }
+
+
+    .hero__person-img {
+        max-height: 610px !important;
+    }
+}
+
+
+
+/* =========================================================
+   TABLET — 641px TO 1024px
+   ========================================================= */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+
+    .hero {
+
+        min-height: auto !important;
+
+        height: auto !important;
+
+        padding-top: 120px !important;
+
+        padding-bottom: 0 !important;
+
+        overflow: hidden !important;
+    }
+
+
+    /* -----------------------------------------------------
+       TABLET CONTAINER
+       ----------------------------------------------------- */
+
+    .hero .wrap {
+
+        width: calc(100% - 40px) !important;
+
+        max-width: 900px !important;
+
+        height: auto !important;
+
+        margin-left: auto !important;
+
+        margin-right: auto !important;
+    }
+
+
+    /* -----------------------------------------------------
+       TABLET GRID
+       ----------------------------------------------------- */
+
+    .hero__grid {
+
+        width: 100% !important;
+
+        height: auto !important;
+
+        display: grid !important;
+
+        grid-template-columns: 55% 45% !important;
+
+        gap: 10px !important;
+
+        align-items: end !important;
+    }
+
+
+    /* -----------------------------------------------------
+       TABLET TEXT
+       ----------------------------------------------------- */
+
+    .hero__content {
+
+        width: 100% !important;
+
+        padding-bottom: 45px !important;
+
+        align-self: end !important;
+
+        margin: 0 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       TABLET IMAGE COLUMN
+       ----------------------------------------------------- */
+
+    .hero__image-col {
+
+        width: 100% !important;
+
+        height: 100% !important;
+
+        display: flex !important;
+
+        align-items: flex-end !important;
+
+        justify-content: center !important;
+
+        overflow: visible !important;
+
+        margin: 0 !important;
+
+        padding: 0 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       TABLET PERSON
+       ----------------------------------------------------- */
+
+    .hero__person-img {
+
+        display: block !important;
+
+        width: auto !important;
+
+        height: auto !important;
+
+        max-width: 100% !important;
+
+        max-height: 460px !important;
+
+        transform: none !important;
+
+        margin: 0 !important;
+
+        object-fit: contain !important;
+
+        object-position: bottom center !important;
+    }
+}
+
+
+
+/* =========================================================
+   MOBILE — 640px AND BELOW
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+    /* -----------------------------------------------------
+       MOBILE HERO
+       ----------------------------------------------------- */
+
+    .hero {
+
+        min-height: auto !important;
+
+        height: auto !important;
+
+        padding-top: 95px !important;
+
+        padding-bottom: 0 !important;
+
+        overflow: hidden !important;
+    }
+
+
+    /* -----------------------------------------------------
+       MOBILE CONTAINER
+       ----------------------------------------------------- */
+
+    .hero .wrap {
+
+        width: calc(100% - 32px) !important;
+
+        max-width: 100% !important;
+
+        height: auto !important;
+
+        margin-left: auto !important;
+
+        margin-right: auto !important;
+    }
+
+
+    /* -----------------------------------------------------
+       MOBILE STACK
+       ----------------------------------------------------- */
+
+    .hero__grid {
+
+        width: 100% !important;
+
+        height: auto !important;
+
+        display: grid !important;
+
+        grid-template-columns: 1fr !important;
+
+        gap: 18px !important;
+
+        align-items: center !important;
+    }
+
+
+    /* -----------------------------------------------------
+       MOBILE TEXT
+       ----------------------------------------------------- */
+
+    .hero__content {
+
+        width: 100% !important;
+
+        padding-bottom: 0 !important;
+
+        margin: 0 !important;
+
+        text-align: left !important;
+
+        align-self: start !important;
+
+        position: relative;
+
+        z-index: 2;
+    }
+
+
+    /* -----------------------------------------------------
+       MOBILE IMAGE COLUMN
+       ----------------------------------------------------- */
+
+    .hero__image-col {
+
+        width: 100% !important;
+
+        height: auto !important;
+
+        min-height: 0 !important;
+
+        display: flex !important;
+
+        align-items: flex-end !important;
+
+        justify-content: center !important;
+
+        overflow: visible !important;
+
+        margin: 0 !important;
+
+        padding: 0 !important;
+
+        position: relative;
+    }
+
+
+    /* -----------------------------------------------------
+       MOBILE PERSON
+       ----------------------------------------------------- */
+
+    .hero__person-img {
+
+        display: block !important;
+
+        width: auto !important;
+
+        height: auto !important;
+
+        /*
+         * Keep inside phone width.
+         */
+        max-width: 100% !important;
+
+        max-height: 390px !important;
+
+        transform: none !important;
+
+        transform-origin: bottom center !important;
+
+        margin: 0 auto !important;
+
+        object-fit: contain !important;
+
+        object-position: bottom center !important;
+    }
+}
+
+
+
+/* =========================================================
+   MOBILE — 481px TO 640px
+   ========================================================= */
+
+@media (min-width: 481px) and (max-width: 640px) {
+
+    .hero {
+        padding-top: 95px !important;
+    }
+
+
+    .hero .wrap {
+        width: calc(100% - 36px) !important;
+    }
+
+
+    .hero__grid {
+        gap: 20px !important;
+    }
+
+
+    .hero__person-img {
+        max-height: 400px !important;
+
+        max-width: 95% !important;
+    }
+}
+
+
+
+/* =========================================================
+   SMALL MOBILE — 480px AND BELOW
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .hero {
+
+        padding-top: 88px !important;
+
+        padding-bottom: 0 !important;
+    }
+
+
+    .hero .wrap {
+
+        width: calc(100% - 28px) !important;
+
+        max-width: 100% !important;
+    }
+
+
+    .hero__grid {
+
+        gap: 15px !important;
+    }
+
+
+    .hero__content {
+
+        padding-bottom: 0 !important;
+
+        width: 100% !important;
+    }
+
+
+    .hero__person-img {
+
+        max-width: 100% !important;
+
+        max-height: 360px !important;
+
+        transform: none !important;
+
+        margin: 0 auto !important;
+    }
+}
+
+
+
+/* =========================================================
+   VERY SMALL PHONES — 360px AND BELOW
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+    .hero {
+
+        padding-top: 82px !important;
+    }
+
+
+    .hero .wrap {
+
+        width: calc(100% - 24px) !important;
+    }
+
+
+    .hero__grid {
+
+        gap: 12px !important;
+    }
+
+
+    .hero__person-img {
+
+        max-width: 100% !important;
+
+        max-height: 325px !important;
+    }
+}
+
+/* =========================================================
+   SUPERHERO HERO — FINAL MASTER FIX
+   Paste this at the VERY END of CSS
+   ========================================================= */
+
+
+/* =========================================================
+   DESKTOP — 1025px+
+   ========================================================= */
+
+@media (min-width: 1025px) {
+
+    /* Full visible desktop screen */
+    .hero {
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+
+        padding-top: 120px !important;
+        padding-bottom: 0 !important;
+
+        display: flex !important;
+        align-items: flex-end !important;
+
+        overflow: hidden !important;
+    }
+
+
+    /* Same width as navbar */
+    .hero .wrap {
+        width: min(1240px, calc(100% - 40px)) !important;
+        max-width: 1240px !important;
+
+        height: calc(100dvh - 120px) !important;
+
+        margin-left: auto !important;
+        margin-right: auto !important;
+
+        padding-bottom: 0 !important;
+
+        display: flex !important;
+        align-items: flex-end !important;
+    }
+
+
+    /* Main hero layout */
+    .hero__grid {
+        width: 100% !important;
+        height: 100% !important;
+
+        display: grid !important;
+
+        grid-template-columns: 57% 43% !important;
+
+        gap: 10px !important;
+
+        align-items: end !important;
+
+        margin: 0 !important;
+    }
+
+
+    /* Hero text */
+    .hero__content {
+        width: 100% !important;
+
+        align-self: end !important;
+
+        /*
+         * Move content slightly upward.
+         */
+        padding-bottom: 105px !important;
+
+        margin: 0 !important;
+
+        position: relative !important;
+
+        z-index: 5 !important;
+    }
+
+
+    /* Person area */
+    .hero__image-col {
+        width: 100% !important;
+        height: 100% !important;
+
+        display: flex !important;
+
+        align-items: flex-end !important;
+
+        justify-content: flex-end !important;
+
+        align-self: end !important;
+
+        overflow: visible !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        position: relative !important;
+
+        z-index: 2 !important;
+    }
+
+
+    /* Person */
+    .hero__person-img {
+        display: block !important;
+
+        width: auto !important;
+        height: auto !important;
+
+        /*
+         * Slightly larger than your current 610px.
+         */
+        max-height: 635px !important;
+
+        /*
+         * Never escape the navbar-aligned container.
+         */
+        max-width: 100% !important;
+
+        transform: none !important;
+
+        transform-origin: bottom right !important;
+
+        margin: 0 !important;
+
+        object-fit: contain !important;
+
+        object-position: bottom right !important;
+    }
+}
+
+
+
+/* =========================================================
+   LARGE DESKTOP — 1400px+
+   ========================================================= */
+
+@media (min-width: 1400px) {
+
+    .hero .wrap {
+        width: min(1240px, calc(100% - 60px)) !important;
+        max-width: 1240px !important;
+    }
+
+
+    .hero__grid {
+        grid-template-columns: 57% 43% !important;
+    }
+
+
+    .hero__content {
+        padding-bottom: 105px !important;
+    }
+
+
+    .hero__person-img {
+        max-height: 635px !important;
+        max-width: 100% !important;
+    }
+}
+
+
+
+/* =========================================================
+   TABLET — 641px TO 1024px
+   ========================================================= */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+
+    .hero {
+        height: auto !important;
+        min-height: auto !important;
+
+        padding-top: 120px !important;
+        padding-bottom: 0 !important;
+
+        overflow: hidden !important;
+    }
+
+
+    .hero .wrap {
+        width: calc(100% - 40px) !important;
+        max-width: 900px !important;
+
+        height: auto !important;
+
+        margin-left: auto !important;
+        margin-right: auto !important;
+
+        padding-bottom: 0 !important;
+    }
+
+
+    .hero__grid {
+        width: 100% !important;
+        height: auto !important;
+
+        display: grid !important;
+
+        grid-template-columns: 55% 45% !important;
+
+        gap: 10px !important;
+
+        align-items: end !important;
+    }
+
+
+    .hero__content {
+        width: 100% !important;
+
+        padding-bottom: 50px !important;
+
+        align-self: end !important;
+
+        margin: 0 !important;
+    }
+
+
+    .hero__image-col {
+        width: 100% !important;
+        height: 100% !important;
+
+        display: flex !important;
+
+        align-items: flex-end !important;
+        justify-content: center !important;
+
+        overflow: visible !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+
+    .hero__person-img {
+        display: block !important;
+
+        width: auto !important;
+        height: auto !important;
+
+        max-width: 100% !important;
+
+        max-height: 460px !important;
+
+        transform: none !important;
+
+        margin: 0 !important;
+
+        object-fit: contain !important;
+
+        object-position: bottom center !important;
+    }
+}
+
+
+
+/* =========================================================
+   MOBILE — 640px AND BELOW
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+    .hero {
+        height: auto !important;
+
+        min-height: 100svh !important;
+
+        padding-top: 95px !important;
+
+        padding-bottom: 0 !important;
+
+        align-items: flex-start !important;
+
+        overflow: hidden !important;
+    }
+
+
+    .hero .wrap {
+        width: calc(100% - 32px) !important;
+
+        max-width: 100% !important;
+
+        height: auto !important;
+
+        margin-left: auto !important;
+        margin-right: auto !important;
+
+        padding-bottom: 0 !important;
+    }
+
+
+    .hero__grid {
+        width: 100% !important;
+
+        height: auto !important;
+
+        display: grid !important;
+
+        grid-template-columns: 1fr !important;
+
+        gap: 18px !important;
+
+        align-items: center !important;
+    }
+
+
+    .hero__content {
+        width: 100% !important;
+
+        padding-bottom: 0 !important;
+
+        margin: 0 !important;
+
+        text-align: left !important;
+
+        align-self: start !important;
+
+        position: relative !important;
+
+        top: 0 !important;
+
+        z-index: 5 !important;
+    }
+
+
+    .hero__image-col {
+        width: 100% !important;
+
+        height: auto !important;
+
+        min-height: 0 !important;
+
+        display: flex !important;
+
+        align-items: flex-end !important;
+
+        justify-content: center !important;
+
+        overflow: visible !important;
+
+        margin: 0 !important;
+
+        padding: 0 !important;
+    }
+
+
+    .hero__person-img,
+    .hero #hero-person-img {
+
+        display: block !important;
+
+        width: auto !important;
+        height: auto !important;
+
+        max-width: 100% !important;
+
+        max-height: 390px !important;
+
+        transform: none !important;
+
+        margin: 0 auto !important;
+
+        object-fit: contain !important;
+
+        object-position: bottom center !important;
+    }
+}
+
+
+
+/* =========================================================
+   SMALL MOBILE — 480px AND BELOW
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .hero {
+        padding-top: 88px !important;
+        padding-bottom: 0 !important;
+    }
+
+
+    .hero .wrap {
+        width: calc(100% - 28px) !important;
+    }
+
+
+    .hero__grid {
+        gap: 15px !important;
+    }
+
+
+    .hero__content {
+        padding-bottom: 0 !important;
+    }
+
+
+    .hero__person-img,
+    .hero #hero-person-img {
+        max-width: 100% !important;
+
+        max-height: 360px !important;
+
+        transform: none !important;
+
+        margin: 0 auto !important;
+    }
+}
+
+
+
+/* =========================================================
+   VERY SMALL PHONE — 360px AND BELOW
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+    .hero {
+        padding-top: 82px !important;
+    }
+
+
+    .hero .wrap {
+        width: calc(100% - 24px) !important;
+    }
+
+
+    .hero__grid {
+        gap: 12px !important;
+    }
+
+
+    .hero__person-img,
+    .hero #hero-person-img {
+        max-width: 100% !important;
+
+        max-height: 325px !important;
+    }
 }
