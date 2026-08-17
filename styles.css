@@ -2149,12 +2149,12 @@ p {
     font-size: 0.7rem;
   }
 
-  /* CTA Buttons in hero — full width on mobile */
+  /* CTA Buttons in hero — fixed size on mobile */
   .cta__buttons,
   .hero__cta-buttons {
     flex-direction: column !important;
     gap: 12px !important;
-    align-items: stretch !important;
+    align-items: flex-start !important;
     width: 100% !important;
   }
 
@@ -2164,11 +2164,11 @@ p {
   }
 
   .hero__cta-buttons .btn-playstore {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    padding: 14px 20px !important;
-    min-height: 56px !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    min-width: 220px !important;
+    padding: 12px 18px !important;
+    min-height: 52px !important;
     border-radius: 14px !important;
     box-sizing: border-box !important;
   }
@@ -2646,15 +2646,16 @@ p {
   .cta__buttons,
   .hero__cta-buttons {
     flex-direction: column !important;
-    align-items: stretch !important;
+    align-items: flex-start !important;
     gap: 10px !important;
     width: 100% !important;
   }
 
   .btn-playstore {
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: 1 1 100% !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    min-width: 220px !important;
+    flex: 0 0 auto !important;
     padding: 12px 16px !important;
     min-height: 52px !important;
   }
