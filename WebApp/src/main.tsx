@@ -1462,7 +1462,7 @@ function CitizenDashboard() {
         throw err;
       });
       setForm((f) => ({ ...f, lat: String(loc.lat.toFixed(6)), lng: String(loc.lng.toFixed(6)) }));
-      const address = await reverseGeocode(loc.lat, loc.lng);
+      const address = await reverseGeocode(loc.lat, loc.lng, accessToken);
       if (address) {
         setForm((f) => ({ ...f, addressText: address }));
       }
@@ -1479,7 +1479,7 @@ function CitizenDashboard() {
     if (val.trim().length >= 2) {
       searchTimeoutRef.current = setTimeout(async () => {
         try {
-          const results = await searchLocations(val);
+          const results = await searchLocations(val, accessToken);
           setSuggestions(results);
           setShowSuggestions(true);
         } catch (err) {
@@ -1497,7 +1497,7 @@ function CitizenDashboard() {
     setSuggestions([]);
     setShowSuggestions(false);
     try {
-      const coords = await resolveLocationCoords(sug);
+      const coords = await resolveLocationCoords(sug, accessToken);
       if (coords) {
         setForm((f) => ({ ...f, lat: String(coords.lat.toFixed(6)), lng: String(coords.lng.toFixed(6)) }));
       }
@@ -1534,8 +1534,8 @@ function CitizenDashboard() {
       let lat = Number(form.lat);
       let lng = Number(form.lng);
       if (!Number.isFinite(lat) || !Number.isFinite(lng) || !form.lat || !form.lng) {
-        const matches = await searchLocations(form.addressText);
-        const coords = matches[0] ? await resolveLocationCoords(matches[0]) : null;
+        const matches = await searchLocations(form.addressText, accessToken);
+        const coords = matches[0] ? await resolveLocationCoords(matches[0], accessToken) : null;
         if (!coords) throw new Error('Please select an address suggestion or use Current Location before creating the task.');
         lat = coords.lat;
         lng = coords.lng;
@@ -2907,6 +2907,7 @@ function PartnerDashboard() {
                     <a className="secondary" href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
                       <Navigation size={17} /> Directions
                     </a>
+                    <small className="map-attribution">Route data © OpenStreetMap contributors</small>
                     <button className="primary" onClick={() => accept(task.id)}>Accept Job</button>
                   </div>
                 </article>
@@ -3272,6 +3273,7 @@ function TaskDetail({
       <a className="secondary" style={{ marginTop: '16px', display: 'inline-flex', width: 'fit-content' }} href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer">
         <Navigation size={17} /> Open Directions
       </a>
+      <small className="map-attribution">Route data © OpenStreetMap contributors</small>
     </section>
   );
 }
@@ -3449,6 +3451,7 @@ function PartnerJobsPage() {
                 </div>
                 <div className="offer-actions">
                   <a className="secondary" href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`} target="_blank" rel="noreferrer"><Navigation size={17} /> Directions</a>
+                  <small className="map-attribution">Route data © OpenStreetMap contributors</small>
                   <button className="primary" onClick={() => accept(task.id)}>Accept Job</button>
                 </div>
               </article>

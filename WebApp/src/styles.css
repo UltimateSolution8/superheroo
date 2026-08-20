@@ -1779,6 +1779,12 @@ button:disabled {
   gap: 10px;
 }
 
+.map-attribution {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
 /* Status Pills */
 .status-pill {
   display: inline-flex;

@@ -604,8 +604,23 @@ export interface LocationSuggestion {
   lat?: number;
   lng?: number;
   placeId?: string;
-  provider: 'osm' | 'photon' | 'ola' | 'google';
+  provider: 'ola' | 'google';
 }
+
+type GeoSuggestionResponse = {
+  suggestions: Array<{
+    placeId?: string | null;
+    primaryText?: string | null;
+    secondaryText?: string | null;
+    description?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+  }>;
+};
+
+type GeoEnvelope<T> = { result: T; provider: string; degraded: boolean };
+type GeoPlaceDetail = { lat: number; lng: number };
+type GeoReverseGeocode = { formattedAddress: string };
 
 export type IfscLookupResult = {
   IFSC: string;
@@ -632,207 +647,38 @@ export async function verifyIfscCode(ifsc: string): Promise<IfscLookupResult> {
   return res.json();
 }
 
-const OLA_MAPS_API_KEY = import.meta.env.VITE_OLA_MAPS_API_KEY || '';
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
-
-export async function searchLocations(query: string): Promise<LocationSuggestion[]> {
-  if (!query || query.trim().length < 2) return [];
-
-  // 1. Try browser-safe OSM Nominatim first
-  try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&q=${encodeURIComponent(query)}`;
-    const res = await fetch(url, {
-      headers: {
-        'Accept-Language': 'en'
-      }
-    });
-    if (res.ok) {
-      const data = await res.json() as any[];
-      if (Array.isArray(data) && data.length > 0) {
-        return data.map(item => ({
-          description: item.display_name,
-          lat: Number(item.lat),
-          lng: Number(item.lon),
-          provider: 'osm'
-        }));
-      }
-    }
-  } catch (err) {
-    console.warn("OSM Nominatim search failed, trying Photon:", err);
-  }
-
-  // 2. Photon is CORS-friendly and returns coordinates directly.
-  try {
-    const url = `https://photon.komoot.io/api/?limit=6&q=${encodeURIComponent(query)}`;
-    const res = await fetch(url);
-    if (res.ok) {
-      const data = await res.json() as any;
-      const features = Array.isArray(data?.features) ? data.features : [];
-      if (features.length > 0) {
-        return features.map((feature: any) => {
-          const props = feature.properties || {};
-          const coords = feature.geometry?.coordinates || [];
-          const label = [props.name, props.street, props.city, props.state, props.country].filter(Boolean).join(', ');
-          return {
-            description: label || props.name || query,
-            lat: Number(coords[1]),
-            lng: Number(coords[0]),
-            provider: 'photon' as const,
-          };
-        }).filter((item: LocationSuggestion) => Number.isFinite(item.lat) && Number.isFinite(item.lng));
-      }
-    }
-  } catch (err) {
-    console.warn("Photon search failed, trying Ola Maps:", err);
-  }
-
-  // 3. Fallback to Ola Maps
-  if (OLA_MAPS_API_KEY) {
-    try {
-      const url = `https://api.olamaps.io/places/v1/autocomplete?input=${encodeURIComponent(query)}&api_key=${OLA_MAPS_API_KEY}`;
-      const res = await fetch(url, {
-        headers: {
-          'X-Request-Id': 'web-mvp-' + Math.random().toString(36).substring(2, 9)
-        }
-      });
-      if (res.ok) {
-        const data = await res.json() as any;
-        if (data && Array.isArray(data.predictions)) {
-          return data.predictions.map((p: any) => ({
-            description: p.description,
-            placeId: p.place_id,
-            provider: 'ola'
-          }));
-        }
-      }
-    } catch (err) {
-      console.warn("Ola Maps autocomplete failed, trying Google Maps:", err);
-    }
-  }
-
-  // 4. Fallback to Google Maps
-  if (GOOGLE_MAPS_API_KEY) {
-    try {
-      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json() as any;
-        if (data && Array.isArray(data.predictions)) {
-          return data.predictions.map((p: any) => ({
-            description: p.description,
-            placeId: p.place_id,
-            provider: 'google'
-          }));
-        }
-      }
-    } catch (err) {
-      console.error("Google Maps autocomplete failed:", err);
-    }
-  }
-
-  return [];
+function providerForPlaceId(placeId?: string | null): 'ola' | 'google' {
+  return placeId?.startsWith('google:') ? 'google' : 'ola';
 }
 
-export async function resolveLocationCoords(suggestion: LocationSuggestion): Promise<{ lat: number; lng: number } | null> {
-  if ((suggestion.provider === 'osm' || suggestion.provider === 'photon') && suggestion.lat !== undefined && suggestion.lng !== undefined) {
+/** Keeps provider keys and OSM public demo services out of the browser. */
+export async function searchLocations(query: string, token?: string | null): Promise<LocationSuggestion[]> {
+  if (!query || query.trim().length < 2) return [];
+  const params = new URLSearchParams({ q: query.trim() });
+  const response = await apiFetch<GeoSuggestionResponse>(`/api/v1/geo/autocomplete?${params}`, {}, token);
+  return (response.suggestions || []).map((item) => ({
+    description: item.description || [item.primaryText, item.secondaryText].filter(Boolean).join(', ') || query,
+    placeId: item.placeId || undefined,
+    lat: typeof item.lat === 'number' ? item.lat : undefined,
+    lng: typeof item.lng === 'number' ? item.lng : undefined,
+    provider: providerForPlaceId(item.placeId),
+  }));
+}
+
+export async function resolveLocationCoords(suggestion: LocationSuggestion, token?: string | null): Promise<{ lat: number; lng: number } | null> {
+  if (suggestion.lat !== undefined && suggestion.lng !== undefined) {
     return { lat: suggestion.lat, lng: suggestion.lng };
   }
-
-  if (suggestion.provider === 'ola' && suggestion.placeId) {
-    try {
-      const url = `https://api.olamaps.io/places/v1/details?place_id=${encodeURIComponent(suggestion.placeId)}&api_key=${OLA_MAPS_API_KEY}`;
-      const res = await fetch(url, {
-        headers: {
-          'X-Request-Id': 'web-mvp-' + Math.random().toString(36).substring(2, 9)
-        }
-      });
-      if (res.ok) {
-        const data = await res.json() as any;
-        const location = data?.result?.geometry?.location;
-        if (location && typeof location.lat === 'number' && typeof location.lng === 'number') {
-          return { lat: location.lat, lng: location.lng };
-        }
-      }
-    } catch (err) {
-      console.error("Failed to resolve Ola Maps details:", err);
-    }
-  }
-
-  if (suggestion.provider === 'google' && suggestion.placeId && GOOGLE_MAPS_API_KEY) {
-    try {
-      const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(suggestion.placeId)}&fields=geometry&key=${GOOGLE_MAPS_API_KEY}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json() as any;
-        const location = data?.result?.geometry?.location;
-        if (location && typeof location.lat === 'number' && typeof location.lng === 'number') {
-          return { lat: location.lat, lng: location.lng };
-        }
-      }
-    } catch (err) {
-      console.error("Failed to resolve Google Maps details:", err);
-    }
-  }
-
-  return null;
+  if (!suggestion.placeId) return null;
+  const params = new URLSearchParams({ placeId: suggestion.placeId });
+  const response = await apiFetch<GeoEnvelope<GeoPlaceDetail>>(`/api/v1/geo/place?${params}`, {}, token);
+  return response.result && Number.isFinite(response.result.lat) && Number.isFinite(response.result.lng)
+    ? { lat: response.result.lat, lng: response.result.lng }
+    : null;
 }
 
-export async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
-  // 1. Try OSM Nominatim first
-  try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
-    const res = await fetch(url, {
-      headers: {
-        'Accept-Language': 'en'
-      }
-    });
-    if (res.ok) {
-      const data = await res.json() as any;
-      if (data && data.display_name) {
-        return data.display_name;
-      }
-    }
-  } catch (err) {
-    console.warn("OSM Nominatim reverse geocode failed, trying Ola Maps:", err);
-  }
-
-  // 2. Try Ola Maps
-  if (OLA_MAPS_API_KEY) {
-    try {
-      const url = `https://api.olamaps.io/places/v1/reverse-geocode?latlng=${lat},${lng}&api_key=${OLA_MAPS_API_KEY}`;
-      const res = await fetch(url, {
-        headers: {
-          'X-Request-Id': 'web-mvp-' + Math.random().toString(36).substring(2, 9)
-        }
-      });
-      if (res.ok) {
-        const data = await res.json() as any;
-        const address = data?.results?.[0]?.formatted_address || data?.results?.[0]?.name || data?.results?.[0]?.description;
-        if (address) {
-          return address;
-        }
-      }
-    } catch (err) {
-      console.warn("Ola Maps reverse geocode failed, trying Google Maps:", err);
-    }
-  }
-
-  // 3. Try Google Maps
-  if (GOOGLE_MAPS_API_KEY) {
-    try {
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json() as any;
-        const address = data?.results?.[0]?.formatted_address;
-        if (address) {
-          return address;
-        }
-      }
-    } catch (err) {
-      console.error("Google Maps reverse geocode failed:", err);
-    }
-  }
-
-  return null;
+export async function reverseGeocode(lat: number, lng: number, token?: string | null): Promise<string | null> {
+  const params = new URLSearchParams({ lat: String(lat), lng: String(lng) });
+  const response = await apiFetch<GeoEnvelope<GeoReverseGeocode>>(`/api/v1/geo/reverse?${params}`, {}, token);
+  return response.result?.formattedAddress || null;
 }
